@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import {
-  FileText,
+  FileText, 
   House,
   LogOut,
   Menu,
