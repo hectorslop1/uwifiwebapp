@@ -110,8 +110,11 @@ export function WalletShell() {
                   <div key={entry.label} className="space-y-3">
                     <AnimatedTooltip
                       content={
-                        <div className="whitespace-nowrap text-body-sm text-ink">
-                          <NumberTicker value={entry.points} /> points
+                        <div className="flex flex-col items-center">
+                          <div className="text-base font-bold text-white">
+                            <NumberTicker value={entry.points} />
+                          </div>
+                          <div className="text-xs text-white/80">points</div>
                         </div>
                       }
                     >

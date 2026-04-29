@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "motion/react";
+import { useEffect } from "react";
 import type { MouseEvent, ReactNode } from "react";
 import { useRef, useState } from "react";
 
@@ -27,15 +28,24 @@ export function AnimatedTooltip({
   const rotate = useSpring(useTransform(x, [-100, 100], [-5, 5]), springConfig);
   const translateX = useSpring(useTransform(x, [-100, 100], [-14, 14]), springConfig);
 
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
   const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
 
+    const rect = event.currentTarget.getBoundingClientRect();
+    const pointerOffset = event.clientX - rect.left - rect.width / 2;
+
     animationFrameRef.current = requestAnimationFrame(() => {
-      const rect = event.currentTarget.getBoundingClientRect();
-      const halfWidth = rect.width / 2;
-      x.set(event.clientX - rect.left - halfWidth);
+      x.set(pointerOffset);
     });
   };
 
@@ -67,7 +77,7 @@ export function AnimatedTooltip({
               whiteSpace: "nowrap",
             }}
             className={cn(
-              "pointer-events-none absolute bottom-full left-1/2 z-50 mb-3 flex -translate-x-1/2 flex-col items-center justify-center rounded-[1rem] border border-white/12 bg-[#101216]/96 px-4 py-2 text-xs text-white shadow-[0_18px_40px_rgba(7,10,18,0.22)] backdrop-blur-xl",
+              "pointer-events-none absolute -top-13 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center justify-center rounded-md bg-black px-4 py-2 text-xs text-white shadow-xl",
               contentClassName,
             )}
           >

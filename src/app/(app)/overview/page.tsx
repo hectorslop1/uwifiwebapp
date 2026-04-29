@@ -9,6 +9,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { InteractiveHoverButtonLink } from "@/src/components/magic/interactive-hover-button";
 import { NumberTicker } from "@/src/components/magic/number-ticker";
+import { StatusBeacon } from "@/src/components/magic/status-beacon";
 import { TextReveal } from "@/src/components/magic/text-reveal";
 
 import RouterStage from "./RouterStage";
@@ -136,7 +137,7 @@ export default function OverviewPage() {
         <div className="relative grid items-center gap-5 lg:grid-cols-[minmax(15rem,20rem)_minmax(0,1fr)] lg:gap-8">
           <div className="flex min-w-0 flex-col justify-center lg:pl-2">
             <div className="inline-flex max-w-full items-center gap-2.5 lg:gap-3">
-              <span className="h-4 w-4 rounded-full bg-success shadow-[0_0_0_8px_rgba(52,199,76,0.12)] lg:h-5 lg:w-5" />
+              <StatusBeacon active />
               <span className="text-[1.35rem] font-medium tracking-[-0.05em] text-ink-soft">
                 <TextReveal text="Active" />
               </span>

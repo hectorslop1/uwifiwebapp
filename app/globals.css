@@ -51,6 +51,18 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --animate-ripple: ripple var(--duration, 4.8s) ease-in-out
+    calc(var(--i, 0) * 0.12s) infinite;
+}
+
+@keyframes ripple {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(0.9);
+  }
 }
 
 @layer base {
