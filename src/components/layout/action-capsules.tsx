@@ -43,8 +43,8 @@ export function ActionCapsule({
     <Link
       href={href}
       className={cx(
-        "group flex min-h-[4rem] items-center gap-4 rounded-pill px-6 py-3 text-left transition-colors duration-200",
-        subtleSurface && "bg-white/60",
+        "group flex min-h-[3.35rem] items-center gap-3 rounded-pill px-4 py-2.5 text-left transition-colors duration-200",
+        subtleSurface && "theme-inline-surface border border-white/80 bg-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]",
         "text-ink-soft hover:bg-surface/70 hover:text-ink",
         className,
       )}
@@ -52,9 +52,9 @@ export function ActionCapsule({
       {/* Icon */}
       <span
         className={cx(
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
           subtleSurface
-            ? "bg-canvas/65 text-ink-muted"
+            ? "theme-icon-surface bg-canvas/65 text-ink-muted"
             : "bg-brand-soft/55 text-brand"
         )}
       >
@@ -62,14 +62,14 @@ export function ActionCapsule({
       </span>
 
       {/* Label */}
-      <span className="min-w-0 flex-1 text-body-lg text-current">
+      <span className="min-w-0 flex-1 text-[0.95rem] text-current">
         {label}
       </span>
 
       {/* Chevron */}
       <span
         aria-hidden="true"
-        className="shrink-0 text-body-lg text-ink-faint transition-transform duration-200 group-hover:translate-x-0.5"
+        className="shrink-0 text-[1rem] text-ink-faint transition-transform duration-200 group-hover:translate-x-0.5"
       >
         ›
       </span>

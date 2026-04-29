@@ -30,19 +30,19 @@ const actions = [
     href: "/billing",
     label: "Pay now",
     icon: DollarSign,
-    iconClassName: "bg-[#eef7ef] text-[#3b7c4b]",
+    iconClassName: "bg-success-soft text-success",
   },
   {
     href: "/billing/invoices",
     label: "View invoices",
     icon: FileText,
-    iconClassName: "bg-[#eff2f5] text-[#516274]",
+    iconClassName: "bg-surface-raised/80 text-ink-soft",
   },
   {
     href: "/gateway",
     label: "Manage gateway",
     icon: Wifi,
-    iconClassName: "bg-[#eeedff] text-[#5562ef]",
+    iconClassName: "bg-brand-soft text-brand",
   },
 ];
 
@@ -56,7 +56,7 @@ function NetworkCard({
   band: string;
 }) {
   return (
-    <div className="rounded-[1.3rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(251,251,253,0.44))] px-4 py-4 shadow-[0_14px_28px_rgba(201,204,214,0.07),inset_0_1px_0_rgba(255,255,255,0.9)]">
+    <div className="theme-panel-soft rounded-[1.3rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(251,251,253,0.44))] px-4 py-4 shadow-[0_14px_28px_rgba(201,204,214,0.07),inset_0_1px_0_rgba(255,255,255,0.9)]">
       <div className="flex items-center gap-2.5 text-[0.95rem] font-medium tracking-[-0.035em] text-ink-soft">
         <span className="flex h-8 w-8 items-center justify-center rounded-[0.85rem] bg-[#eef9f0] text-success">
           <Wifi size={16} strokeWidth={1.9} />
@@ -107,7 +107,7 @@ function ActionCard({
     return (
       <InteractiveHoverButtonLink
         href={href}
-        className="group flex items-center gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,251,0.82))] px-3.5 py-3.5 shadow-[0_16px_32px_rgba(201,203,213,0.09),inset_0_1px_0_rgba(255,255,255,0.94)] backdrop-blur-xl"
+        className="theme-panel group flex items-center gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,251,0.82))] px-3.5 py-3.5 shadow-[0_16px_32px_rgba(201,203,213,0.09),inset_0_1px_0_rgba(255,255,255,0.94)] backdrop-blur-xl"
         containerClassName="rounded-[1.35rem]"
       >
         {content}
@@ -118,7 +118,7 @@ function ActionCard({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,251,0.82))] px-3.5 py-3.5 shadow-[0_16px_32px_rgba(201,203,213,0.09),inset_0_1px_0_rgba(255,255,255,0.94)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_38px_rgba(193,196,206,0.14),inset_0_1px_0_rgba(255,255,255,0.96)]"
+      className="theme-panel group flex items-center gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,251,0.82))] px-3.5 py-3.5 shadow-[0_16px_32px_rgba(201,203,213,0.09),inset_0_1px_0_rgba(255,255,255,0.94)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_38px_rgba(193,196,206,0.14),inset_0_1px_0_rgba(255,255,255,0.96)]"
     >
       {content}
     </Link>
@@ -127,11 +127,11 @@ function ActionCard({
 
 export default function OverviewPage() {
   return (
-    <div className="flex flex-col gap-4 lg:h-[calc(100vh-6.8rem-3rem)] lg:min-h-0 lg:gap-4 xl:h-[calc(100vh-6.8rem-3.5rem)]">
-      <section className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(247,247,249,0.62))] px-4 py-4 shadow-[0_22px_48px_rgba(205,207,214,0.11),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-5 sm:py-5 lg:px-7 lg:py-5">
+    <div className="flex flex-col gap-4 lg:h-[calc(100dvh-5.4rem-2rem)] lg:min-h-0 lg:gap-4 xl:h-[calc(100dvh-5.4rem-2.5rem)]">
+      <section className="theme-panel relative overflow-hidden rounded-[2rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(247,247,249,0.62))] px-4 py-4 shadow-[0_22px_48px_rgba(205,207,214,0.11),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-5 sm:py-5 lg:px-7 lg:py-5">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute left-[8%] top-5 h-36 w-36 rounded-full bg-white/80 blur-3xl" />
-          <div className="absolute bottom-6 left-[30%] h-14 w-36 rounded-full bg-[#f1f1f6] blur-3xl" />
+          <div className="theme-shell-orb-primary absolute left-[8%] top-5 h-36 w-36 rounded-full blur-3xl" />
+          <div className="theme-shell-orb-secondary absolute bottom-6 left-[30%] h-14 w-36 rounded-full blur-3xl" />
         </div>
 
         <div className="relative grid items-center gap-5 lg:grid-cols-[minmax(15rem,20rem)_minmax(0,1fr)] lg:gap-8">
@@ -144,7 +144,7 @@ export default function OverviewPage() {
               <span className="hidden h-px flex-1 bg-[linear-gradient(90deg,rgba(222,225,231,0.8),rgba(222,225,231,0))] lg:block" />
             </div>
 
-            <div className="mt-4 text-[3.35rem] font-medium leading-[0.92] tracking-[-0.075em] text-[#252932] sm:text-[4rem] xl:text-[4.3rem]">
+            <div className="mt-4 text-[3.35rem] font-medium leading-[0.92] tracking-[-0.075em] text-ink sm:text-[4rem] xl:text-[4.3rem]">
               <NumberTicker value={110} prefix="$" decimals={2} />
             </div>
 
@@ -162,14 +162,14 @@ export default function OverviewPage() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden rounded-[1.8rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.88),rgba(248,248,250,0.72))] px-4 py-4 shadow-[0_20px_44px_rgba(205,207,214,0.1),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-5 sm:py-5 lg:flex-1 lg:px-6 lg:py-5">
+      <section className="theme-panel-subtle relative overflow-hidden rounded-[1.8rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.88),rgba(248,248,250,0.72))] px-4 py-4 shadow-[0_20px_44px_rgba(205,207,214,0.1),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-5 sm:py-5 lg:flex-1 lg:px-6 lg:py-5">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute right-0 top-0 h-28 w-28 rounded-full bg-white/70 blur-3xl" />
+          <div className="theme-shell-orb-tertiary absolute right-0 top-0 h-28 w-28 rounded-full blur-3xl" />
         </div>
 
         <div className="relative grid gap-4 xl:h-full xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.82fr)_16rem] xl:gap-6">
           <div className="space-y-4 xl:pr-1">
-            <h2 className="text-[1.55rem] font-medium tracking-[-0.055em] text-[#343843]">
+            <h2 className="text-[1.55rem] font-medium tracking-[-0.055em] text-ink">
               Gateway
             </h2>
 
@@ -187,7 +187,7 @@ export default function OverviewPage() {
                     className="flex items-baseline justify-between gap-4 text-[0.9rem] tracking-[-0.03em]"
                   >
                     <span className="text-ink-muted">{payment.date}</span>
-                    <span className="text-[0.94rem] font-medium text-[#44765a]">
+                    <span className="text-[0.94rem] font-medium text-success">
                       {payment.amount}
                     </span>
                   </div>

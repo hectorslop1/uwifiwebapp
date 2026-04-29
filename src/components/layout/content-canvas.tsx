@@ -4,7 +4,7 @@ export function ContentCanvas({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-6.8rem)] w-full max-w-[1240px] flex-col gap-4 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6 xl:px-10 xl:py-7">
+    <div className="mx-auto flex min-h-[calc(100dvh-5.4rem)] w-full max-w-[1220px] flex-col gap-3 px-4 py-3 sm:px-5 sm:py-4 lg:h-[calc(100dvh-5.4rem)] lg:min-h-0 lg:gap-4 lg:px-7 lg:py-4 xl:px-8 xl:py-5">
       {children}
     </div>
   );

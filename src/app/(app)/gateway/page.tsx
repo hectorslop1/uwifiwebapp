@@ -26,7 +26,7 @@ const gatewayMeta = [
 
 export default function GatewayPage() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
       <PageIntro
         eyebrow="Gateway"
         title="Gateway control center"
@@ -36,7 +36,7 @@ export default function GatewayPage() {
             <StatusPill label="Connected" tone="success" />
             <Link
               href="/gateway/wifi"
-              className="rounded-pill border border-white/80 bg-white/65 px-4 py-2.5 text-body-sm text-ink-soft shadow-[0_12px_28px_rgba(196,199,208,0.08)] transition-colors duration-200 hover:text-ink"
+              className="theme-control rounded-pill border border-white/80 bg-white/65 px-4 py-2.5 text-body-sm text-ink-soft shadow-[0_12px_28px_rgba(196,199,208,0.08)] transition-colors duration-200 hover:text-ink"
             >
               Adjust Wi-Fi
             </Link>
@@ -44,15 +44,15 @@ export default function GatewayPage() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <StatTile label="Connection" value="99.98%" meta="Service health this month" />
         <StatTile label="Connected devices" value="7" meta="Across both radios" />
         <StatTile label="Latency profile" value="12 ms" meta="Low variability" />
         <StatTile label="Last restart" value="2 days" meta="No manual action needed" />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.2fr)_20rem]">
-        <SurfacePanel className="p-5 sm:p-6">
+      <div className="grid gap-4 lg:min-h-0 lg:flex-1 xl:grid-cols-[minmax(0,1.2fr)_18rem]">
+        <SurfacePanel className="p-4 sm:p-5 lg:min-h-0">
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="text-title-md text-ink">Radio summary</div>
@@ -63,17 +63,17 @@ export default function GatewayPage() {
 
             <button
               type="button"
-              className="rounded-pill border border-white/80 bg-white/70 px-4 py-2 text-body-sm text-ink-soft shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-colors duration-200 hover:text-ink"
+              className="theme-control rounded-pill border border-white/80 bg-white/70 px-4 py-2 text-body-sm text-ink-soft shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] transition-colors duration-200 hover:text-ink"
             >
               Refresh
             </button>
           </div>
 
-          <div className="mt-5 grid gap-3 lg:grid-cols-2">
+          <div className="mt-4 grid gap-3 lg:grid-cols-2">
             {networks.map((network) => (
               <div
                 key={network.name}
-                className="rounded-[1.35rem] border border-white/75 bg-white/55 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
+                className="theme-inline-surface rounded-[1.25rem] border border-white/75 bg-white/55 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
               >
                 <div className="flex items-center gap-3 text-ink-soft">
                   <span className="flex h-9 w-9 items-center justify-center rounded-[0.95rem] bg-success-soft text-success">
@@ -93,7 +93,7 @@ export default function GatewayPage() {
             ))}
           </div>
 
-          <div className="mt-5 rounded-[1.35rem] border border-line/30 bg-white/45 px-4 py-4">
+          <div className="theme-soft-well mt-4 rounded-[1.25rem] border border-line/30 bg-white/45 px-4 py-3.5 lg:max-h-[14rem] lg:overflow-auto">
             <div className="flex items-center gap-2 text-body-md text-ink">
               <Activity size={17} strokeWidth={1.8} />
               Recent network events
@@ -116,15 +116,15 @@ export default function GatewayPage() {
           </div>
         </SurfacePanel>
 
-        <div className="space-y-5">
-          <SurfacePanel subtle className="p-5">
+        <div className="space-y-4">
+          <SurfacePanel subtle className="p-4">
             <div className="text-title-md text-ink">Gateway details</div>
             <div className="mt-4">
               <KeyValueList items={gatewayMeta} />
             </div>
           </SurfacePanel>
 
-          <SurfacePanel subtle className="p-5">
+          <SurfacePanel subtle className="p-4">
             <div className="text-title-md text-ink">Primary actions</div>
             <ActionCapsules className="mt-4">
               <ActionCapsule href="/gateway/devices" label="Inspect devices" />

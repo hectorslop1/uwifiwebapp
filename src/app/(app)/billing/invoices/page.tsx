@@ -15,14 +15,14 @@ const invoices = [
 
 export default function BillingInvoicesPage() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
       <PageIntro
         eyebrow="Billing"
         title="Invoices"
         description="This route replaces manual table layouts with a reusable SaaS table pattern: quiet header, clear filters and obvious document actions."
       />
 
-      <SurfacePanel className="p-4 sm:p-5">
+      <SurfacePanel className="p-4 lg:min-h-0">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             {["All", "Paid", "Pending", "This year"].map((filter, index) => (
@@ -31,8 +31,8 @@ export default function BillingInvoicesPage() {
                 type="button"
                 className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
                   index === 0
-                    ? "bg-white/90 text-ink shadow-[0_10px_22px_rgba(201,204,214,0.14)]"
-                    : "bg-white/45 text-ink-muted hover:text-ink-soft"
+                    ? "theme-control-active bg-white/90 text-ink shadow-[0_10px_22px_rgba(201,204,214,0.14)]"
+                    : "theme-control-muted bg-white/45 text-ink-muted hover:bg-white/45 hover:text-ink-soft"
                 }`}
               >
                 {filter}
@@ -40,12 +40,12 @@ export default function BillingInvoicesPage() {
             ))}
           </div>
 
-          <div className="rounded-pill border border-white/80 bg-white/55 px-4 py-2 text-body-sm text-ink-muted">
+          <div className="theme-inline-surface rounded-pill border border-white/80 bg-white/55 px-4 py-2 text-body-sm text-ink-muted">
             Search by invoice number will live here.
           </div>
         </div>
 
-        <ProgressiveBlur className="mt-4" maxHeightClassName="max-h-[28rem]">
+        <ProgressiveBlur className="mt-4" maxHeightClassName="max-h-[24rem]">
           <PremiumTable
             columns={[
               { key: "invoice", label: "Invoice" },

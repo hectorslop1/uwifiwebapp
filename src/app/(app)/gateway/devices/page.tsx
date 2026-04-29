@@ -44,7 +44,7 @@ const rows = [
 
 export default function GatewayDevicesPage() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
       <PageIntro
         eyebrow="Gateway"
         title="Connected devices"
@@ -54,7 +54,7 @@ export default function GatewayDevicesPage() {
             <StatusPill label="7 active devices" tone="success" />
             <button
               type="button"
-              className="rounded-pill border border-white/80 bg-white/65 px-4 py-2.5 text-body-sm text-ink-soft shadow-[0_12px_28px_rgba(196,199,208,0.08)] transition-colors duration-200 hover:text-ink"
+              className="theme-control rounded-pill border border-white/80 bg-white/65 px-4 py-2.5 text-body-sm text-ink-soft shadow-[0_12px_28px_rgba(196,199,208,0.08)] transition-colors duration-200 hover:text-ink"
             >
               Refresh list
             </button>
@@ -62,13 +62,13 @@ export default function GatewayDevicesPage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         <StatTile label="Trusted" value="5" meta="Persistent household devices" />
         <StatTile label="Needs review" value="1" meta="Recent connection change" />
         <StatTile label="Radio distribution" value="4 / 3" meta="5 GHz vs 2.4 GHz" />
       </div>
 
-      <SurfacePanel className="p-4 sm:p-5">
+      <SurfacePanel className="p-4 lg:min-h-0">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-2">
             {["All devices", "5 GHz", "2.4 GHz", "Trusted only"].map((filter, index) => (
@@ -77,8 +77,8 @@ export default function GatewayDevicesPage() {
                 type="button"
                 className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
                   index === 0
-                    ? "bg-white/90 text-ink shadow-[0_10px_22px_rgba(201,204,214,0.14)]"
-                    : "bg-white/45 text-ink-muted hover:text-ink-soft"
+                    ? "theme-control-active bg-white/90 text-ink shadow-[0_10px_22px_rgba(201,204,214,0.14)]"
+                    : "theme-control-muted bg-white/45 text-ink-muted hover:bg-white/45 hover:text-ink-soft"
                 }`}
               >
                 {filter}
@@ -86,12 +86,12 @@ export default function GatewayDevicesPage() {
             ))}
           </div>
 
-          <div className="rounded-pill border border-white/80 bg-white/55 px-4 py-2 text-body-sm text-ink-muted">
+          <div className="theme-inline-surface rounded-pill border border-white/80 bg-white/55 px-4 py-2 text-body-sm text-ink-muted">
             Search and live filters will plug into this surface next.
           </div>
         </div>
 
-        <ProgressiveBlur className="mt-4" maxHeightClassName="max-h-[30rem]">
+        <ProgressiveBlur className="mt-4" maxHeightClassName="max-h-[23rem]">
           <PremiumTable
             columns={[
               { key: "device", label: "Device" },
@@ -104,7 +104,7 @@ export default function GatewayDevicesPage() {
               id: row.id,
               cells: [
                 <div key={`${row.id}-device`} className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-[0.95rem] bg-white/80 text-ink-soft">
+                  <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-[0.95rem] bg-white/80 text-ink-soft">
                     {row.name.includes("iPhone") ? (
                       <Smartphone size={16} strokeWidth={1.8} />
                     ) : row.name.includes("MacBook") ? (
@@ -133,15 +133,15 @@ export default function GatewayDevicesPage() {
         </ProgressiveBlur>
       </SurfacePanel>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <SurfacePanel subtle className="p-5">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
+        <SurfacePanel subtle className="p-4">
           <div className="text-title-md text-ink">Recommended detail drawer content</div>
           <div className="mt-3 text-body-sm text-ink-muted">
             Vendor, MAC, connection quality, last authorization, pause or block actions, plus a short audit trail. The route is structured so we can add that drawer without redesigning the page.
           </div>
         </SurfacePanel>
 
-        <SurfacePanel subtle className="p-5">
+        <SurfacePanel subtle className="p-4">
           <div className="flex items-center gap-2 text-title-md text-ink">
             <BadgeCheck size={17} strokeWidth={1.8} />
             Trust model

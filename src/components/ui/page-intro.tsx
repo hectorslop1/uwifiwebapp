@@ -20,22 +20,22 @@ export function PageIntro({
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between",
+        "flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between",
         className,
       )}
     >
-      <div className="max-w-[42rem] space-y-2">
+      <div className="max-w-[40rem] space-y-1.5">
         {eyebrow ? (
-          <div className="text-label-sm uppercase tracking-[0.18em] text-ink-faint">
+          <div className="text-[0.66rem] uppercase tracking-[0.18em] text-ink-faint">
             {eyebrow}
           </div>
         ) : null}
 
-        <h1 className="text-[2rem] font-medium tracking-[-0.06em] text-ink sm:text-[2.35rem]">
+        <h1 className="text-[1.72rem] font-medium tracking-[-0.06em] text-ink sm:text-[2rem]">
           {title}
         </h1>
 
-        <p className="max-w-[38rem] text-body-md text-ink-muted">
+        <p className="max-w-[36rem] text-[0.92rem] leading-6 text-ink-muted">
           {description}
         </p>
       </div>

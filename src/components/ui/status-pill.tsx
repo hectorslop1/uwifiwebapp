@@ -7,8 +7,8 @@ type StatusTone = "success" | "brand" | "muted" | "warning";
 const toneMap: Record<StatusTone, string> = {
   success: "bg-success-soft text-success",
   brand: "bg-brand-soft text-brand",
-  muted: "bg-[#f1f2f5] text-ink-soft",
-  warning: "bg-[#fff4df] text-[#b67a17]",
+  muted: "theme-status-muted bg-[#f1f2f5] text-ink-soft",
+  warning: "theme-status-warning bg-[#fff4df] text-[#b67a17]",
 };
 
 type StatusPillProps = {

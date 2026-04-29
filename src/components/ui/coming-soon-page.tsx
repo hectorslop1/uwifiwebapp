@@ -34,7 +34,7 @@ export function ComingSoonPage({
             action={
               <Link
                 href="/overview"
-                className="inline-flex items-center gap-2 rounded-pill bg-white/75 px-4 py-2.5 text-body-sm text-ink-soft shadow-[0_12px_28px_rgba(196,199,208,0.1)] transition-colors duration-200 hover:text-ink"
+                className="theme-control inline-flex items-center gap-2 rounded-pill border border-white/80 bg-white/75 px-4 py-2.5 text-body-sm text-ink-soft shadow-[0_12px_28px_rgba(196,199,208,0.1)] transition-colors duration-200 hover:text-ink"
               >
                 Back to overview
                 <ArrowRight size={16} strokeWidth={1.8} />

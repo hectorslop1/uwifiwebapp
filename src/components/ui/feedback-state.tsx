@@ -20,7 +20,7 @@ export function FeedbackState({
   return (
     <div
       className={cn(
-        "flex min-h-[16rem] flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-line/70 bg-white/40 px-6 py-8 text-center",
+        "theme-soft-well flex min-h-[16rem] flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-line/70 bg-white/40 px-6 py-8 text-center",
         className,
       )}
     >

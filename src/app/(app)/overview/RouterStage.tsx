@@ -10,7 +10,7 @@ export function RouterStage() {
   return (
     <div className="relative flex min-h-[15rem] w-full items-end justify-center overflow-visible lg:min-h-[22rem] lg:justify-end">
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute right-[18%] top-[10%] h-24 w-24 rounded-full bg-white/90 blur-3xl sm:h-32 sm:w-32 lg:h-40 lg:w-40" />
+        <div className="theme-shell-orb-primary absolute right-[18%] top-[10%] h-24 w-24 rounded-full blur-3xl sm:h-32 sm:w-32 lg:h-40 lg:w-40" />
       </div>
 
       <motion.div

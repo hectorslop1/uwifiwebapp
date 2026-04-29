@@ -18,15 +18,15 @@ export function StatTile({
   return (
     <div
       className={cn(
-        "rounded-[1.35rem] border border-white/80 bg-white/60 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]",
+        "theme-inline-surface rounded-[1.25rem] border border-white/80 bg-white/60 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]",
         className,
       )}
     >
       <div className="text-label-md text-ink-muted">{label}</div>
-      <div className="mt-2 text-[1.65rem] font-medium tracking-[-0.055em] text-ink">
+      <div className="mt-1.5 text-[1.45rem] font-medium tracking-[-0.055em] text-ink">
         {value}
       </div>
-      {meta ? <div className="mt-2 text-body-sm text-ink-muted">{meta}</div> : null}
+      {meta ? <div className="mt-1.5 text-[0.82rem] text-ink-muted">{meta}</div> : null}
     </div>
   );
 }

@@ -9,7 +9,7 @@ import { SurfacePanel } from "@/src/components/ui/surface-panel";
 type SettingsSection = "account" | "security" | "preferences" | "notifications";
 
 const fieldClassName =
-  "w-full rounded-[1rem] border border-white/80 bg-white/65 px-4 py-3 text-body-sm text-ink outline-none placeholder:text-ink-faint shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]";
+  "theme-input w-full rounded-[1rem] border border-white/80 bg-white/65 px-4 py-3 text-body-sm text-ink outline-none placeholder:text-ink-faint shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]";
 
 function SectionHeader({
   title,
@@ -32,7 +32,7 @@ export function SettingsShell() {
   });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
       <PageIntro
         eyebrow="Settings"
         title="Account settings"
@@ -52,13 +52,13 @@ export function SettingsShell() {
       />
 
       {section === "account" ? (
-        <SurfacePanel className="p-5 sm:p-6">
+        <SurfacePanel className="p-4 sm:p-5">
           <SectionHeader
             title="Profile information"
             description="Keep account information compact and scannable instead of spreading it into oversized form sections."
           />
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
             <input defaultValue="Luc" className={fieldClassName} aria-label="First name" />
             <input defaultValue="Nguyen" className={fieldClassName} aria-label="Last name" />
             <input
@@ -76,13 +76,13 @@ export function SettingsShell() {
       ) : null}
 
       {section === "security" ? (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_18rem]">
-          <SurfacePanel className="p-5 sm:p-6">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_17rem]">
+          <SurfacePanel className="p-4 sm:p-5">
             <SectionHeader
               title="Password update"
               description="The security flow remains available, but the presentation is now calmer and more trustworthy."
             />
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
               <input type="password" placeholder="Current password" className={fieldClassName} />
               <input type="password" placeholder="New password" className={fieldClassName} />
               <input
@@ -93,7 +93,7 @@ export function SettingsShell() {
             </div>
           </SurfacePanel>
 
-          <SurfacePanel subtle className="p-5">
+          <SurfacePanel subtle className="p-4">
             <SectionHeader
               title="Security notes"
               description="2FA, active sessions and recovery methods should live in this rail on the next backend-connected pass."
@@ -103,15 +103,16 @@ export function SettingsShell() {
       ) : null}
 
       {section === "preferences" ? (
-        <SurfacePanel className="p-5 sm:p-6">
+        <SurfacePanel className="p-4 sm:p-5">
           <SectionHeader
             title="Preferences"
             description="Theme, language and time-related preferences remain part of the app web scope."
           />
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
             <select className={fieldClassName} defaultValue="light">
               <option value="light">Light appearance</option>
+              <option value="dark">Dark appearance</option>
               <option value="system">System appearance</option>
             </select>
             <select className={fieldClassName} defaultValue="en">
@@ -131,13 +132,13 @@ export function SettingsShell() {
       ) : null}
 
       {section === "notifications" ? (
-        <SurfacePanel className="p-5 sm:p-6">
+        <SurfacePanel className="p-4 sm:p-5">
           <SectionHeader
             title="Notification preferences"
             description="Billing, outage and promotional settings stay inside the experience instead of being dropped during the redesign."
           />
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-4 space-y-3">
             {[
               {
                 key: "billing" as const,
@@ -157,7 +158,7 @@ export function SettingsShell() {
             ].map((item) => (
               <div
                 key={item.key}
-                className="flex items-center justify-between gap-4 rounded-[1.2rem] border border-white/75 bg-white/55 px-4 py-4"
+                className="theme-inline-surface flex items-center justify-between gap-4 rounded-[1.15rem] border border-white/75 bg-white/55 px-4 py-3.5"
               >
                 <div>
                   <div className="text-body-md font-medium text-ink">{item.title}</div>
@@ -177,7 +178,7 @@ export function SettingsShell() {
                   }`}
                 >
                   <span
-                    className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all duration-200 ${
+                    className={`theme-toggle-knob absolute top-1 h-5 w-5 rounded-full bg-white transition-all duration-200 ${
                       notifications[item.key] ? "left-6" : "left-1"
                     }`}
                   />
@@ -188,7 +189,7 @@ export function SettingsShell() {
         </SurfacePanel>
       ) : null}
 
-      <SurfacePanel subtle className="p-4 sm:p-5">
+      <SurfacePanel subtle className="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="text-body-md font-medium text-ink">Save bar</div>
@@ -200,13 +201,13 @@ export function SettingsShell() {
           <div className="flex gap-3">
             <button
               type="button"
-              className="rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft"
+              className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft"
             >
               Cancel
             </button>
             <button
               type="button"
-              className="rounded-pill bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-4 py-2.5 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)]"
+              className="theme-cta rounded-pill bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-4 py-2.5 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)]"
             >
               Save changes
             </button>

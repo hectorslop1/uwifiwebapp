@@ -33,7 +33,7 @@ export function PremiumTable({
     <SurfacePanel className="overflow-hidden">
       <div className="grid gap-0">
         <div
-          className="grid gap-4 border-b border-line/30 px-5 py-4 text-label-sm uppercase tracking-[0.14em] text-ink-faint"
+          className="grid gap-4 border-b border-line/30 px-4 py-3 text-label-sm uppercase tracking-[0.14em] text-ink-faint"
           style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
         >
           {columns.map((column) => (
@@ -49,7 +49,7 @@ export function PremiumTable({
         {rows.map((row, rowIndex) => (
           <div
             key={row.id}
-            className="grid gap-4 px-5 py-4 text-body-sm text-ink-soft transition-colors duration-200 hover:bg-white/45"
+            className="grid gap-4 px-4 py-3 text-body-sm text-ink-soft transition-colors duration-200 hover:bg-white/45"
             style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
           >
             {row.cells.map((cell, index) => (

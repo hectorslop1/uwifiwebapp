@@ -18,7 +18,7 @@ export function SectionTabs({ items }: Readonly<SectionTabsProps>) {
   const pathname = usePathname();
 
   return (
-    <div className="inline-flex flex-wrap gap-2 rounded-pill border border-white/80 bg-white/55 p-1.5 shadow-[0_14px_34px_rgba(193,196,205,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl">
+    <div className="theme-control inline-flex flex-wrap gap-2 rounded-pill border border-white/80 bg-white/55 p-1.5 shadow-[0_14px_34px_rgba(193,196,205,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl">
       {items.map((item) => {
         const active =
           pathname === item.href ||
@@ -32,8 +32,8 @@ export function SectionTabs({ items }: Readonly<SectionTabsProps>) {
             className={cn(
               "rounded-pill px-4 py-2.5 text-body-sm transition-all duration-200",
               active
-                ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] text-ink shadow-[0_12px_26px_rgba(205,207,214,0.16)]"
-                : "text-ink-muted hover:bg-white/65 hover:text-ink-soft",
+                ? "theme-control-active bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] text-ink shadow-[0_12px_26px_rgba(205,207,214,0.16)]"
+                : "theme-control-muted text-ink-muted hover:bg-white/65 hover:text-ink-soft",
             )}
           >
             {item.label}

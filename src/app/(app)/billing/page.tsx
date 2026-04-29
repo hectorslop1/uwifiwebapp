@@ -18,7 +18,7 @@ const activity = [
 
 export default function BillingPage() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
       <PageIntro
         eyebrow="Billing"
         title="Billing overview"
@@ -28,7 +28,7 @@ export default function BillingPage() {
             <StatusPill label="Autopay active" tone="success" />
             <Link
               href="/billing/payment-methods"
-              className="rounded-pill border border-white/80 bg-white/65 px-4 py-2.5 text-body-sm text-ink-soft shadow-[0_12px_28px_rgba(196,199,208,0.08)] transition-colors duration-200 hover:text-ink"
+              className="theme-control rounded-pill border border-white/80 bg-white/65 px-4 py-2.5 text-body-sm text-ink-soft shadow-[0_12px_28px_rgba(196,199,208,0.08)] transition-colors duration-200 hover:text-ink"
             >
               Manage payment methods
             </Link>
@@ -36,15 +36,15 @@ export default function BillingPage() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_repeat(3,minmax(0,1fr))]">
-        <SurfacePanel className="p-5 sm:p-6">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_repeat(3,minmax(0,1fr))]">
+        <SurfacePanel className="p-4 sm:p-5">
           <div className="text-label-md uppercase tracking-[0.14em] text-ink-faint">
             Current balance
           </div>
-          <div className="mt-3 text-[3.35rem] font-medium tracking-[-0.08em] text-ink">
+          <div className="mt-2 text-[2.8rem] font-medium tracking-[-0.08em] text-ink">
             <NumberTicker value={110} prefix="$" decimals={2} />
           </div>
-          <div className="mt-4 flex items-center gap-3 text-body-sm text-ink-muted">
+          <div className="mt-3 flex items-center gap-3 text-body-sm text-ink-muted">
             <StatusPill
               label={
                 <>
@@ -62,8 +62,8 @@ export default function BillingPage() {
         <StatTile label="Cycle health" value="Stable" meta="No failed payments this quarter" />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_18rem]">
-        <SurfacePanel className="p-5 sm:p-6">
+      <div className="grid gap-4 lg:min-h-0 lg:flex-1 xl:grid-cols-[minmax(0,1.1fr)_17rem]">
+        <SurfacePanel className="p-4 sm:p-5 lg:min-h-0">
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="text-title-md text-ink">Recent activity</div>
@@ -81,24 +81,24 @@ export default function BillingPage() {
             </Link>
           </div>
 
-          <div className="mt-5 space-y-3">
+          <div className="mt-4 space-y-2.5 lg:max-h-[22rem] lg:overflow-auto lg:pr-1">
             {activity.map((entry) => (
               <div
                 key={entry.date}
-                className="flex flex-col gap-2 rounded-[1.25rem] border border-white/75 bg-white/55 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] sm:flex-row sm:items-center sm:justify-between"
+                className="theme-inline-surface flex flex-col gap-2 rounded-[1.15rem] border border-white/75 bg-white/55 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <div className="text-body-md font-medium text-ink">{entry.label}</div>
                   <div className="text-body-sm text-ink-muted">{entry.date}</div>
                 </div>
-                <div className="text-title-md text-[#44765a]">{entry.amount}</div>
+                <div className="text-title-md text-success">{entry.amount}</div>
               </div>
             ))}
           </div>
         </SurfacePanel>
 
-        <div className="space-y-5">
-          <SurfacePanel subtle className="p-5">
+        <div className="space-y-4">
+          <SurfacePanel subtle className="p-4">
             <div className="text-title-md text-ink">Account snapshot</div>
             <div className="mt-4">
               <KeyValueList
@@ -112,7 +112,7 @@ export default function BillingPage() {
             </div>
           </SurfacePanel>
 
-          <SurfacePanel subtle className="p-5">
+          <SurfacePanel subtle className="p-4">
             <div className="text-title-md text-ink">Quick paths</div>
             <ActionCapsules className="mt-4">
               <ActionCapsule href="/billing/invoices" label="Open invoices" />

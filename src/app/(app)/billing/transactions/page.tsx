@@ -33,14 +33,14 @@ const transactions = [
 
 export default function BillingTransactionsPage() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
       <PageIntro
         eyebrow="Billing"
         title="Transactions"
         description="Invoices and transactions now share a single table language. That consistency is what makes the product feel like one premium system instead of multiple dashboards."
       />
 
-      <SurfacePanel className="p-4 sm:p-5">
+      <SurfacePanel className="p-4 lg:min-h-0">
         <div className="flex flex-wrap gap-2">
           {["Newest first", "Settled", "Wallet", "Card payments"].map((filter, index) => (
             <button
@@ -48,8 +48,8 @@ export default function BillingTransactionsPage() {
               type="button"
               className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
                 index === 0
-                  ? "bg-white/90 text-ink shadow-[0_10px_22px_rgba(201,204,214,0.14)]"
-                  : "bg-white/45 text-ink-muted hover:text-ink-soft"
+                  ? "theme-control-active bg-white/90 text-ink shadow-[0_10px_22px_rgba(201,204,214,0.14)]"
+                  : "theme-control-muted bg-white/45 text-ink-muted hover:bg-white/45 hover:text-ink-soft"
               }`}
             >
               {filter}
@@ -57,7 +57,7 @@ export default function BillingTransactionsPage() {
           ))}
         </div>
 
-        <ProgressiveBlur className="mt-4" maxHeightClassName="max-h-[28rem]">
+        <ProgressiveBlur className="mt-4" maxHeightClassName="max-h-[24rem]">
           <PremiumTable
             columns={[
               { key: "type", label: "Type" },

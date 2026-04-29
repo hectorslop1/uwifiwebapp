@@ -34,7 +34,7 @@ export function StoreShell() {
   }, [category, query]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
       <PageIntro
         eyebrow="Store"
         title="U-Store"
@@ -42,9 +42,9 @@ export function StoreShell() {
         actions={<StatusPill label={`${products.length} items visible`} tone="brand" />}
       />
 
-      <SurfacePanel className="p-5 sm:p-6">
+      <SurfacePanel className="p-4 sm:p-5">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] xl:items-center">
-          <div className="rounded-[1.4rem] border border-white/80 bg-white/55 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+          <div className="theme-input rounded-[1.4rem] border border-white/80 bg-white/55 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
             <div className="flex items-center gap-3 text-ink-muted">
               <Search size={18} strokeWidth={1.8} />
               <input
@@ -70,44 +70,44 @@ export function StoreShell() {
         </div>
       </SurfacePanel>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 lg:min-h-0 lg:flex-1 lg:overflow-auto lg:pr-1">
         {products.map((product) => (
-          <SurfacePanel key={product.id} className="p-5">
-            <div className="rounded-[1.45rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(245,246,249,0.7))] px-5 py-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.94)]">
-              <div className="mx-auto flex h-36 w-36 items-center justify-center rounded-[2rem] bg-white/90 shadow-[0_18px_42px_rgba(198,202,212,0.16)]">
-                <span className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-white/85 text-ink-soft">
+          <SurfacePanel key={product.id} className="p-4">
+            <div className="theme-inline-surface rounded-[1.25rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(245,246,249,0.7))] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.94)]">
+              <div className="theme-panel-soft mx-auto flex h-28 w-28 items-center justify-center rounded-[1.5rem] bg-white/90 shadow-[0_18px_42px_rgba(198,202,212,0.16)]">
+                <span className="theme-icon-surface flex h-12 w-12 items-center justify-center rounded-[1rem] bg-white/85 text-ink-soft">
                   <ShoppingBag size={28} strokeWidth={1.7} />
                 </span>
               </div>
             </div>
 
-            <div className="mt-5">
+            <div className="mt-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-title-md text-ink">{product.name}</div>
                 {product.featured ? <StatusPill label="Featured" tone="brand" /> : null}
               </div>
               <div className="mt-2 text-body-sm text-ink-muted">{product.description}</div>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {product.highlights.map((highlight) => (
                   <span
                     key={highlight}
-                    className="rounded-pill bg-white/65 px-3 py-1.5 text-label-md text-ink-muted"
+                    className="theme-control-muted rounded-pill bg-white/65 px-3 py-1.5 text-label-md text-ink-muted"
                   >
                     {highlight}
                   </span>
                 ))}
               </div>
-              <div className="mt-5 flex items-end justify-between gap-4">
+              <div className="mt-4 flex items-end justify-between gap-4">
                 <div>
                   <div className="text-label-md text-ink-muted">{product.category}</div>
-                  <div className="mt-1 text-[1.75rem] font-medium tracking-[-0.05em] text-ink">
+                  <div className="mt-1 text-[1.5rem] font-medium tracking-[-0.05em] text-ink">
                     ${product.price.toFixed(2)}
                   </div>
                 </div>
 
                 <Link
                   href={`/store/${product.id}`}
-                  className="inline-flex items-center gap-2 rounded-pill border border-white/80 bg-white/65 px-4 py-2.5 text-body-sm text-ink-soft shadow-[0_12px_28px_rgba(196,199,208,0.08)] transition-colors duration-200 hover:text-ink"
+                  className="theme-control inline-flex items-center gap-2 rounded-pill border border-white/80 bg-white/65 px-4 py-2.5 text-body-sm text-ink-soft shadow-[0_12px_28px_rgba(196,199,208,0.08)] transition-colors duration-200 hover:text-ink"
                 >
                   View details
                   <ArrowRight size={16} strokeWidth={1.8} />

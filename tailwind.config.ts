@@ -23,6 +23,8 @@ export default {
         "brand-soft": "rgb(var(--color-brand-soft) / <alpha-value>)",
         success: "rgb(var(--color-success) / <alpha-value>)",
         "success-soft": "rgb(var(--color-success-soft) / <alpha-value>)",
+        warning: "rgb(var(--color-warning) / <alpha-value>)",
+        "warning-soft": "rgb(var(--color-warning-soft) / <alpha-value>)",
       },
       spacing: {
         18: "4.5rem",

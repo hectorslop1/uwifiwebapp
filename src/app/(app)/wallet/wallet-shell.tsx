@@ -80,7 +80,7 @@ export function WalletShell() {
                   <span>{walletSummary.tier} tier</span>
                   <span>{tierProgress}% to next level</span>
                 </div>
-                <div className="mt-2 h-2.5 rounded-full bg-white/65">
+                <div className="mt-2 h-2.5 rounded-full bg-surface-raised/55">
                   <div
                     className="h-full rounded-full bg-[linear-gradient(90deg,rgba(52,196,59,0.92),rgba(108,69,255,0.72))]"
                     style={{ width: `${Math.min(tierProgress, 100)}%` }}
@@ -118,7 +118,7 @@ export function WalletShell() {
                         </div>
                       }
                     >
-                      <div className="flex h-44 items-end rounded-[1.25rem] bg-white/45 px-3 py-3">
+                      <div className="flex h-44 items-end rounded-[1.25rem] bg-surface/55 px-3 py-3">
                         <div
                           className="w-full rounded-[0.95rem] bg-[linear-gradient(180deg,rgba(108,69,255,0.82),rgba(52,196,59,0.82))] transition-transform duration-300 hover:scale-[1.02]"
                           style={{ height: `${Math.max(18, entry.points)}px` }}
@@ -151,7 +151,7 @@ export function WalletShell() {
               <SurfacePanel key={card.id} className="p-5">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-[1rem] bg-white/80 text-ink-soft">
+                    <span className="theme-icon-surface flex h-12 w-12 items-center justify-center rounded-[1rem] bg-white/80 text-ink-soft">
                       <CreditCard size={19} strokeWidth={1.8} />
                     </span>
                     <div>
@@ -166,7 +166,7 @@ export function WalletShell() {
                     {card.isDefault ? <StatusPill label="Default" tone="success" /> : null}
                     <button
                       type="button"
-                      className="rounded-pill border border-white/80 bg-white/65 px-4 py-2 text-body-sm text-ink-soft"
+                      className="theme-control rounded-pill border border-white/80 bg-white/65 px-4 py-2 text-body-sm text-ink-soft"
                     >
                       {card.isDefault ? "Edit" : "Set default"}
                     </button>
@@ -186,7 +186,7 @@ export function WalletShell() {
             </p>
             <button
               type="button"
-              className="mt-5 w-full rounded-pill bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-4 py-3 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)]"
+              className="theme-cta mt-5 w-full rounded-pill bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-4 py-3 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)]"
             >
               Launch add-card flow
             </button>
@@ -236,7 +236,7 @@ export function WalletShell() {
             </p>
             <button
               type="button"
-              className="mt-5 w-full rounded-pill border border-white/80 bg-white/60 px-4 py-3 text-body-sm text-ink-soft"
+              className="theme-control mt-5 w-full rounded-pill border border-white/80 bg-white/60 px-4 py-3 text-body-sm text-ink-soft"
             >
               Start invite flow
             </button>

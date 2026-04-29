@@ -16,7 +16,7 @@ export function UwifiBrandTile({
   return (
     <div
       className={cx(
-        "inline-flex items-center justify-center rounded-[1.65rem] border border-white/80",
+        "theme-panel-subtle inline-flex items-center justify-center rounded-[1.65rem] border border-white/80",
         "bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,248,250,0.88))]",
         "shadow-[0_18px_48px_rgba(192,195,205,0.14),inset_0_1px_0_rgba(255,255,255,0.92)]",
         "backdrop-blur-xl",
