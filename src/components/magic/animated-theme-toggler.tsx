@@ -96,7 +96,7 @@ function buildClipPath(
 
 export function AnimatedThemeToggler({
   className,
-  duration = 400,
+  duration = 650,
   variant,
   fromCenter = false,
   onClick,

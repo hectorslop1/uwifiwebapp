@@ -56,7 +56,7 @@ function SidebarItem({
           : "justify-center px-2 py-3.5",
         active
           ? "theme-control-active border-white/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] text-ink shadow-[0_22px_46px_rgba(184,191,179,0.2),0_8px_18px_rgba(208,214,205,0.16),inset_0_1px_0_rgba(255,255,255,0.96)]"
-          : "border-transparent text-ink-soft hover:border-white/70 hover:bg-white/35 hover:text-ink"
+          : "theme-sidebar-item-idle border-transparent text-ink-soft hover:border-white/70 hover:bg-white/35 hover:text-ink"
       )}
     >
       <span
@@ -65,7 +65,7 @@ function SidebarItem({
           expanded ? "h-9 w-9" : "h-10 w-10",
           active
             ? "border-[#dff3e3] bg-[linear-gradient(180deg,rgba(241,251,243,0.96),rgba(231,248,235,0.92))] text-[#34c43b] shadow-[0_8px_20px_rgba(140,199,142,0.18),inset_0_1px_0_rgba(255,255,255,0.9)]"
-            : "border-white/0 bg-white/0 text-ink-muted group-hover:border-white/60 group-hover:bg-white/55 group-hover:text-ink"
+            : "theme-sidebar-icon-idle border-white/0 bg-white/0 text-ink-muted group-hover:border-white/60 group-hover:bg-white/55 group-hover:text-ink"
         )}
       >
         <Icon size={19} strokeWidth={1.8} />
@@ -130,11 +130,11 @@ function SidebarContent({
           type="button"
           onClick={onLogout}
           className={cx(
-            "group flex w-full items-center rounded-[1.3rem] text-left font-medium tracking-[-0.03em] text-ink-soft transition-all duration-300 hover:bg-white/35 hover:text-ink",
+            "theme-sidebar-item-idle group flex w-full items-center rounded-[1.3rem] text-left font-medium tracking-[-0.03em] text-ink-soft transition-all duration-300 hover:bg-white/35 hover:text-ink",
             expanded ? "gap-3.5 px-4 py-3.5 text-[0.95rem]" : "justify-center px-2 py-3.5 text-[0.95rem]"
           )}
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.9rem] text-ink-muted transition-colors duration-300 group-hover:bg-white/55 group-hover:text-ink">
+          <span className="theme-sidebar-icon-idle flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.9rem] text-ink-muted transition-colors duration-300 group-hover:bg-white/55 group-hover:text-ink">
             <LogOut size={19} strokeWidth={1.8} />
           </span>
 
@@ -187,7 +187,7 @@ export function SidebarRail() {
         onMouseLeave={() => setDesktopOpen(false)}
         animate={{ width: desktopOpen ? 240 : 92 }}
         transition={{ duration: 0.24, ease: "easeOut" }}
-        className="hidden shrink-0 border-r border-line/25 bg-white/12 px-3 py-4 backdrop-blur-xl lg:flex lg:min-h-[calc(100dvh-5.4rem)] lg:flex-col"
+        className="theme-sidebar-rail hidden shrink-0 border-r border-line/25 bg-white/12 px-3 py-4 backdrop-blur-xl lg:flex lg:min-h-[calc(100dvh-5.4rem)] lg:flex-col"
       >
         <SidebarContent
           expanded={desktopOpen}

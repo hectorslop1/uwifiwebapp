@@ -132,6 +132,38 @@ html[data-theme="dark"] .theme-shell {
   background: linear-gradient(180deg, #050608 0%, #0b0f0d 100%);
 }
 
+html[data-theme="dark"] .theme-topbar {
+  border-color: rgba(44, 50, 57, 0.92);
+  background: linear-gradient(
+    180deg,
+    rgba(8, 10, 13, 0.94),
+    rgba(12, 15, 19, 0.9)
+  );
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22);
+}
+
+html[data-theme="dark"] .theme-topbar-chip {
+  border-color: rgba(60, 67, 75, 0.82);
+  background: linear-gradient(
+    180deg,
+    rgba(23, 27, 32, 0.96),
+    rgba(17, 20, 24, 0.92)
+  );
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+html[data-theme="dark"] .theme-topbar-menu {
+  border-color: rgba(60, 67, 75, 0.84);
+  background: linear-gradient(
+    180deg,
+    rgba(14, 18, 22, 0.98),
+    rgba(10, 13, 16, 0.94)
+  );
+  box-shadow: 0 26px 62px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
 html[data-theme="dark"] .theme-shell-orb-primary {
   background: rgba(28, 36, 43, 0.72);
 }
@@ -197,6 +229,36 @@ html[data-theme="dark"] .theme-control-active {
 
 html[data-theme="dark"] .theme-control-muted {
   background: rgba(17, 20, 24, 0.68);
+}
+
+html[data-theme="dark"] .theme-sidebar-rail {
+  border-color: rgba(44, 50, 57, 0.84);
+  background: linear-gradient(
+    180deg,
+    rgba(13, 16, 20, 0.9),
+    rgba(16, 20, 24, 0.8)
+  );
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03);
+}
+
+html[data-theme="dark"] .theme-sidebar-item-idle {
+  color: rgb(var(--color-ink-soft));
+}
+
+html[data-theme="dark"] .theme-sidebar-item-idle:hover {
+  border-color: rgba(58, 65, 73, 0.88);
+  background: rgba(16, 20, 24, 0.74);
+  color: rgb(var(--color-ink));
+}
+
+html[data-theme="dark"] .theme-sidebar-icon-idle {
+  color: rgb(var(--color-ink-muted));
+}
+
+html[data-theme="dark"] .theme-sidebar-item-idle:hover .theme-sidebar-icon-idle {
+  border-color: rgba(58, 65, 73, 0.74);
+  background: rgba(22, 26, 31, 0.9);
+  color: rgb(var(--color-ink));
 }
 
 html[data-theme="dark"] .theme-input {
