@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
 import {
@@ -93,10 +93,12 @@ function SidebarContent({
   expanded,
   pathname,
   onNavigate,
+  onLogout,
 }: {
   expanded: boolean;
   pathname: string;
   onNavigate?: () => void;
+  onLogout?: () => void;
 }) {
   const currentPath = useMemo(() => pathname.replace(/\/$/, "") || "/", [pathname]);
 
@@ -126,6 +128,7 @@ function SidebarContent({
       <div className="border-t border-line/35 pt-5">
         <button
           type="button"
+          onClick={onLogout}
           className={cx(
             "group flex w-full items-center rounded-[1.3rem] text-left font-medium tracking-[-0.03em] text-ink-soft transition-all duration-300 hover:bg-white/35 hover:text-ink",
             expanded ? "gap-3.5 px-4 py-3.5 text-[0.95rem]" : "justify-center px-2 py-3.5 text-[0.95rem]"
@@ -157,8 +160,14 @@ function SidebarContent({
 
 export function SidebarRail() {
   const pathname = usePathname();
+  const router = useRouter();
   const [desktopOpen, setDesktopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleLogout = () => {
+    setMobileOpen(false);
+    router.push("/login");
+  };
 
   return (
     <>
@@ -180,7 +189,11 @@ export function SidebarRail() {
         transition={{ duration: 0.24, ease: "easeOut" }}
         className="hidden shrink-0 border-r border-line/25 bg-white/12 px-3 py-4 backdrop-blur-xl lg:flex lg:min-h-[calc(100dvh-5.4rem)] lg:flex-col"
       >
-        <SidebarContent expanded={desktopOpen} pathname={pathname} />
+        <SidebarContent
+          expanded={desktopOpen}
+          pathname={pathname}
+          onLogout={handleLogout}
+        />
       </motion.aside>
 
       <AnimatePresence>
@@ -223,6 +236,7 @@ export function SidebarRail() {
                 expanded
                 pathname={pathname}
                 onNavigate={() => setMobileOpen(false)}
+                onLogout={handleLogout}
               />
             </motion.aside>
           </>
