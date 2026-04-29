@@ -23,6 +23,29 @@
   --color-success-soft: 236 250 238;
 }
 
+:root[data-theme="dark"] {
+  --background: #0f1115;
+  --foreground: #f2f4f8;
+
+  --color-canvas: 20 23 29;
+  --color-surface: 25 28 35;
+  --color-surface-raised: 31 35 44;
+
+  --color-line: 56 61 71;
+  --color-line-strong: 78 83 93;
+
+  --color-ink: 242 244 248;
+  --color-ink-soft: 213 218 226;
+  --color-ink-muted: 151 157 168;
+  --color-ink-faint: 108 114 125;
+
+  --color-brand: 145 128 255;
+  --color-brand-soft: 44 39 72;
+
+  --color-success: 95 211 101;
+  --color-success-soft: 28 46 31;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -36,6 +59,10 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+
   body {
     min-height: 100vh;
     background:
@@ -44,6 +71,15 @@
     color: rgb(var(--color-ink));
     font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
     overflow-x: hidden;
+    transition:
+      background 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      color 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  html[data-theme="dark"] body {
+    background:
+      radial-gradient(circle at top left, rgba(255, 255, 255, 0.06), transparent 26%),
+      linear-gradient(180deg, #11141a 0%, #0d1015 100%);
   }
 
   * {

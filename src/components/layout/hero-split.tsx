@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 
+import { NumberTicker } from "@/src/components/magic/number-ticker";
+import { TextReveal } from "@/src/components/magic/text-reveal";
+
 type HeroSplitProps = {
   left: ReactNode;
   right: ReactNode;
@@ -56,6 +59,8 @@ export function MetricStack({
       : statusTone === "brand"
       ? "bg-brand"
       : "bg-line-strong";
+  const numericAmount = Number(amount.replace(/[^0-9.-]/g, ""));
+  const amountPrefix = amount.trim().startsWith("$") ? "$" : "";
 
   return (
     <div
@@ -67,15 +72,23 @@ export function MetricStack({
     >
       {/* Status */}
       <div className="flex items-center gap-3 text-body-md text-ink-muted">
-  <span className={cx("h-2.5 w-2.5 rounded-full", statusToneClass)} />
-  <span>{status}</span>
-</div>
+        <span className={cx("h-2.5 w-2.5 rounded-full", statusToneClass)} />
+        <TextReveal text={status} />
+      </div>
 
       {/* Main metric */}
       <div className="space-y-5">
         {/* 🔥 CAMBIO CLAVE: más presencia */}
         <div className="text-[4.5rem] font-semibold tracking-tight">
-          {amount}
+          {Number.isFinite(numericAmount) ? (
+            <NumberTicker
+              value={numericAmount}
+              prefix={amountPrefix}
+              decimals={amount.includes(".") ? 2 : 0}
+            />
+          ) : (
+            amount
+          )}
         </div>
 
         <div className="space-y-3">

@@ -7,6 +7,10 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+import { InteractiveHoverButtonLink } from "@/src/components/magic/interactive-hover-button";
+import { NumberTicker } from "@/src/components/magic/number-ticker";
+import { TextReveal } from "@/src/components/magic/text-reveal";
+
 import RouterStage from "./RouterStage";
 
 const payments = [
@@ -78,11 +82,8 @@ function ActionCard({
   icon: LucideIcon;
   iconClassName: string;
 }) {
-  return (
-    <Link
-      href={href}
-      className="group flex items-center gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,251,0.82))] px-3.5 py-3.5 shadow-[0_16px_32px_rgba(201,203,213,0.09),inset_0_1px_0_rgba(255,255,255,0.94)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_38px_rgba(193,196,206,0.14),inset_0_1px_0_rgba(255,255,255,0.96)]"
-    >
+  const content = (
+    <>
       <span
         className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.85rem] ${iconClassName}`}
       >
@@ -98,6 +99,27 @@ function ActionCard({
         strokeWidth={1.9}
         className="shrink-0 text-ink-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-ink-muted"
       />
+    </>
+  );
+
+  if (label === "Pay now") {
+    return (
+      <InteractiveHoverButtonLink
+        href={href}
+        className="group flex items-center gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,251,0.82))] px-3.5 py-3.5 shadow-[0_16px_32px_rgba(201,203,213,0.09),inset_0_1px_0_rgba(255,255,255,0.94)] backdrop-blur-xl"
+        containerClassName="rounded-[1.35rem]"
+      >
+        {content}
+      </InteractiveHoverButtonLink>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className="group flex items-center gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,251,0.82))] px-3.5 py-3.5 shadow-[0_16px_32px_rgba(201,203,213,0.09),inset_0_1px_0_rgba(255,255,255,0.94)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_38px_rgba(193,196,206,0.14),inset_0_1px_0_rgba(255,255,255,0.96)]"
+    >
+      {content}
     </Link>
   );
 }
@@ -116,13 +138,13 @@ export default function OverviewPage() {
             <div className="inline-flex max-w-full items-center gap-2.5 lg:gap-3">
               <span className="h-4 w-4 rounded-full bg-success shadow-[0_0_0_8px_rgba(52,199,76,0.12)] lg:h-5 lg:w-5" />
               <span className="text-[1.35rem] font-medium tracking-[-0.05em] text-ink-soft">
-                Active
+                <TextReveal text="Active" />
               </span>
               <span className="hidden h-px flex-1 bg-[linear-gradient(90deg,rgba(222,225,231,0.8),rgba(222,225,231,0))] lg:block" />
             </div>
 
             <div className="mt-4 text-[3.35rem] font-medium leading-[0.92] tracking-[-0.075em] text-[#252932] sm:text-[4rem] xl:text-[4.3rem]">
-              $110.00
+              <NumberTicker value={110} prefix="$" decimals={2} />
             </div>
 
             <div className="mt-4 space-y-1">

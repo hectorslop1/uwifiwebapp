@@ -1,0 +1,45 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+import { cn } from "@/src/lib/cn";
+
+type SectionTab = {
+  label: string;
+  href: string;
+};
+
+type SectionTabsProps = {
+  items: SectionTab[];
+};
+
+export function SectionTabs({ items }: Readonly<SectionTabsProps>) {
+  const pathname = usePathname();
+
+  return (
+    <div className="inline-flex flex-wrap gap-2 rounded-pill border border-white/80 bg-white/55 p-1.5 shadow-[0_14px_34px_rgba(193,196,205,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl">
+      {items.map((item) => {
+        const active =
+          pathname === item.href ||
+          (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "rounded-pill px-4 py-2.5 text-body-sm transition-all duration-200",
+              active
+                ? "bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] text-ink shadow-[0_12px_26px_rgba(205,207,214,0.16)]"
+                : "text-ink-muted hover:bg-white/65 hover:text-ink-soft",
+            )}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
