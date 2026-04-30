@@ -3,16 +3,15 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, Radio, Receipt, Router, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, Radio, Receipt, Router, ShieldCheck } from "lucide-react";
 
 import DotGrid from "@/src/components/login/dot-grid";
 import Grainient from "@/src/components/login/grainient";
 import { UwifiBrandTile } from "@/src/components/layout/uwifi-brand";
 import { AnimatedThemeToggler } from "@/src/components/magic/animated-theme-toggler";
-import { PREMIUM_EASE } from "@/src/components/magic/motion-tokens";
 import { TextReveal } from "@/src/components/magic/text-reveal";
 import { AuroraText } from "@/src/components/ui/aurora-text";
+import { InteractiveHoverButton } from "@/src/components/ui/interactive-hover-button";
 import { ShineBorder } from "@/src/components/ui/shine-border";
 
 type FieldErrors = {
@@ -23,18 +22,18 @@ type FieldErrors = {
 const featureCards = [
   {
     icon: Radio,
-    title: "Service visibility",
-    copy: "Connection health, gateway activity and account status in one calm interface.",
+    title: "Check your connection",
+    copy: "See service status and spot issues before they interrupt your day.",
   },
   {
     icon: Router,
-    title: "Gateway control",
-    copy: "Review radios, Wi-Fi settings and devices without the clutter of legacy dashboards.",
+    title: "Manage your Wi-Fi",
+    copy: "Update your network, review connected devices and keep your home online.",
   },
   {
     icon: Receipt,
-    title: "Billing clarity",
-    copy: "Payments, invoices and wallet balance presented like a modern SaaS product.",
+    title: "Review bills and payments",
+    copy: "Check invoices, recent payments and account details in one simple place.",
   },
 ];
 
@@ -42,13 +41,13 @@ function validate(email: string, password: string) {
   const nextErrors: FieldErrors = {};
 
   if (!email.trim()) {
-    nextErrors.email = "Email is required.";
+    nextErrors.email = "Please enter your email.";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
     nextErrors.email = "Enter a valid email address.";
   }
 
   if (!password) {
-    nextErrors.password = "Password is required.";
+    nextErrors.password = "Please enter your password.";
   } else if (password.length < 6) {
     nextErrors.password = "Use at least 6 characters.";
   }
@@ -88,7 +87,7 @@ export function LoginShell() {
 
       router.push("/overview");
     } catch {
-      setFormError("We could not sign you in right now. Please try again.");
+      setFormError("We couldn't sign you in right now. Please try again in a moment.");
       setIsSubmitting(false);
     }
   };
@@ -132,26 +131,30 @@ export function LoginShell() {
             <div className="grid w-full gap-8 lg:gap-10">
               <div className="grid gap-4">
                 <div className="text-[0.72rem] uppercase tracking-[0.18em] text-ink-faint">
-                  <TextReveal text="Secure customer access" />
+                  <TextReveal text="Your internet account, in one place" />
                 </div>
-                <h1 className="text-[2.8rem] font-medium leading-[0.98] tracking-[-0.095em] text-ink sm:text-[3.4rem] lg:text-[4.2rem] xl:text-[4.6rem]">
-                  Welcome back to your <AuroraText>U-WiFi portal</AuroraText>.
+                <h1 className="text-[2.8rem] font-medium leading-[1.04] tracking-[-0.095em] text-ink sm:text-[3.4rem] lg:text-[4.05rem] xl:text-[4.4rem]">
+                  Manage your <AuroraText>U-WiFi service</AuroraText> with clarity.
                 </h1>
                 <p className="w-full text-[1rem] leading-7 text-ink-muted sm:text-[1.02rem] lg:w-[88%] xl:w-[76%]">
-                  Access service controls, billing and account settings from a cleaner sign-in flow designed
-                  to feel more premium without adding friction.
+                  Review your Wi-Fi, connected devices, bills and account details, all from here!
                 </p>
               </div>
 
-              <section className="theme-panel-subtle w-full rounded-[2rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,248,250,0.84))] px-5 py-5 shadow-[0_24px_52px_rgba(193,196,206,0.12),inset_0_1px_0_rgba(255,255,255,0.96)] backdrop-blur-xl sm:px-6 sm:py-6 lg:w-[92%] xl:w-[84%]">
+              <section className="theme-panel-subtle relative w-full overflow-hidden rounded-[2rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,248,250,0.84))] px-5 py-5 shadow-[0_24px_52px_rgba(193,196,206,0.12),inset_0_1px_0_rgba(255,255,255,0.96)] backdrop-blur-xl sm:px-6 sm:py-6 lg:w-[92%] xl:w-[84%]">
+                <ShineBorder
+                  borderWidth={1.35}
+                  duration={7.4}
+                  shineColor={["#f5f8f5", "#81c784", "#b39ddb"]}
+                />
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="text-[0.72rem] uppercase tracking-[0.18em] text-ink-faint">
-                      Account access
+                      Customer access
                     </div>
                     <div className="mt-2 text-[1.85rem] font-medium tracking-[-0.07em] text-ink">Sign in</div>
                     <p className="mt-2 text-[0.92rem] leading-6 text-ink-muted">
-                      Use your portal credentials to continue.
+                      Enter your details to manage your internet service.
                     </p>
                   </div>
 
@@ -234,7 +237,7 @@ export function LoginShell() {
                           }`}
                         />
                       </button>
-                      Keep me signed in
+                      Remember this device
                     </label>
 
                     <div className="hidden items-center gap-2 rounded-full bg-white/60 px-3 py-1.5 text-[0.76rem] text-ink-muted sm:flex">
@@ -249,41 +252,18 @@ export function LoginShell() {
                     </div>
                   ) : null}
 
-                  <motion.button
-                    type="submit"
-                    disabled={isSubmitting}
-                    whileHover={{
-                      scale: isSubmitting ? 1 : 1.015,
-                      boxShadow: "0 18px 34px rgba(76,175,80,0.14), 0 8px 22px rgba(126,87,194,0.16)",
-                    }}
-                    transition={{ duration: 0.45, ease: PREMIUM_EASE }}
-                    className="group relative mt-2 flex w-full items-center justify-center overflow-hidden rounded-full px-4 py-3.5 text-[0.96rem] font-medium text-white shadow-[0_20px_40px_rgba(94,92,168,0.16)] disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    <ShineBorder
-                      borderWidth={1.75}
-                      duration={5.3}
-                      shineColor={["#f4f8f4", "#81c784", "#b39ddb"]}
-                    />
-                    <span className="absolute inset-[1.5px] rounded-full bg-[linear-gradient(135deg,#352f63_0%,#6f5ab1_52%,#5aa55e_100%)]" />
-                    <span className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.28),transparent_48%)] opacity-80" />
-                    <span className="relative flex items-center justify-center gap-2">
-                      {isSubmitting ? "Signing in..." : "Sign in to portal"}
-                      <ArrowRight
-                        size={16}
-                        strokeWidth={1.9}
-                        className="transition-transform duration-300 group-hover:translate-x-0.5"
-                      />
-                    </span>
-                  </motion.button>
+                  <InteractiveHoverButton type="submit" disabled={isSubmitting} className="mt-2">
+                    {isSubmitting ? "Signing in..." : "Sign in to portal"}
+                  </InteractiveHoverButton>
                 </form>
 
                 <div className="theme-inline-surface mt-6 rounded-[1.3rem] border border-white/80 bg-white/55 px-4 py-4">
                   <div className="flex items-start gap-3">
                     <CheckCircle2 size={16} strokeWidth={1.9} className="mt-0.5 shrink-0 text-success" />
                     <div>
-                      <div className="text-[0.9rem] font-medium text-ink">Demo credentials loaded</div>
+                      <div className="text-[0.9rem] font-medium text-ink">Demo access ready</div>
                       <p className="mt-1 text-[0.82rem] leading-6 text-ink-muted">
-                        This preview signs into the redesigned portal flow and sends you to the new overview
+                        This preview takes you into the customer portal so you can review the updated
                         experience.
                       </p>
                     </div>
@@ -301,27 +281,27 @@ export function LoginShell() {
             color1="#81c784"
             color2="#7e57c2"
             color3="#08110d"
-            timeSpeed={0.3}
-            colorBalance={-0.18}
+            timeSpeed={0.38}
+            colorBalance={-0.12}
             warpStrength={1.14}
             warpFrequency={3.1}
-            warpSpeed={1.52}
+            warpSpeed={1.78}
             warpAmplitude={44}
             blendAngle={-18}
-            blendSoftness={0.12}
+            blendSoftness={0.14}
             rotationAmount={280}
             noiseScale={1.55}
-            grainAmount={0.06}
+            grainAmount={0.07}
             grainScale={1.3}
-            saturation={0.92}
-            contrast={1.18}
+            saturation={1.02}
+            contrast={1.24}
             centerX={0.03}
             centerY={0}
             zoom={0.96}
           />
           <DotGrid
-            className="absolute inset-0 opacity-70"
-            dotSize={7}
+            className="absolute inset-0 opacity-85"
+            dotSize={8}
             gap={18}
             baseColor="#7e57c2"
             activeColor="#81c784"
@@ -334,22 +314,15 @@ export function LoginShell() {
           <div className="absolute inset-y-0 left-0 w-24 bg-[linear-gradient(90deg,rgba(11,10,24,0.26),transparent)] lg:w-32" />
 
           <div className="relative z-10 flex h-full flex-col justify-end px-6 pb-6 pt-24 sm:px-8 sm:pb-8 sm:pt-28 lg:px-10 lg:pb-10 lg:pt-32 xl:px-14">
-            <div className="ml-auto rounded-full border border-white/16 bg-white/10 px-3 py-1.5 text-[0.72rem] uppercase tracking-[0.16em] text-white/72 backdrop-blur-md">
-              Live visual layer
-            </div>
+            
 
             <div className="mt-auto grid gap-6">
               <div className="grid gap-4">
-                <div className="text-[0.72rem] uppercase tracking-[0.18em] text-white/58">
-                  Premium portal experience
-                </div>
+                
                 <h2 className="text-[2.6rem] font-medium leading-[0.98] tracking-[-0.08em] text-white sm:text-[3rem] lg:text-[3.6rem]">
                   Operate smarter. Stay connected.
                 </h2>
-                <p className="w-full text-[1rem] leading-7 text-white/72 lg:w-[80%]">
-                  A more cinematic surface for login that still feels calm, legible and aligned with the
-                  U-WiFi product.
-                </p>
+              
               </div>
 
               <div className="grid gap-3 lg:w-[85%]">
