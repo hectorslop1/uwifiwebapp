@@ -122,7 +122,7 @@ export function LoginShell() {
                 Connected service
               </div>
               <div className="text-[0.95rem] font-medium tracking-[-0.03em] text-ink-soft">
-                U-WiFi customer portal
+                U-wifi customer portal
               </div>
             </div>
           </div>
@@ -130,11 +130,9 @@ export function LoginShell() {
           <div className="relative flex w-full items-center px-6 pb-6 pt-24 sm:px-8 sm:pb-8 sm:pt-28 lg:px-10 lg:pb-10 lg:pt-32 xl:px-14">
             <div className="grid w-full gap-8 lg:gap-10">
               <div className="grid gap-4">
-                <div className="text-[0.72rem] uppercase tracking-[0.18em] text-ink-faint">
-                  <TextReveal text="Your internet account, in one place" />
-                </div>
+                
                 <h1 className="text-[2.8rem] font-medium leading-[1.04] tracking-[-0.095em] text-ink sm:text-[3.4rem] lg:text-[4.05rem] xl:text-[4.4rem]">
-                  Manage your <AuroraText>U-WiFi service</AuroraText> with clarity.
+                  Manage your <AuroraText>U-wifi service</AuroraText> with clarity.
                 </h1>
                 <p className="w-full text-[1rem] leading-7 text-ink-muted sm:text-[1.02rem] lg:w-[88%] xl:w-[76%]">
                   Review your Wi-Fi, connected devices, bills and account details, all from here!
@@ -256,19 +254,6 @@ export function LoginShell() {
                     {isSubmitting ? "Signing in..." : "Sign in to portal"}
                   </InteractiveHoverButton>
                 </form>
-
-                <div className="theme-inline-surface mt-6 rounded-[1.3rem] border border-white/80 bg-white/55 px-4 py-4">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 size={16} strokeWidth={1.9} className="mt-0.5 shrink-0 text-success" />
-                    <div>
-                      <div className="text-[0.9rem] font-medium text-ink">Demo access ready</div>
-                      <p className="mt-1 text-[0.82rem] leading-6 text-ink-muted">
-                        This preview takes you into the customer portal so you can review the updated
-                        experience.
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </section>
             </div>
           </div>
