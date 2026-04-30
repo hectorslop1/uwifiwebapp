@@ -47,7 +47,7 @@ export function TopUtilityBar() {
         </div>
 
         <div className="flex items-center gap-3">
-          <AnimatedThemeToggler duration={1200} variant="circle" />
+          <AnimatedThemeToggler duration={1500} variant="circle" />
 
           <div ref={menuRef} className="relative">
             <button
