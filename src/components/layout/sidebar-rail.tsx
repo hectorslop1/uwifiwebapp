@@ -50,13 +50,13 @@ function SidebarItem({
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
       className={cx(
-        "group relative flex items-center overflow-hidden rounded-[1.35rem] border transition-all duration-200",
+        "group relative flex items-center overflow-hidden rounded-[1.35rem] border transition-all duration-200 hover:-translate-y-0.5",
         expanded
           ? "gap-3.5 px-4 py-4"
           : "justify-center px-2 py-3.5",
         active
           ? "theme-control-active border-white/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] text-ink shadow-[0_22px_46px_rgba(184,191,179,0.2),0_8px_18px_rgba(208,214,205,0.16),inset_0_1px_0_rgba(255,255,255,0.96)]"
-          : "theme-sidebar-item-idle border-transparent text-ink-soft hover:border-white/70 hover:bg-white/35 hover:text-ink"
+          : "theme-sidebar-item-idle border-transparent text-ink-soft hover:border-[#d6edd9] hover:bg-[linear-gradient(180deg,rgba(249,253,249,0.94),rgba(237,246,239,0.82))] hover:text-ink hover:shadow-[0_18px_30px_rgba(183,206,185,0.18),inset_0_1px_0_rgba(255,255,255,0.94)]"
       )}
     >
       <span
@@ -65,7 +65,7 @@ function SidebarItem({
           expanded ? "h-9 w-9" : "h-10 w-10",
           active
             ? "border-[#dff3e3] bg-[linear-gradient(180deg,rgba(241,251,243,0.96),rgba(231,248,235,0.92))] text-[#34c43b] shadow-[0_8px_20px_rgba(140,199,142,0.18),inset_0_1px_0_rgba(255,255,255,0.9)]"
-            : "theme-sidebar-icon-idle border-white/0 bg-white/0 text-ink-muted group-hover:border-white/60 group-hover:bg-white/55 group-hover:text-ink"
+            : "theme-sidebar-icon-idle border-white/0 bg-white/0 text-ink-muted group-hover:border-[#dff1e2] group-hover:bg-[linear-gradient(180deg,rgba(245,252,246,0.98),rgba(235,247,237,0.94))] group-hover:text-success group-hover:shadow-[0_10px_18px_rgba(168,201,171,0.14)]"
         )}
       >
         <Icon size={19} strokeWidth={1.8} />
@@ -130,11 +130,11 @@ function SidebarContent({
           type="button"
           onClick={onLogout}
           className={cx(
-            "theme-sidebar-item-idle group flex w-full items-center rounded-[1.3rem] text-left font-medium tracking-[-0.03em] text-ink-soft transition-all duration-200 hover:bg-white/35 hover:text-ink",
+            "theme-sidebar-item-idle group flex w-full items-center rounded-[1.3rem] text-left font-medium tracking-[-0.03em] text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(249,253,249,0.94),rgba(237,246,239,0.82))] hover:text-ink hover:shadow-[0_18px_30px_rgba(183,206,185,0.18),inset_0_1px_0_rgba(255,255,255,0.94)]",
             expanded ? "gap-3.5 px-4 py-3.5 text-[0.95rem]" : "justify-center px-2 py-3.5 text-[0.95rem]"
           )}
         >
-          <span className="theme-sidebar-icon-idle flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.9rem] text-ink-muted transition-colors duration-200 group-hover:bg-white/55 group-hover:text-ink">
+          <span className="theme-sidebar-icon-idle flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-all duration-200 group-hover:bg-[linear-gradient(180deg,rgba(245,252,246,0.98),rgba(235,247,237,0.94))] group-hover:text-success group-hover:shadow-[0_10px_18px_rgba(168,201,171,0.14)]">
             <LogOut size={19} strokeWidth={1.8} />
           </span>
 
@@ -176,7 +176,7 @@ export function SidebarRail() {
           type="button"
           aria-label="Open navigation"
           onClick={() => setMobileOpen(true)}
-          className="theme-control flex h-11 w-11 items-center justify-center rounded-[1rem] border border-white/80 bg-white/65 text-ink shadow-[0_12px_26px_rgba(201,203,212,0.1),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl transition-transform duration-200 hover:-translate-y-0.5"
+          className="theme-control-button flex h-11 w-11 items-center justify-center rounded-full border text-ink shadow-[0_12px_26px_rgba(201,203,212,0.1),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl transition-transform duration-200 hover:-translate-y-0.5"
         >
           <Menu size={20} strokeWidth={1.8} />
         </button>
@@ -229,7 +229,7 @@ export function SidebarRail() {
                   type="button"
                   aria-label="Close navigation"
                   onClick={() => setMobileOpen(false)}
-                  className="theme-control flex h-10 w-10 items-center justify-center rounded-[0.95rem] border border-white/80 bg-white/70 text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
+                  className="theme-control-button flex h-10 w-10 items-center justify-center rounded-full border text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
                 >
                   <X size={18} strokeWidth={1.8} />
                 </button>

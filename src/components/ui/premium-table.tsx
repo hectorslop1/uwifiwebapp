@@ -49,7 +49,7 @@ export function PremiumTable({
         {rows.map((row, rowIndex) => (
           <div
             key={row.id}
-            className="grid gap-4 px-4 py-3 text-body-sm text-ink-soft transition-colors duration-200 hover:bg-white/45"
+            className="grid gap-4 px-4 py-3 text-body-sm text-ink-soft transition-all duration-200 hover:bg-white/64 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
             style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
           >
             {row.cells.map((cell, index) => (

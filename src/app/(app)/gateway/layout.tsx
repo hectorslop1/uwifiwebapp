@@ -12,7 +12,7 @@ export default function GatewayLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5 pb-4 lg:space-y-6 lg:pb-6">
       <SectionTabs items={items} />
       {children}
     </div>

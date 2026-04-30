@@ -55,7 +55,7 @@ export function TopUtilityBar() {
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((current) => !current)}
-              className="theme-control theme-topbar-chip group flex min-w-0 items-center gap-3 rounded-full border border-white/80 bg-white/60 px-3 py-1.5 text-left shadow-[0_14px_34px_rgba(193,196,205,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl transition-transform duration-200 hover:-translate-y-0.5"
+              className="theme-control-button theme-topbar-chip group flex min-w-0 items-center gap-3 rounded-full border px-3 py-1.5 text-left shadow-[0_14px_34px_rgba(193,196,205,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl transition-transform duration-200 hover:-translate-y-0.5"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7eea2f_0%,#07cf47_42%,#7b3cff_100%)] text-[1.3rem] font-medium tracking-[-0.05em] text-white shadow-[0_10px_24px_rgba(108,87,192,0.24)]">
                 LN
@@ -88,9 +88,9 @@ export function TopUtilityBar() {
                   type="button"
                   role="menuitem"
                   onClick={handleLogout}
-                  className="flex w-full items-center gap-3 rounded-[0.9rem] px-3 py-2.5 text-left text-[0.9rem] font-medium text-ink-soft transition-colors duration-200 hover:bg-white/75 hover:text-ink"
+                  className="theme-control-button flex w-full items-center gap-3 rounded-full border border-transparent px-3 py-2.5 text-left text-[0.9rem] font-medium text-ink-soft transition-all duration-200 hover:text-ink"
                 >
-                  <span className="theme-icon-surface flex h-8 w-8 items-center justify-center rounded-[0.8rem] bg-white/80 text-ink-muted">
+                  <span className="theme-icon-surface flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-ink-muted">
                     <LogOut size={16} strokeWidth={1.8} />
                   </span>
                   Log out

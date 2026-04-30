@@ -1,4 +1,4 @@
-import { BadgeCheck, Laptop2, ShieldEllipsis, Smartphone } from "lucide-react";
+import { Laptop2, Radio, ShieldEllipsis, Smartphone } from "lucide-react";
 
 import { ProgressiveBlur } from "@/src/components/magic/progressive-blur";
 import { PageIntro } from "@/src/components/ui/page-intro";
@@ -14,7 +14,8 @@ const rows = [
     band: "5 GHz",
     ip: "192.168.1.101",
     lastSeen: "Active now",
-    trust: "Known",
+    deviceType: "Personal phone",
+    connection: "Excellent",
   },
   {
     id: "macbook-pro",
@@ -22,7 +23,8 @@ const rows = [
     band: "5 GHz",
     ip: "192.168.1.102",
     lastSeen: "2 min ago",
-    trust: "Known",
+    deviceType: "Work laptop",
+    connection: "Strong",
   },
   {
     id: "smart-tv",
@@ -30,7 +32,8 @@ const rows = [
     band: "5 GHz",
     ip: "192.168.1.115",
     lastSeen: "9 min ago",
-    trust: "Trusted",
+    deviceType: "Streaming device",
+    connection: "Stable",
   },
   {
     id: "ring",
@@ -38,23 +41,24 @@ const rows = [
     band: "2.4 GHz",
     ip: "192.168.1.126",
     lastSeen: "18 min ago",
-    trust: "Needs review",
+    deviceType: "Entry camera",
+    connection: "Long range",
   },
 ];
 
 export default function GatewayDevicesPage() {
   return (
-    <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
+    <div className="space-y-5 pb-2 lg:flex lg:min-h-0 lg:flex-col lg:pb-4">
       <PageIntro
         eyebrow="Gateway"
         title="Connected devices"
         description="This route replaces the old card grid with a cleaner inventory view: scannable, filterable and closer to a modern SaaS operations table."
         actions={
           <>
-            <StatusPill label="7 active devices" tone="success" />
+            <StatusPill label="7 active devices" tone="success" pulse />
             <button
               type="button"
-              className="theme-control rounded-pill border border-white/80 bg-white/65 px-4 py-2.5 text-body-sm text-ink-soft shadow-[0_12px_28px_rgba(196,199,208,0.08)] transition-colors duration-200 hover:text-ink"
+              className="theme-control-button rounded-pill border px-4 py-2.5 text-body-sm transition-all duration-200 hover:-translate-y-0.5"
             >
               Refresh list
             </button>
@@ -63,22 +67,23 @@ export default function GatewayDevicesPage() {
       />
 
       <div className="grid gap-3 md:grid-cols-3">
-        <StatTile label="Trusted" value="5" meta="Persistent household devices" />
-        <StatTile label="Needs review" value="1" meta="Recent connection change" />
+        <StatTile label="Connected" value="7" meta="Devices online right now" />
+        <StatTile label="Recently active" value="4" meta="Seen within the last 20 minutes" />
         <StatTile label="Radio distribution" value="4 / 3" meta="5 GHz vs 2.4 GHz" />
       </div>
 
-      <SurfacePanel className="p-4 lg:min-h-0">
+      <SurfacePanel className="overflow-hidden p-4 lg:min-h-0">
+        <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-b-[2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.12),transparent_74%)]" />
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-2">
-            {["All devices", "5 GHz", "2.4 GHz", "Trusted only"].map((filter, index) => (
+          <div className="theme-tab-shell inline-flex flex-wrap gap-2 rounded-pill border p-1.5">
+            {["All devices", "5 GHz", "2.4 GHz", "Recently active"].map((filter, index) => (
               <button
                 key={filter}
                 type="button"
-                className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
+                className={`theme-tab-item rounded-pill border px-4 py-2 text-body-sm transition-all duration-200 hover:-translate-y-0.5 ${
                   index === 0
-                    ? "theme-control-active bg-white/90 text-ink shadow-[0_10px_22px_rgba(201,204,214,0.14)]"
-                    : "theme-control-muted bg-white/45 text-ink-muted hover:bg-white/45 hover:text-ink-soft"
+                    ? "theme-tab-item-active border"
+                    : "border-transparent"
                 }`}
               >
                 {filter}
@@ -86,7 +91,7 @@ export default function GatewayDevicesPage() {
             ))}
           </div>
 
-          <div className="theme-inline-surface rounded-pill border border-white/80 bg-white/55 px-4 py-2 text-body-sm text-ink-muted">
+          <div className="theme-inline-surface rounded-pill border border-white/82 bg-white/60 px-4 py-2 text-body-sm text-ink-muted shadow-[0_12px_22px_rgba(208,212,219,0.08)]">
             Search and live filters will plug into this surface next.
           </div>
         </div>
@@ -98,7 +103,7 @@ export default function GatewayDevicesPage() {
               { key: "band", label: "Band" },
               { key: "ip", label: "IP address" },
               { key: "last-seen", label: "Last seen" },
-              { key: "status", label: "Trust", align: "right" },
+              { key: "status", label: "Connection", align: "right" },
             ]}
             rows={rows.map((row) => ({
               id: row.id,
@@ -115,17 +120,14 @@ export default function GatewayDevicesPage() {
                   </span>
                   <div>
                     <div className="font-medium text-ink">{row.name}</div>
-                    <div className="text-label-md text-ink-muted">Known household device</div>
+                    <div className="text-label-md text-ink-muted">{row.deviceType}</div>
                   </div>
                 </div>,
                 row.band,
                 row.ip,
                 row.lastSeen,
                 <div key={`${row.id}-trust`} className="flex justify-end">
-                  <StatusPill
-                    label={row.trust}
-                    tone={row.trust === "Needs review" ? "warning" : "success"}
-                  />
+                  <StatusPill label={row.connection} tone={row.connection === "Long range" ? "brand" : "success"} />
                 </div>,
               ],
             }))}
@@ -133,26 +135,33 @@ export default function GatewayDevicesPage() {
         </ProgressiveBlur>
       </SurfacePanel>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
-        <SurfacePanel subtle className="p-4">
-          <div className="text-title-md text-ink">Recommended detail drawer content</div>
-          <div className="mt-3 text-body-sm text-ink-muted">
-            Vendor, MAC, connection quality, last authorization, pause or block actions, plus a short audit trail. The route is structured so we can add that drawer without redesigning the page.
+      <SurfacePanel subtle className="overflow-hidden p-5">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.14),transparent_74%)]" />
+        <div className="flex items-center gap-2 text-title-md text-ink">
+          <Radio size={17} strokeWidth={1.8} />
+          2.4 GHz vs 5 GHz
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="theme-inline-surface rounded-[1.25rem] border border-white/80 px-4 py-3.5">
+            <div className="text-body-md font-medium text-ink">2.4 GHz</div>
+            <p className="mt-2 text-body-sm text-ink-muted">
+              Reaches farther and passes through walls more easily, so it is ideal for doorbells, cameras and devices that sit farther from the gateway.
+            </p>
           </div>
-        </SurfacePanel>
-
-        <SurfacePanel subtle className="p-4">
-          <div className="flex items-center gap-2 text-title-md text-ink">
-            <BadgeCheck size={17} strokeWidth={1.8} />
-            Trust model
+          <div className="theme-inline-surface rounded-[1.25rem] border border-white/80 px-4 py-3.5">
+            <div className="text-body-md font-medium text-ink">5 GHz</div>
+            <p className="mt-2 text-body-sm text-ink-muted">
+              Delivers faster speeds and lower congestion when the device is close enough, which makes it better for phones, laptops, TVs and gaming gear.
+            </p>
           </div>
-          <div className="mt-4 space-y-3 text-body-sm text-ink-muted">
-            <p>Known: remembered and approved.</p>
-            <p>Trusted: persistent, safe and stable.</p>
-            <p>Needs review: new behavior or unknown pattern.</p>
+          <div className="theme-inline-surface rounded-[1.25rem] border border-white/80 px-4 py-3.5">
+            <div className="text-body-md font-medium text-ink">Quick tip</div>
+            <p className="mt-2 text-body-sm text-ink-muted">
+              If a device feels slow far from the router, try moving it to 2.4 GHz. If it needs more speed near the gateway, keep it on 5 GHz.
+            </p>
           </div>
-        </SurfacePanel>
-      </div>
+        </div>
+      </SurfacePanel>
     </div>
   );
 }

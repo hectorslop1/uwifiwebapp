@@ -43,18 +43,18 @@ export function ActionCapsule({
     <Link
       href={href}
       className={cx(
-        "group flex min-h-[3.35rem] items-center gap-3 rounded-pill px-4 py-2.5 text-left transition-colors duration-200",
+        "theme-control-button group flex min-h-[3.35rem] items-center gap-3 rounded-pill border px-4 py-2.5 text-left transition-all duration-200 hover:-translate-y-0.5",
         subtleSurface && "theme-inline-surface border border-white/80 bg-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]",
-        "text-ink-soft hover:bg-surface/70 hover:text-ink",
+        "text-ink-soft hover:text-ink",
         className,
       )}
     >
       {/* Icon */}
       <span
         className={cx(
-          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
           subtleSurface
-            ? "theme-icon-surface bg-canvas/65 text-ink-muted"
+            ? "theme-icon-surface bg-canvas/65 text-ink-muted group-hover:bg-[linear-gradient(180deg,rgba(241,251,243,0.98),rgba(229,247,233,0.95))] group-hover:text-success"
             : "bg-brand-soft/55 text-brand"
         )}
       >
@@ -69,7 +69,7 @@ export function ActionCapsule({
       {/* Chevron */}
       <span
         aria-hidden="true"
-        className="shrink-0 text-[1rem] text-ink-faint transition-transform duration-200 group-hover:translate-x-0.5"
+        className="shrink-0 text-[1rem] text-ink-faint transition-transform duration-200 group-hover:translate-x-1 group-hover:text-ink-soft"
       >
         ›
       </span>

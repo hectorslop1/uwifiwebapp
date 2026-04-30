@@ -1,5 +1,8 @@
+"use client";
+
 import type { ReactNode } from "react";
 
+import { StatusBeacon } from "@/src/components/magic/status-beacon";
 import { cn } from "@/src/lib/cn";
 
 type StatusTone = "success" | "brand" | "muted" | "warning";
@@ -14,12 +17,14 @@ const toneMap: Record<StatusTone, string> = {
 type StatusPillProps = {
   label: ReactNode;
   tone?: StatusTone;
+  pulse?: boolean;
   className?: string;
 };
 
 export function StatusPill({
   label,
   tone = "muted",
+  pulse = false,
   className,
 }: Readonly<StatusPillProps>) {
   return (
@@ -30,7 +35,11 @@ export function StatusPill({
         className,
       )}
     >
-      <span className="h-2 w-2 rounded-full bg-current/80" />
+      {pulse ? (
+        <StatusBeacon active={tone !== "warning"} className="h-3.5 w-3.5" />
+      ) : (
+        <span className="h-2 w-2 rounded-full bg-current/80" />
+      )}
       {label}
     </span>
   );

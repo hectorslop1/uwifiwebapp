@@ -23,7 +23,7 @@ export function SegmentedControl<T extends string>({
   return (
     <div
       className={cn(
-        "theme-control inline-flex flex-wrap gap-2 rounded-pill border border-white/80 bg-white/55 p-1.5 shadow-[0_14px_34px_rgba(193,196,205,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl",
+        "theme-tab-shell inline-flex flex-wrap gap-2 rounded-pill border p-1.5 backdrop-blur-xl",
         className,
       )}
     >
@@ -36,10 +36,10 @@ export function SegmentedControl<T extends string>({
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              "rounded-pill px-4 py-2.5 text-body-sm transition-all duration-200",
+              "theme-tab-item rounded-pill border px-4 py-2.5 text-body-sm transition-all duration-200 hover:-translate-y-0.5",
               active
-                ? "theme-control-active bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] text-ink shadow-[0_12px_26px_rgba(205,207,214,0.16)]"
-                : "theme-control-muted text-ink-muted hover:bg-white/65 hover:text-ink-soft",
+                ? "theme-tab-item-active border"
+                : "border-transparent",
             )}
           >
             {option.label}
