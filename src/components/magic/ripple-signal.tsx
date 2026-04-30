@@ -14,7 +14,7 @@ type RippleSignalProps = ComponentPropsWithoutRef<"div"> & {
 export const RippleSignal = React.memo(function RippleSignal({
   connected = true,
   mainCircleSize = 210,
-  mainCircleOpacity = 0.22,
+  mainCircleOpacity = 0.30,
   numCircles = 8,
   className,
   ...props

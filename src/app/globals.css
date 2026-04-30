@@ -69,6 +69,10 @@
 
 @layer base {
   html {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
@@ -78,7 +82,10 @@
   }
 
   body {
+    width: 100%;
     min-height: 100vh;
+    margin: 0;
+    padding: 0;
     background:
       radial-gradient(circle at top left, rgba(255, 255, 255, 0.78), transparent 30%),
       linear-gradient(180deg, #fbfaf7 0%, #f5f4ef 100%);

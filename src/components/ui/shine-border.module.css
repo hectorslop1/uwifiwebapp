@@ -1,0 +1,53 @@
+.root {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--shine-border-width, 1px);
+  pointer-events: none;
+  overflow: hidden;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.root::before {
+  content: "";
+  position: absolute;
+  inset: -165%;
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 32deg,
+      var(--shine-color-1) 70deg,
+      var(--shine-color-2) 116deg,
+      var(--shine-color-3) 152deg,
+      transparent 198deg,
+      transparent 360deg
+    ),
+    radial-gradient(
+      circle at center,
+      color-mix(in srgb, var(--shine-color-1) 36%, transparent),
+      transparent 60%
+    );
+  animation: shineOrbit var(--shine-border-duration, 5.8s) linear infinite;
+  filter: blur(14px) saturate(135%);
+  opacity: 0.95;
+}
+
+@keyframes shineOrbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root::before {
+    animation-duration: 18s;
+  }
+}
