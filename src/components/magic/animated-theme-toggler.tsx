@@ -96,7 +96,7 @@ function buildClipPath(
 
 export function AnimatedThemeToggler({
   className,
-  duration = 650,
+  duration = 1200,
   variant,
   fromCenter = false,
   onClick,
@@ -203,7 +203,7 @@ export function AnimatedThemeToggler({
         }
       }}
       whileHover={{ scale: 1.015 }}
-      transition={{ duration: 0.45, ease: PREMIUM_EASE }}
+      transition={{ duration: 0.38, ease: PREMIUM_EASE }}
       className={cn(
         "theme-control relative flex h-11 w-11 items-center justify-center rounded-full border text-ink-soft backdrop-blur-xl",
         className,
@@ -216,7 +216,7 @@ export function AnimatedThemeToggler({
           initial={{ opacity: 0, y: 8, scale: 0.88 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.88 }}
-          transition={{ duration: 0.55, ease: PREMIUM_EASE }}
+          transition={{ duration: 0.45, ease: PREMIUM_EASE }}
           className="absolute inset-0 flex items-center justify-center"
         >
           {theme === "dark" ? (
