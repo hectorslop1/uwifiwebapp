@@ -1,10 +1,14 @@
+import type { PortalUser } from "@/src/server/auth/types";
+
 import { ContentCanvas } from "./content-canvas";
 import { SidebarRail } from "./sidebar-rail";
 import { TopUtilityBar } from "./top-utility-bar";
 
 export function AppShell({
+  user,
   children,
 }: Readonly<{
+  user: PortalUser;
   children: React.ReactNode;
 }>) {
   return (
@@ -16,7 +20,7 @@ export function AppShell({
       </div>
 
       <div className="relative">
-        <TopUtilityBar />
+        <TopUtilityBar user={user} />
 
         <div className="mx-auto max-w-[1560px] lg:flex lg:h-[calc(100dvh-5.4rem)]">
           <SidebarRail />

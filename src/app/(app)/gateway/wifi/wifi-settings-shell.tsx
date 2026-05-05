@@ -1,12 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { Eye, EyeOff, RefreshCw, WifiHigh } from "lucide-react";
 
-import { ActionCapsule, ActionCapsules } from "@/src/components/layout/action-capsules";
-import { cn } from "@/src/lib/cn";
+import {
+  ActionCapsule,
+  ActionCapsules,
+} from "@/src/components/layout/action-capsules";
 import { PageIntro } from "@/src/components/ui/page-intro";
 import { SurfacePanel } from "@/src/components/ui/surface-panel";
+import type { GatewayOverviewData } from "@/src/server/gateway/types";
+
+import { initialWifiSettingsActionState } from "../gateway-action-state";
+import {
+  rebootGatewayAction,
+  saveWifiSettingsAction,
+} from "../actions";
+import { GatewayFlash, type GatewayFlashMessage } from "../gateway-ui";
 
 type NetworkKey = "fiveG" | "twoFour";
 
@@ -15,19 +25,21 @@ type NetworkConfig = {
   password: string;
 };
 
-const initialNetworks: Record<NetworkKey, NetworkConfig> = {
-  fiveG: {
-    ssid: "U-WiFi 5G",
-    password: "SecureFiber5G!",
-  },
-  twoFour: {
-    ssid: "U-WiFi",
-    password: "SecureFiber24!",
-  },
-};
-
 const inputClassName =
   "theme-input w-full rounded-[1rem] border px-4 py-3 text-body-sm text-ink outline-none transition-all duration-200 placeholder:text-ink-faint focus:border-[rgba(52,196,59,0.42)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]";
+
+function buildNetworks(gateway: GatewayOverviewData): Record<NetworkKey, NetworkConfig> {
+  return {
+    fiveG: {
+      ssid: gateway.wifi5GName || "",
+      password: gateway.wifi5GPassword || "",
+    },
+    twoFour: {
+      ssid: gateway.wifi24GName || "",
+      password: gateway.wifi24GPassword || "",
+    },
+  };
+}
 
 function NetworkSettingsCard({
   title,
@@ -36,6 +48,8 @@ function NetworkSettingsCard({
   showPassword,
   onTogglePassword,
   onChange,
+  ssidName,
+  passwordName,
 }: {
   title: string;
   subtitle: string;
@@ -43,6 +57,8 @@ function NetworkSettingsCard({
   showPassword: boolean;
   onTogglePassword: () => void;
   onChange: (field: keyof NetworkConfig, nextValue: string) => void;
+  ssidName: string;
+  passwordName: string;
 }) {
   return (
     <SurfacePanel subtle className="overflow-hidden p-5">
@@ -62,6 +78,7 @@ function NetworkSettingsCard({
         <label className="space-y-1.5">
           <span className="text-label-md text-ink-muted">SSID</span>
           <input
+            name={ssidName}
             value={value.ssid}
             onChange={(event) => onChange("ssid", event.target.value)}
             className={inputClassName}
@@ -72,6 +89,7 @@ function NetworkSettingsCard({
           <span className="text-label-md text-ink-muted">Password</span>
           <div className="theme-input flex items-center rounded-[1rem] border px-4 py-3 transition-all duration-200 focus-within:border-[rgba(52,196,59,0.42)] focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]">
             <input
+              name={passwordName}
               type={showPassword ? "text" : "password"}
               value={value.password}
               onChange={(event) => onChange("password", event.target.value)}
@@ -96,17 +114,36 @@ function NetworkSettingsCard({
   );
 }
 
-export function WifiSettingsShell() {
-  const [networks, setNetworks] = useState(initialNetworks);
+export function WifiSettingsShell({
+  initialGateway,
+  flash,
+}: Readonly<{
+  initialGateway: GatewayOverviewData;
+  flash: GatewayFlashMessage | null;
+}>) {
+  const [networks, setNetworks] = useState(() => buildNetworks(initialGateway));
   const [showPassword, setShowPassword] = useState<Record<NetworkKey, boolean>>({
     fiveG: false,
     twoFour: false,
   });
-  const [savedAt, setSavedAt] = useState("Saved 2 min ago");
+  const [state, formAction, isPending] = useActionState(
+    saveWifiSettingsAction,
+    initialWifiSettingsActionState,
+  );
+
+  const gateway = state.gateway ?? initialGateway;
+  const savedAt =
+    state.status === "success"
+      ? "Saved just now"
+      : state.status === "error" && state.message
+        ? "Review the message and try again."
+        : "Saved settings appear here after each update.";
+
+  const baselineNetworks = useMemo(() => buildNetworks(gateway), [gateway]);
 
   const isDirty = useMemo(
-    () => JSON.stringify(networks) !== JSON.stringify(initialNetworks),
-    [networks],
+    () => JSON.stringify(networks) !== JSON.stringify(baselineNetworks),
+    [baselineNetworks, networks],
   );
 
   const updateNetwork = (
@@ -123,23 +160,30 @@ export function WifiSettingsShell() {
     }));
   };
 
-  const handleSave = () => {
-    setSavedAt("Changes staged for next apply");
-  };
-
   return (
     <div className="space-y-5 pb-2 lg:flex lg:min-h-0 lg:flex-col lg:pb-4">
       <PageIntro
         eyebrow="Gateway"
-        title="Wi-Fi settings"
-        description="Update both network names and passwords in one place, with a cleaner save flow and stronger state feedback than the older control panel."
+        title="Wi‑Fi settings"
+        description="Update the names and passwords for both Wi‑Fi bands in one place."
       />
 
-      <div className="grid gap-4 lg:min-h-0 lg:flex-1 xl:grid-cols-[minmax(0,1.15fr)_19rem]">
+      {flash ? <GatewayFlash tone={flash.status}>{flash.message}</GatewayFlash> : null}
+      {state.status !== "idle" && state.message ? (
+        <GatewayFlash tone={state.status === "success" ? "success" : "error"}>
+          {state.message}
+        </GatewayFlash>
+      ) : null}
+
+      <form
+        action={formAction}
+        className="grid gap-4 lg:min-h-0 lg:flex-1 xl:grid-cols-[minmax(0,1.15fr)_19rem]"
+      >
+        <input type="hidden" name="redirectTo" value="/gateway/wifi" />
         <div className="grid gap-4 lg:grid-cols-2">
           <NetworkSettingsCard
-            title="U-WiFi 5G"
-            subtitle="Primary high-band radio"
+            title={gateway.wifi5GName || "5 GHz network"}
+            subtitle={`${gateway.devices5G.length} devices currently connected`}
             value={networks.fiveG}
             showPassword={showPassword.fiveG}
             onTogglePassword={() =>
@@ -149,11 +193,13 @@ export function WifiSettingsShell() {
               }))
             }
             onChange={(field, nextValue) => updateNetwork("fiveG", field, nextValue)}
+            ssidName="ssidFiveG"
+            passwordName="passwordFiveG"
           />
 
           <NetworkSettingsCard
-            title="U-WiFi"
-            subtitle="Coverage-focused radio"
+            title={gateway.wifi24GName || "2.4 GHz network"}
+            subtitle={`${gateway.devices24G.length} devices currently connected`}
             value={networks.twoFour}
             showPassword={showPassword.twoFour}
             onTogglePassword={() =>
@@ -163,6 +209,8 @@ export function WifiSettingsShell() {
               }))
             }
             onChange={(field, nextValue) => updateNetwork("twoFour", field, nextValue)}
+            ssidName="ssidTwoFour"
+            passwordName="passwordTwoFour"
           />
         </div>
 
@@ -172,7 +220,7 @@ export function WifiSettingsShell() {
             <div className="relative">
               <div className="text-title-md text-ink">Apply changes</div>
               <div className="mt-2 text-body-sm text-ink-muted">
-                Keep both bands aligned, review pending edits and push the update when the network name or password changes.
+                Review both networks before saving the updated names and passwords.
               </div>
 
               <div className="theme-soft-well mt-4 rounded-[1.15rem] border px-4 py-3">
@@ -181,12 +229,11 @@ export function WifiSettingsShell() {
                     Status
                   </span>
                   <span
-                    className={cn(
-                      "rounded-pill px-2.5 py-1 text-label-md",
+                    className={`rounded-pill px-2.5 py-1 text-label-md ${
                       isDirty
                         ? "bg-[rgba(255,243,220,0.98)] text-[#b67a17]"
-                        : "bg-success-soft text-success",
-                    )}
+                        : "bg-success-soft text-success"
+                    }`}
                   >
                     {isDirty ? "Unsaved changes" : "All synced"}
                   </span>
@@ -197,15 +244,16 @@ export function WifiSettingsShell() {
 
               <div className="mt-4 flex flex-col gap-3">
                 <button
-                  type="button"
-                  onClick={handleSave}
-                  className="theme-cta rounded-pill px-4 py-3 text-body-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_42px_rgba(111,191,118,0.34),inset_0_1px_0_rgba(255,255,255,0.22)]"
+                  type="submit"
+                  disabled={isPending}
+                  className="theme-cta rounded-pill px-4 py-3 text-body-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_42px_rgba(111,191,118,0.34),inset_0_1px_0_rgba(255,255,255,0.22)] disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  Save network updates
+                  {isPending ? "Saving network updates..." : "Save network updates"}
                 </button>
                 <button
-                  type="button"
-                  className="theme-control-button rounded-pill border px-4 py-3 text-body-sm transition-all duration-200 hover:-translate-y-0.5"
+                  type="submit"
+                  formAction={rebootGatewayAction}
+                  className="theme-control-button w-full rounded-pill border px-4 py-3 text-body-sm transition-all duration-200 hover:-translate-y-0.5"
                 >
                   Restart gateway
                 </button>
@@ -217,7 +265,7 @@ export function WifiSettingsShell() {
             <div className="text-title-md text-ink">Related actions</div>
             <ActionCapsules className="mt-4">
               <ActionCapsule href="/gateway/devices" label="Review connected devices" />
-              <ActionCapsule href="/billing/payment-methods" label="Confirm autopay method" />
+              <ActionCapsule href="/billing/payment-methods" label="Open payment methods" />
               <ActionCapsule href="/overview" label="Back to account overview" />
             </ActionCapsules>
           </SurfacePanel>
@@ -228,12 +276,12 @@ export function WifiSettingsShell() {
               Update guidance
             </div>
             <div className="mt-3 space-y-2 text-body-sm text-ink-muted">
-              <p>Changing the SSID updates the customer-facing network name once you apply the save flow.</p>
-              <p>Updating the password helps keep both bands aligned, and the restart action stays available only if you want a manual reset afterward.</p>
+              <p>Keep both network names easy to recognize for the devices in your home.</p>
+              <p>Choose passwords with at least 8 characters so both networks stay secure.</p>
             </div>
           </SurfacePanel>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

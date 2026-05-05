@@ -11,19 +11,11 @@ import { InteractiveHoverButtonLink } from "@/src/components/magic/interactive-h
 import { NumberTicker } from "@/src/components/magic/number-ticker";
 import { StatusBeacon } from "@/src/components/magic/status-beacon";
 import { TextReveal } from "@/src/components/magic/text-reveal";
+import { getAuthenticatedPortalContext } from "@/src/server/auth/session";
+import { getBillingOverviewData } from "@/src/server/billing/api";
+import { getGatewayOverviewData } from "@/src/server/gateway/api";
 
 import RouterStage from "./RouterStage";
-
-const payments = [
-  { date: "Mar 4, 2026", amount: "$220.00" },
-  { date: "Feb 3, 2026", amount: "$55.00" },
-  { date: "Jan 4, 2026", amount: "$45.00" },
-];
-
-const radios = [
-  { label: "U-WiFi 5G", devices: "0 devices", band: "5 GHz" },
-  { label: "U-WiFi", devices: "0 devices", band: "2.4 GHz" },
-];
 
 const actions = [
   {
@@ -50,15 +42,23 @@ function NetworkCard({
   label,
   devices,
   band,
+  connected,
 }: {
   label: string;
   devices: string;
   band: string;
+  connected: boolean;
 }) {
   return (
     <div className="theme-panel-soft rounded-[1.3rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(251,251,253,0.44))] px-4 py-4 shadow-[0_14px_28px_rgba(201,204,214,0.07),inset_0_1px_0_rgba(255,255,255,0.9)]">
       <div className="flex items-center gap-2.5 text-[0.95rem] font-medium tracking-[-0.035em] text-ink-soft">
-        <span className="flex h-8 w-8 items-center justify-center rounded-[0.85rem] bg-[#eef9f0] text-success">
+        <span
+          className={`flex h-8 w-8 items-center justify-center rounded-[0.85rem] ${
+            connected
+              ? "bg-[#eef9f0] text-success"
+              : "bg-[#fff0ed] text-[#e65b4a]"
+          }`}
+        >
           <Wifi size={16} strokeWidth={1.9} />
         </span>
         {label}
@@ -125,7 +125,51 @@ function ActionCard({
   );
 }
 
-export default function OverviewPage() {
+export default async function OverviewPage() {
+  const context = await getAuthenticatedPortalContext();
+
+  if (!context) {
+    return null;
+  }
+
+  const [gateway, billing] = await Promise.all([
+    getGatewayOverviewData(context.user.customerId, context.accessToken),
+    getBillingOverviewData(context.user.customerId, context.accessToken),
+  ]);
+  const gatewayConnected = gateway?.isConnected ?? false;
+  const gatewayStatusLabel = gatewayConnected ? "connected" : "disconnected";
+  const nextBillingDate = billing.billingPeriod?.dueDate
+    ? new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+      }).format(new Date(billing.billingPeriod.dueDate))
+    : "Unavailable";
+  const recentPayments = billing.transactions
+    .filter((entry) => entry.status === "Settled")
+    .slice(0, 3)
+    .map((entry) => ({
+      date: new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(new Date(entry.createdAt)),
+      amount: new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(entry.amount),
+    }));
+  const radios =
+    gateway?.networks.map((network) => ({
+      label: network.title,
+      devices: `${network.devices.length} devices`,
+      band: network.band,
+    })) ?? [
+      { label: "5 GHz network", devices: "0 devices", band: "5 GHz" },
+      { label: "2.4 GHz network", devices: "0 devices", band: "2.4 GHz" },
+    ];
+
   return (
     <div className="flex flex-col gap-4 lg:h-[calc(100dvh-5.4rem-2rem)] lg:min-h-0 lg:gap-4 xl:h-[calc(100dvh-5.4rem-2.5rem)]">
       <section className="theme-panel relative overflow-hidden rounded-[2rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(247,247,249,0.62))] px-4 py-4 shadow-[0_22px_48px_rgba(205,207,214,0.11),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-5 sm:py-5 lg:px-7 lg:py-5">
@@ -137,15 +181,15 @@ export default function OverviewPage() {
         <div className="relative grid items-center gap-5 lg:grid-cols-[minmax(15rem,20rem)_minmax(0,1fr)] lg:gap-8">
           <div className="flex min-w-0 flex-col justify-center lg:pl-2">
             <div className="inline-flex max-w-full items-center gap-2.5 lg:gap-3">
-              <StatusBeacon active />
+              <StatusBeacon active={gatewayConnected} />
               <span className="text-[1.35rem] font-medium tracking-[-0.05em] text-ink-soft">
-                <TextReveal text="Active" />
+                <TextReveal text={gatewayStatusLabel} />
               </span>
               <span className="hidden h-px flex-1 bg-[linear-gradient(90deg,rgba(222,225,231,0.8),rgba(222,225,231,0))] lg:block" />
             </div>
 
             <div className="mt-4 text-[3.35rem] font-medium leading-[0.92] tracking-[-0.075em] text-ink sm:text-[4rem] xl:text-[4.3rem]">
-              <NumberTicker value={110} prefix="$" decimals={2} />
+              <NumberTicker value={billing.amountDue} prefix="$" decimals={2} />
             </div>
 
             <div className="mt-4 space-y-1">
@@ -153,12 +197,12 @@ export default function OverviewPage() {
                 Next billing
               </div>
               <div className="text-[1.75rem] font-medium tracking-[-0.055em] text-ink sm:text-[1.95rem]">
-                Mar 17
+                {nextBillingDate}
               </div>
             </div>
           </div>
 
-          <RouterStage />
+          <RouterStage connected={gatewayConnected} />
         </div>
       </section>
 
@@ -175,13 +219,13 @@ export default function OverviewPage() {
 
             <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
               {radios.map((radio) => (
-                <NetworkCard key={radio.label} {...radio} />
+                <NetworkCard key={radio.label} {...radio} connected={gatewayConnected} />
               ))}
             </div>
 
             <div className="border-t border-line/40 pt-4">
               <div className="space-y-2.5">
-                {payments.map((payment) => (
+                {recentPayments.length ? recentPayments.map((payment) => (
                   <div
                     key={payment.date}
                     className="flex items-baseline justify-between gap-4 text-[0.9rem] tracking-[-0.03em]"
@@ -191,7 +235,11 @@ export default function OverviewPage() {
                       {payment.amount}
                     </span>
                   </div>
-                ))}
+                )) : (
+                  <div className="text-[0.9rem] text-ink-muted">
+                    No recent payments have been recorded yet.
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -200,21 +248,25 @@ export default function OverviewPage() {
             <div className="flex items-baseline justify-between gap-4 border-b border-line/25 pb-2.5">
               <span className="text-[0.84rem] text-ink-muted">Serial number</span>
               <span className="text-[0.9rem] font-medium tracking-[-0.03em] text-ink-soft">
-                N/A
+                {gateway?.serialNumber || "Unavailable"}
               </span>
             </div>
 
             <div className="flex items-baseline justify-between gap-4 border-b border-line/25 pb-2.5">
               <span className="text-[0.84rem] text-ink-muted">Devices</span>
               <span className="text-[0.9rem] font-medium tracking-[-0.03em] text-ink-soft">
-                0
+                {gateway?.totalDevices ?? 0}
               </span>
             </div>
 
             <div className="flex items-baseline justify-between gap-4 border-b border-line/25 pb-2.5">
               <span className="text-[0.84rem] text-ink-muted">Status</span>
-              <span className="text-[0.9rem] font-medium tracking-[-0.03em] text-success">
-                Connected
+              <span
+                className={`text-[0.9rem] font-medium tracking-[-0.03em] ${
+                  gatewayConnected ? "text-success" : "text-[#e65b4a]"
+                }`}
+              >
+                {gatewayStatusLabel}
               </span>
             </div>
 

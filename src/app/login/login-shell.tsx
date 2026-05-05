@@ -1,18 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { CheckCircle2, Eye, EyeOff, Radio, Receipt, Router, ShieldCheck } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useActionState, useMemo, useState } from "react";
+import { Eye, EyeOff, Radio, Receipt, Router, ShieldCheck } from "lucide-react";
 
 import DotGrid from "@/src/components/login/dot-grid";
 import Grainient from "@/src/components/login/grainient";
 import { UwifiBrandTile } from "@/src/components/layout/uwifi-brand";
 import { AnimatedThemeToggler } from "@/src/components/magic/animated-theme-toggler";
-import { TextReveal } from "@/src/components/magic/text-reveal";
 import { AuroraText } from "@/src/components/ui/aurora-text";
 import { InteractiveHoverButton } from "@/src/components/ui/interactive-hover-button";
 import { ShineBorder } from "@/src/components/ui/shine-border";
+
+import { loginAction, type LoginActionState } from "./actions";
 
 type FieldErrors = {
   email?: string;
@@ -56,39 +56,88 @@ function validate(email: string, password: string) {
 }
 
 export function LoginShell() {
-  const router = useRouter();
-  const [email, setEmail] = useState("luc.nguyen@uwifi.com");
-  const [password, setPassword] = useState("password");
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [formError, setFormError] = useState("");
+  const [passwordResetMessage, setPasswordResetMessage] = useState("");
+  const initialActionState = useMemo<LoginActionState>(() => null, []);
+  const [actionState, formAction, isSubmitting] = useActionState(
+    loginAction,
+    initialActionState,
+  );
+  const activeFormError = actionState?.message || formError;
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     const nextErrors = validate(email, password);
     setErrors(nextErrors);
     setFormError("");
+    setPasswordResetMessage("");
 
     if (Object.keys(nextErrors).length > 0) {
+      event.preventDefault();
+      return;
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      setErrors((current) => ({
+        ...current,
+        email: "Enter your email first so we know where to send the reset link.",
+      }));
+      setPasswordResetMessage("");
       return;
     }
 
-    setIsSubmitting(true);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setErrors((current) => ({
+        ...current,
+        email: "Enter a valid email address before requesting a reset.",
+      }));
+      setPasswordResetMessage("");
+      return;
+    }
+
+    setErrors((current) => ({ ...current, email: undefined }));
+    setFormError("");
+    setPasswordResetMessage("");
+    setIsResettingPassword(true);
 
     try {
-      await new Promise((resolve) => window.setTimeout(resolve, 700));
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmedEmail }),
+      });
+      const payload = (await response.json()) as { message?: string };
 
-      if (!rememberMe) {
-        window.localStorage.removeItem("uwifi-theme");
+      if (!response.ok) {
+        throw new Error(
+          payload.message ||
+            "We couldn't send the reset instructions right now.",
+        );
       }
 
-      router.push("/overview");
-    } catch {
-      setFormError("We couldn't sign you in right now. Please try again in a moment.");
-      setIsSubmitting(false);
+      setPasswordResetMessage(
+        payload.message ||
+          "If the account exists, we'll email password reset instructions.",
+      );
+    } catch (error) {
+      setFormError(
+        error instanceof Error
+          ? error.message
+          : "We couldn't send the reset instructions right now.",
+      );
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -161,13 +210,15 @@ export function LoginShell() {
                   </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                <form action={formAction} onSubmit={handleSubmit} className="mt-6 space-y-4">
+                  <input type="hidden" name="next" value={searchParams.get("next") ?? ""} />
                   <div className="space-y-2">
                     <label htmlFor="email" className="text-[0.8rem] font-medium text-ink-soft">
                       Email
                     </label>
                     <input
                       id="email"
+                      name="email"
                       type="email"
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
@@ -183,17 +234,20 @@ export function LoginShell() {
                       <label htmlFor="password" className="text-[0.8rem] font-medium text-ink-soft">
                         Password
                       </label>
-                      <Link
-                        href="#"
+                      <button
+                        type="button"
+                        onClick={handlePasswordReset}
+                        disabled={isResettingPassword}
                         className="text-[0.8rem] text-ink-muted transition-colors duration-200 hover:text-ink"
                       >
-                        Forgot password?
-                      </Link>
+                        {isResettingPassword ? "Sending link..." : "Forgot password?"}
+                      </button>
                     </div>
 
                     <div className="relative">
                       <input
                         id="password"
+                        name="password"
                         type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
@@ -235,6 +289,11 @@ export function LoginShell() {
                           }`}
                         />
                       </button>
+                      <input
+                        type="hidden"
+                        name="rememberMe"
+                        value={rememberMe ? "true" : "false"}
+                      />
                       Remember this device
                     </label>
 
@@ -244,9 +303,15 @@ export function LoginShell() {
                     </div>
                   </div>
 
-                  {formError ? (
+                  {activeFormError ? (
                     <div className="rounded-[1rem] border border-[#f2d8d4] bg-[#fff7f5] px-4 py-3 text-[0.84rem] text-[#b05749]">
-                      {formError}
+                      {activeFormError}
+                    </div>
+                  ) : null}
+
+                  {passwordResetMessage ? (
+                    <div className="rounded-[1rem] border border-[#d7ebd8] bg-[#f5fff5] px-4 py-3 text-[0.84rem] text-[#2f7c39]">
+                      {passwordResetMessage}
                     </div>
                   ) : null}
 

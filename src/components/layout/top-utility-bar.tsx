@@ -1,16 +1,31 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, LogOut } from "lucide-react";
+
+import type { PortalUser } from "@/src/server/auth/types";
 
 import { AnimatedThemeToggler } from "@/src/components/magic/animated-theme-toggler";
 
 import { UwifiBrandTile } from "./uwifi-brand";
 
-export function TopUtilityBar() {
+function getInitials(fullName: string) {
+  const initials = fullName
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+
+  return initials || "UW";
+}
+
+export function TopUtilityBar({ user }: Readonly<{ user: PortalUser }>) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isLoggingOut, startLogoutTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -24,9 +39,17 @@ export function TopUtilityBar() {
     return () => window.removeEventListener("pointerdown", handlePointerDown);
   }, []);
 
-  const handleLogout = () => {
+  const performLogout = async () => {
     setMenuOpen(false);
-    router.push("/login");
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+    router.refresh();
+  };
+
+  const handleLogout = () => {
+    startLogoutTransition(() => {
+      void performLogout();
+    });
   };
 
   return (
@@ -58,15 +81,15 @@ export function TopUtilityBar() {
               className="theme-control-button theme-topbar-chip group flex min-w-0 items-center gap-3 rounded-full border px-3 py-1.5 text-left shadow-[0_14px_34px_rgba(193,196,205,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl transition-transform duration-200 hover:-translate-y-0.5"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7eea2f_0%,#07cf47_42%,#7b3cff_100%)] text-[1.3rem] font-medium tracking-[-0.05em] text-white shadow-[0_10px_24px_rgba(108,87,192,0.24)]">
-                LN
+                {getInitials(user.fullName)}
               </div>
 
               <div className="min-w-0 leading-tight">
                 <div className="truncate text-[0.95rem] font-medium tracking-[-0.035em] text-ink">
-                  Luc Nguyen
+                  {user.fullName}
                 </div>
                 <div className="mt-0.5 truncate text-[0.82rem] text-ink-muted">
-                  luc.nguyen@uwifi.com
+                  {user.email}
                 </div>
               </div>
 
@@ -88,12 +111,13 @@ export function TopUtilityBar() {
                   type="button"
                   role="menuitem"
                   onClick={handleLogout}
+                  disabled={isLoggingOut}
                   className="theme-control-button flex w-full items-center gap-3 rounded-full border border-transparent px-3 py-2.5 text-left text-[0.9rem] font-medium text-ink-soft transition-all duration-200 hover:text-ink"
                 >
                   <span className="theme-icon-surface flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-ink-muted">
                     <LogOut size={16} strokeWidth={1.8} />
                   </span>
-                  Log out
+                  {isLoggingOut ? "Logging out..." : "Log out"}
                 </button>
               </div>
             ) : null}

@@ -6,14 +6,20 @@ import { PageIntro } from "@/src/components/ui/page-intro";
 import { PremiumTable } from "@/src/components/ui/premium-table";
 import { StatusPill } from "@/src/components/ui/status-pill";
 import { SurfacePanel } from "@/src/components/ui/surface-panel";
+import { getAuthenticatedPortalContext } from "@/src/server/auth/session";
+import { getInvoices } from "@/src/server/billing/api";
 
-const invoices = [
-  { id: "INV-1042", date: "Mar 4, 2026", amount: "$220.00", status: "Paid" },
-  { id: "INV-1028", date: "Feb 3, 2026", amount: "$55.00", status: "Paid" },
-  { id: "INV-1007", date: "Jan 4, 2026", amount: "$45.00", status: "Pending" },
-];
+import { formatCurrency, formatDate } from "../billing-ui";
 
-export default function BillingInvoicesPage() {
+export default async function BillingInvoicesPage() {
+  const context = await getAuthenticatedPortalContext();
+
+  if (!context) {
+    return null;
+  }
+
+  const invoices = await getInvoices(context.user.customerId, context.accessToken);
+
   return (
     <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
       <PageIntro
@@ -55,31 +61,37 @@ export default function BillingInvoicesPage() {
               { key: "actions", label: "Actions", align: "right" },
             ]}
             rows={invoices.map((invoice) => ({
-              id: invoice.id,
+              id: invoice.invoiceNumber,
               cells: [
-                <div key={`${invoice.id}-number`}>
-                  <div className="font-medium text-ink">{invoice.id}</div>
+                <div key={`${invoice.invoiceNumber}-number`}>
+                  <div className="font-medium text-ink">{invoice.invoiceNumber}</div>
                   <div className="text-label-md text-ink-muted">Monthly service invoice</div>
                 </div>,
-                invoice.date,
-                <span key={`${invoice.id}-amount`} className="font-medium text-ink">
-                  {invoice.amount}
+                formatDate(invoice.createdAt),
+                <span key={`${invoice.invoiceNumber}-amount`} className="font-medium text-ink">
+                  {formatCurrency(invoice.totalAmount)}
                 </span>,
-                <div key={`${invoice.id}-status`} className="flex justify-center">
+                <div key={`${invoice.invoiceNumber}-status`} className="flex justify-center">
                   <StatusPill
                     label={invoice.status}
                     tone={invoice.status === "Pending" ? "warning" : "success"}
                   />
                 </div>,
-                <div key={`${invoice.id}-actions`} className="flex justify-end gap-3">
-                  <Link href="#" className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-ink">
-                    <Eye size={15} strokeWidth={1.8} />
-                    View
-                  </Link>
-                  <Link href="#" className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-ink">
-                    <Download size={15} strokeWidth={1.8} />
-                    PDF
-                  </Link>
+                <div key={`${invoice.invoiceNumber}-actions`} className="flex justify-end gap-3">
+                  {invoice.fileUrl ? (
+                    <>
+                      <Link href={invoice.fileUrl} target="_blank" className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-ink">
+                        <Eye size={15} strokeWidth={1.8} />
+                        View
+                      </Link>
+                      <Link href={invoice.fileUrl} target="_blank" className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-ink">
+                        <Download size={15} strokeWidth={1.8} />
+                        PDF
+                      </Link>
+                    </>
+                  ) : (
+                    <span className="text-body-sm text-ink-faint">No file</span>
+                  )}
                 </div>,
               ],
             }))}

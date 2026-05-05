@@ -1,138 +1,156 @@
-import { Laptop2, Radio, ShieldEllipsis, Smartphone } from "lucide-react";
+import {
+  Laptop2,
+  Radio,
+  ShieldEllipsis,
+  Smartphone,
+} from "lucide-react";
 
 import { ProgressiveBlur } from "@/src/components/magic/progressive-blur";
+import { FeedbackState } from "@/src/components/ui/feedback-state";
 import { PageIntro } from "@/src/components/ui/page-intro";
 import { PremiumTable } from "@/src/components/ui/premium-table";
+import { RefreshRouteButton } from "@/src/components/ui/refresh-route-button";
 import { StatTile } from "@/src/components/ui/stat-tile";
 import { StatusPill } from "@/src/components/ui/status-pill";
 import { SurfacePanel } from "@/src/components/ui/surface-panel";
+import { getAuthenticatedPortalContext } from "@/src/server/auth/session";
+import { getGatewayOverviewData } from "@/src/server/gateway/api";
 
-const rows = [
-  {
-    id: "iphone-15-pro",
-    name: "iPhone 15 Pro",
-    band: "5 GHz",
-    ip: "192.168.1.101",
-    lastSeen: "Active now",
-    deviceType: "Personal phone",
-    connection: "Excellent",
-  },
-  {
-    id: "macbook-pro",
-    name: "MacBook Pro",
-    band: "5 GHz",
-    ip: "192.168.1.102",
-    lastSeen: "2 min ago",
-    deviceType: "Work laptop",
-    connection: "Strong",
-  },
-  {
-    id: "smart-tv",
-    name: "Living room TV",
-    band: "5 GHz",
-    ip: "192.168.1.115",
-    lastSeen: "9 min ago",
-    deviceType: "Streaming device",
-    connection: "Stable",
-  },
-  {
-    id: "ring",
-    name: "Doorbell",
-    band: "2.4 GHz",
-    ip: "192.168.1.126",
-    lastSeen: "18 min ago",
-    deviceType: "Entry camera",
-    connection: "Long range",
-  },
-];
+function getDeviceIcon(name: string) {
+  if (/iphone|phone|pixel|galaxy/i.test(name)) {
+    return <Smartphone size={16} strokeWidth={1.8} />;
+  }
 
-export default function GatewayDevicesPage() {
+  if (/macbook|laptop|pc|desktop/i.test(name)) {
+    return <Laptop2 size={16} strokeWidth={1.8} />;
+  }
+
+  return <ShieldEllipsis size={16} strokeWidth={1.8} />;
+}
+
+export default async function GatewayDevicesPage() {
+  const context = await getAuthenticatedPortalContext();
+
+  if (!context) {
+    return null;
+  }
+
+  const gateway = await getGatewayOverviewData(
+    context.user.customerId,
+    context.accessToken,
+  );
+
+  if (!gateway) {
+    return (
+      <div className="space-y-5 pb-6">
+        <PageIntro
+          eyebrow="Gateway"
+          title="Connected devices"
+          description="Review the devices using your Wi‑Fi and which band they are currently using."
+        />
+        <FeedbackState
+          title="No gateway connected"
+          description="Once this account has an active gateway, connected devices will appear here."
+        />
+      </div>
+    );
+  }
+
+  const rows = [...gateway.devices5G, ...gateway.devices24G];
+
   return (
-    <div className="space-y-5 pb-2 lg:flex lg:min-h-0 lg:flex-col lg:pb-4">
+    <div className="space-y-5 pb-6">
       <PageIntro
         eyebrow="Gateway"
         title="Connected devices"
-        description="This route replaces the old card grid with a cleaner inventory view: scannable, filterable and closer to a modern SaaS operations table."
+        description="Review the devices currently connected to your Wi‑Fi across both network bands."
         actions={
           <>
-            <StatusPill label="7 active devices" tone="success" pulse />
-            <button
-              type="button"
-              className="theme-control-button rounded-pill border px-4 py-2.5 text-body-sm transition-all duration-200 hover:-translate-y-0.5"
-            >
-              Refresh list
-            </button>
+            <StatusPill
+              label={`${gateway.totalDevices} active devices`}
+              tone="success"
+              pulse={gateway.totalDevices > 0}
+            />
+            <RefreshRouteButton label="Refresh list" />
           </>
         }
       />
 
       <div className="grid gap-3 md:grid-cols-3">
-        <StatTile label="Connected" value="7" meta="Devices online right now" />
-        <StatTile label="Recently active" value="4" meta="Seen within the last 20 minutes" />
-        <StatTile label="Radio distribution" value="4 / 3" meta="5 GHz vs 2.4 GHz" />
+        <StatTile label="Connected" value={String(gateway.totalDevices)} meta="Devices online right now" />
+        <StatTile label="5 GHz" value={String(gateway.devices5G.length)} meta={gateway.wifi5GName || "5 GHz network"} />
+        <StatTile label="2.4 GHz" value={String(gateway.devices24G.length)} meta={gateway.wifi24GName || "2.4 GHz network"} />
       </div>
 
-      <SurfacePanel className="overflow-hidden p-4 lg:min-h-0">
+      <SurfacePanel className="overflow-visible p-4">
         <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-b-[2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.12),transparent_74%)]" />
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="theme-tab-shell inline-flex flex-wrap gap-2 rounded-pill border p-1.5">
-            {["All devices", "5 GHz", "2.4 GHz", "Recently active"].map((filter, index) => (
-              <button
-                key={filter}
-                type="button"
-                className={`theme-tab-item rounded-pill border px-4 py-2 text-body-sm transition-all duration-200 hover:-translate-y-0.5 ${
-                  index === 0
-                    ? "theme-tab-item-active border"
-                    : "border-transparent"
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
+            <div className="theme-tab-item theme-tab-item-active rounded-pill border px-4 py-2 text-body-sm">
+              All devices
+            </div>
+            <div className="theme-tab-item rounded-pill border border-transparent px-4 py-2 text-body-sm">
+              5 GHz: {gateway.devices5G.length}
+            </div>
+            <div className="theme-tab-item rounded-pill border border-transparent px-4 py-2 text-body-sm">
+              2.4 GHz: {gateway.devices24G.length}
+            </div>
           </div>
 
           <div className="theme-inline-surface rounded-pill border border-white/82 bg-white/60 px-4 py-2 text-body-sm text-ink-muted shadow-[0_12px_22px_rgba(208,212,219,0.08)]">
-            Search and live filters will plug into this surface next.
+            Showing {rows.length} connected devices
           </div>
         </div>
 
-        <ProgressiveBlur className="mt-4" maxHeightClassName="max-h-[23rem]">
-          <PremiumTable
-            columns={[
-              { key: "device", label: "Device" },
-              { key: "band", label: "Band" },
-              { key: "ip", label: "IP address" },
-              { key: "last-seen", label: "Last seen" },
-              { key: "status", label: "Connection", align: "right" },
-            ]}
-            rows={rows.map((row) => ({
-              id: row.id,
-              cells: [
-                <div key={`${row.id}-device`} className="flex items-center gap-3">
-                  <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-[0.95rem] bg-white/80 text-ink-soft">
-                    {row.name.includes("iPhone") ? (
-                      <Smartphone size={16} strokeWidth={1.8} />
-                    ) : row.name.includes("MacBook") ? (
-                      <Laptop2 size={16} strokeWidth={1.8} />
-                    ) : (
-                      <ShieldEllipsis size={16} strokeWidth={1.8} />
-                    )}
-                  </span>
-                  <div>
-                    <div className="font-medium text-ink">{row.name}</div>
-                    <div className="text-label-md text-ink-muted">{row.deviceType}</div>
-                  </div>
-                </div>,
-                row.band,
-                row.ip,
-                row.lastSeen,
-                <div key={`${row.id}-trust`} className="flex justify-end">
-                  <StatusPill label={row.connection} tone={row.connection === "Long range" ? "brand" : "success"} />
-                </div>,
-              ],
-            }))}
+        {rows.length ? (
+          <ProgressiveBlur className="mt-4" maxHeightClassName="max-h-[30rem]">
+            <div className="overflow-x-auto">
+              <div className="min-w-[56rem]">
+                <PremiumTable
+                  columns={[
+                    { key: "device", label: "Device" },
+                    { key: "band", label: "Band" },
+                    { key: "ip", label: "IP address" },
+                    { key: "mac", label: "MAC address" },
+                    { key: "status", label: "Connection", align: "right" },
+                  ]}
+                  rows={rows.map((row) => ({
+                    id: row.id,
+                    cells: [
+                      <div key={`${row.id}-device`} className="flex min-w-[14rem] items-center gap-3">
+                        <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-[0.95rem] bg-white/80 text-ink-soft">
+                          {getDeviceIcon(row.name)}
+                        </span>
+                        <div>
+                          <div className="font-medium text-ink">{row.name}</div>
+                          <div className="text-label-md text-ink-muted">
+                            {row.connectionType || "Wi‑Fi device"}
+                          </div>
+                        </div>
+                      </div>,
+                      <span key={`${row.id}-radio`} className="whitespace-nowrap">{row.band}</span>,
+                      <span key={`${row.id}-ip`} className="whitespace-nowrap">
+                        {row.ipAddress || "Unavailable"}
+                      </span>,
+                      <span key={`${row.id}-mac`} className="whitespace-nowrap">
+                        {row.macAddress || "Unavailable"}
+                      </span>,
+                      <div key={`${row.id}-band`} className="flex justify-end">
+                        <StatusPill label={row.band} tone={row.band === "5 GHz" ? "success" : "brand"} />
+                      </div>,
+                    ],
+                  }))}
+                />
+              </div>
+            </div>
+          </ProgressiveBlur>
+        ) : (
+          <FeedbackState
+            className="mt-4 min-h-[12rem]"
+            title="No connected devices"
+            description="No devices are currently reporting as connected to this gateway."
           />
-        </ProgressiveBlur>
+        )}
       </SurfacePanel>
 
       <SurfacePanel subtle className="overflow-hidden p-5">
@@ -145,19 +163,19 @@ export default function GatewayDevicesPage() {
           <div className="theme-inline-surface rounded-[1.25rem] border border-white/80 px-4 py-3.5">
             <div className="text-body-md font-medium text-ink">2.4 GHz</div>
             <p className="mt-2 text-body-sm text-ink-muted">
-              Reaches farther and passes through walls more easily, so it is ideal for doorbells, cameras and devices that sit farther from the gateway.
+              Best for devices that are farther away or need more range through walls.
             </p>
           </div>
           <div className="theme-inline-surface rounded-[1.25rem] border border-white/80 px-4 py-3.5">
             <div className="text-body-md font-medium text-ink">5 GHz</div>
             <p className="mt-2 text-body-sm text-ink-muted">
-              Delivers faster speeds and lower congestion when the device is close enough, which makes it better for phones, laptops, TVs and gaming gear.
+              Best for faster speeds when devices stay closer to the gateway.
             </p>
           </div>
           <div className="theme-inline-surface rounded-[1.25rem] border border-white/80 px-4 py-3.5">
             <div className="text-body-md font-medium text-ink">Quick tip</div>
             <p className="mt-2 text-body-sm text-ink-muted">
-              If a device feels slow far from the router, try moving it to 2.4 GHz. If it needs more speed near the gateway, keep it on 5 GHz.
+              If a device needs more stability at a distance, try keeping it on the 2.4 GHz network.
             </p>
           </div>
         </div>

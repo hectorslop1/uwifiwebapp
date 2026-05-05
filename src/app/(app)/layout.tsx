@@ -1,9 +1,19 @@
+import { redirect } from "next/navigation";
+
+import { getAuthenticatedPortalUser } from "@/src/server/auth/session";
+
 import { AppShell } from "../../components/layout/app-shell";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <AppShell>{children}</AppShell>;
+  const user = await getAuthenticatedPortalUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  return <AppShell user={user}>{children}</AppShell>;
 }

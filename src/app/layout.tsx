@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -29,14 +18,21 @@ export default function RootLayout({
       lang="en"
       data-theme="light"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className="h-full antialiased"
     >
       <body className="flex min-h-full flex-col">
         <Script id="theme-init" strategy="beforeInteractive">
           {`
             try {
               const storedTheme = window.localStorage.getItem("uwifi-theme");
-              const theme = storedTheme === "dark" ? "dark" : "light";
+              const theme =
+                storedTheme === "dark"
+                  ? "dark"
+                  : storedTheme === "system"
+                    ? window.matchMedia("(prefers-color-scheme: dark)").matches
+                      ? "dark"
+                      : "light"
+                    : "light";
               document.documentElement.dataset.theme = theme;
             } catch (error) {
               document.documentElement.dataset.theme = "light";

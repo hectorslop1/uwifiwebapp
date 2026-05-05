@@ -1,15 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useFormStatus } from "react-dom";
+import { Bell, LockKeyhole, Save, ShieldCheck, SlidersHorizontal, UserRound } from "lucide-react";
 
 import { PageIntro } from "@/src/components/ui/page-intro";
 import { SegmentedControl } from "@/src/components/ui/segmented-control";
 import { SurfacePanel } from "@/src/components/ui/surface-panel";
+import type { SettingsProfile } from "@/src/server/settings/types";
 
-type SettingsSection = "account" | "security" | "preferences" | "notifications";
+import {
+  changePasswordSettingsAction,
+  saveProfileSettingsAction,
+} from "./actions";
+import type { SettingsFlashMessage, SettingsSection } from "./settings-ui";
 
 const fieldClassName =
   "theme-input w-full rounded-[1rem] border border-white/80 bg-white/65 px-4 py-3 text-body-sm text-ink outline-none placeholder:text-ink-faint shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]";
+
+const settingsKey = "uwifi-settings-v1";
+
+type ThemePreference = "light" | "dark" | "system";
+type DensityPreference = "comfortable" | "compact";
+type LocalePreference = "en" | "es";
+type TimezonePreference = "america-tijuana" | "america-los-angeles";
+
+type PortalPreferences = {
+  theme: ThemePreference;
+  language: LocalePreference;
+  timezone: TimezonePreference;
+  density: DensityPreference;
+};
+
+type PortalNotifications = {
+  billing: boolean;
+  outages: boolean;
+  promotions: boolean;
+};
+
+const defaultPreferences: PortalPreferences = {
+  theme: "light",
+  language: "en",
+  timezone: "america-tijuana",
+  density: "comfortable",
+};
+
+const defaultNotifications: PortalNotifications = {
+  billing: true,
+  outages: true,
+  promotions: false,
+};
 
 function SectionHeader({
   title,
@@ -23,20 +64,246 @@ function SectionHeader({
   );
 }
 
-export function SettingsShell() {
-  const [section, setSection] = useState<SettingsSection>("account");
-  const [notifications, setNotifications] = useState({
-    billing: true,
-    outages: true,
-    promotions: false,
+function SettingsFlash({
+  tone,
+  children,
+}: Readonly<{
+  tone: "success" | "error";
+  children: string;
+}>) {
+  return (
+    <div
+      className={`rounded-[1.25rem] border px-4 py-3 text-body-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] ${
+        tone === "success"
+          ? "border-[#d5eed2] bg-[rgba(242,251,241,0.9)] text-[#319c39]"
+          : "border-[#f0d4cf] bg-[rgba(252,244,241,0.9)] text-[#c86c58]"
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SectionIcon({
+  children,
+  tone = "green",
+}: Readonly<{
+  children: ReactNode;
+  tone?: "green" | "soft";
+}>) {
+  return (
+    <span
+      className={`flex h-10 w-10 items-center justify-center rounded-[0.95rem] ${
+        tone === "green"
+          ? "bg-[linear-gradient(180deg,#78dc60_0%,#6bcf54_100%)] text-white shadow-[0_18px_35px_rgba(109,201,89,0.32)]"
+          : "border border-white/90 bg-[#f4faf3] text-[#42b53f]"
+      }`}
+    >
+      {children}
+    </span>
+  );
+}
+
+function FormSubmitButton({
+  idleLabel,
+  pendingLabel,
+}: Readonly<{
+  idleLabel: string;
+  pendingLabel: string;
+}>) {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-5 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)] disabled:cursor-not-allowed disabled:opacity-70"
+    >
+      <Save size={16} strokeWidth={1.8} />
+      {pending ? pendingLabel : idleLabel}
+    </button>
+  );
+}
+
+function ToggleRow({
+  title,
+  description,
+  checked,
+  onToggle,
+}: Readonly<{
+  title: string;
+  description: string;
+  checked: boolean;
+  onToggle: () => void;
+}>) {
+  return (
+    <div className="theme-inline-surface flex items-center justify-between gap-4 rounded-[1.15rem] border border-white/75 bg-white/55 px-4 py-3.5">
+      <div>
+        <div className="text-body-md font-medium text-ink">{title}</div>
+        <div className="text-body-sm text-ink-muted">{description}</div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`relative h-7 w-12 rounded-full transition-colors duration-200 ${
+          checked ? "bg-success/85" : "bg-line-strong/70"
+        }`}
+      >
+        <span
+          className={`theme-toggle-knob absolute top-1 h-5 w-5 rounded-full bg-white transition-all duration-200 ${
+            checked ? "left-6" : "left-1"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
+function getStoredSettings() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(settingsKey);
+
+    if (!raw) {
+      return null;
+    }
+
+    return JSON.parse(raw) as {
+      preferences?: Partial<PortalPreferences>;
+      notifications?: Partial<PortalNotifications>;
+    };
+  } catch {
+    return null;
+  }
+}
+
+function resolveTheme(theme: ThemePreference) {
+  if (theme !== "system") {
+    return theme;
+  }
+
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function applyPreferences(preferences: PortalPreferences) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const resolvedTheme = resolveTheme(preferences.theme);
+  document.documentElement.dataset.theme = resolvedTheme;
+  document.documentElement.dataset.density = preferences.density;
+  document.documentElement.lang = preferences.language;
+  window.localStorage.setItem("uwifi-theme", preferences.theme);
+}
+
+function saveStoredSettings(
+  preferences: PortalPreferences,
+  notifications: PortalNotifications,
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(
+    settingsKey,
+    JSON.stringify({ preferences, notifications }),
+  );
+}
+
+export function SettingsShell({
+  initialProfile,
+  initialSection,
+  flash,
+}: Readonly<{
+  initialProfile: SettingsProfile;
+  initialSection: SettingsSection;
+  flash: SettingsFlashMessage | null;
+}>) {
+  const [section, setSection] = useState<SettingsSection>(initialSection);
+  const [preferences, setPreferences] = useState<PortalPreferences>(() => {
+    const stored = getStoredSettings();
+
+    return {
+      ...defaultPreferences,
+      ...stored?.preferences,
+    };
   });
+  const [notifications, setNotifications] = useState<PortalNotifications>(() => {
+    const stored = getStoredSettings();
+
+    return {
+      ...defaultNotifications,
+      ...stored?.notifications,
+    };
+  });
+  const [preferencesSaved, setPreferencesSaved] = useState(false);
+  const [notificationsSaved, setNotificationsSaved] = useState(false);
+
+  useEffect(() => {
+    applyPreferences(preferences);
+  }, [preferences]);
+
+  useEffect(() => {
+    if (preferences.theme !== "system" || typeof window === "undefined") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => applyPreferences(preferences);
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [preferences]);
+
+  const notificationsList = useMemo(
+    () => [
+      {
+        key: "billing" as const,
+        title: "Billing updates",
+        description: "Invoices, failed charges, due reminders and payment confirmations.",
+      },
+      {
+        key: "outages" as const,
+        title: "Gateway and outage alerts",
+        description: "Connection issues, gateway restarts and important service events.",
+      },
+      {
+        key: "promotions" as const,
+        title: "Offers and product news",
+        description: "Optional updates about plans, hardware and bundles.",
+      },
+    ],
+    [],
+  );
+
+  const persistPreferences = () => {
+    applyPreferences(preferences);
+    saveStoredSettings(preferences, notifications);
+    setPreferencesSaved(true);
+  };
+
+  const persistNotifications = () => {
+    saveStoredSettings(preferences, notifications);
+    setNotificationsSaved(true);
+  };
 
   return (
     <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
       <PageIntro
         eyebrow="Settings"
         title="Account settings"
-        description="All core settings from Flutter remain in scope: profile, security, preferences and notifications. The rewrite focuses on denser forms, quieter sections and clearer save behavior."
+        description="Manage your profile, security, preferences, and notification settings in one place."
         actions={
           <SegmentedControl
             value={section}
@@ -51,167 +318,333 @@ export function SettingsShell() {
         }
       />
 
-      {section === "account" ? (
-        <SurfacePanel className="p-4 sm:p-5">
-          <SectionHeader
-            title="Profile information"
-            description="Keep account information compact and scannable instead of spreading it into oversized form sections."
-          />
+      {flash ? <SettingsFlash tone={flash.status}>{flash.message}</SettingsFlash> : null}
 
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <input defaultValue="Luc" className={fieldClassName} aria-label="First name" />
-            <input defaultValue="Nguyen" className={fieldClassName} aria-label="Last name" />
-            <input
-              defaultValue="luc.nguyen@uwifi.com"
-              className={fieldClassName}
-              aria-label="Email"
-            />
-            <input
-              defaultValue="+1 (555) 234-8890"
-              className={fieldClassName}
-              aria-label="Phone"
-            />
-          </div>
-        </SurfacePanel>
+      {section === "account" ? (
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_18rem]">
+          <form action={saveProfileSettingsAction}>
+            <SurfacePanel className="p-4 sm:p-5">
+              <SectionHeader
+                title="Profile information"
+                description="Keep your contact details current so account and support updates reach the right person."
+              />
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <input
+                  name="firstName"
+                  defaultValue={initialProfile.firstName}
+                  className={fieldClassName}
+                  aria-label="First name"
+                />
+                <input
+                  name="lastName"
+                  defaultValue={initialProfile.lastName}
+                  className={fieldClassName}
+                  aria-label="Last name"
+                />
+                <input
+                  defaultValue={initialProfile.email}
+                  className={`${fieldClassName} cursor-not-allowed text-ink-muted`}
+                  aria-label="Email"
+                  disabled
+                />
+                <input
+                  name="phone"
+                  defaultValue={initialProfile.phone}
+                  className={fieldClassName}
+                  aria-label="Phone"
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  type="reset"
+                  className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft"
+                >
+                  Reset
+                </button>
+                <FormSubmitButton
+                  idleLabel="Save profile"
+                  pendingLabel="Saving profile..."
+                />
+              </div>
+            </SurfacePanel>
+          </form>
+
+          <SurfacePanel subtle className="p-4">
+            <div className="flex items-center gap-3">
+              <SectionIcon>
+                <UserRound size={18} strokeWidth={1.8} />
+              </SectionIcon>
+              <div className="text-title-md text-ink">Account details</div>
+            </div>
+            <div className="mt-4 space-y-3 text-body-sm text-ink-muted">
+              <div>Your account email stays tied to your sign-in credentials.</div>
+              <div>Use the phone field for billing and support follow-up.</div>
+              <div>Profile updates apply to the portal right away.</div>
+            </div>
+          </SurfacePanel>
+        </div>
       ) : null}
 
       {section === "security" ? (
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_17rem]">
-          <SurfacePanel className="p-4 sm:p-5">
-            <SectionHeader
-              title="Password update"
-              description="The security flow remains available, but the presentation is now calmer and more trustworthy."
-            />
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <input type="password" placeholder="Current password" className={fieldClassName} />
-              <input type="password" placeholder="New password" className={fieldClassName} />
-              <input
-                type="password"
-                placeholder="Confirm new password"
-                className={fieldClassName}
+          <form action={changePasswordSettingsAction}>
+            <SurfacePanel className="p-4 sm:p-5">
+              <SectionHeader
+                title="Password update"
+                description="Update your password here to keep access to the portal secure."
               />
-            </div>
-          </SurfacePanel>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <input
+                  name="currentPassword"
+                  type="password"
+                  placeholder="Current password"
+                  className={fieldClassName}
+                />
+                <input
+                  name="newPassword"
+                  type="password"
+                  placeholder="New password"
+                  className={fieldClassName}
+                />
+                <input
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Confirm new password"
+                  className={fieldClassName}
+                />
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  type="reset"
+                  className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft"
+                >
+                  Clear
+                </button>
+                <FormSubmitButton
+                  idleLabel="Update password"
+                  pendingLabel="Updating password..."
+                />
+              </div>
+            </SurfacePanel>
+          </form>
 
           <SurfacePanel subtle className="p-4">
-            <SectionHeader
-              title="Security notes"
-              description="2FA, active sessions and recovery methods should live in this rail on the next backend-connected pass."
-            />
+            <div className="flex items-center gap-3">
+              <SectionIcon tone="soft">
+                <ShieldCheck size={18} strokeWidth={1.8} />
+              </SectionIcon>
+              <div className="text-title-md text-ink">Security notes</div>
+            </div>
+            <div className="mt-4 space-y-3 text-body-sm text-ink-muted">
+              <div>Use at least 8 characters with a strong combination of letters and numbers.</div>
+              <div>Choose a password you are not using anywhere else.</div>
+              <div>If you ever lose access, you can still recover it from the sign-in screen.</div>
+            </div>
           </SurfacePanel>
         </div>
       ) : null}
 
       {section === "preferences" ? (
-        <SurfacePanel className="p-4 sm:p-5">
-          <SectionHeader
-            title="Preferences"
-            description="Theme, language and time-related preferences remain part of the app web scope."
-          />
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_18rem]">
+          <SurfacePanel className="p-4 sm:p-5">
+            <SectionHeader
+              title="Preferences"
+              description="Choose how the portal should look and behave on this device."
+            />
 
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <select className={fieldClassName} defaultValue="light">
-              <option value="light">Light appearance</option>
-              <option value="dark">Dark appearance</option>
-              <option value="system">System appearance</option>
-            </select>
-            <select className={fieldClassName} defaultValue="en">
-              <option value="en">English</option>
-              <option value="es">Spanish</option>
-            </select>
-            <select className={fieldClassName} defaultValue="america-tijuana">
-              <option value="america-tijuana">America/Tijuana</option>
-              <option value="america-los-angeles">America/Los_Angeles</option>
-            </select>
-            <select className={fieldClassName} defaultValue="comfortable">
-              <option value="comfortable">Comfortable density</option>
-              <option value="compact">Compact density</option>
-            </select>
-          </div>
-        </SurfacePanel>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <select
+                className={fieldClassName}
+                value={preferences.theme}
+                onChange={(event) => {
+                  setPreferencesSaved(false);
+                  setPreferences((current) => ({
+                    ...current,
+                    theme: event.target.value as ThemePreference,
+                  }));
+                }}
+              >
+                <option value="light">Light appearance</option>
+                <option value="dark">Dark appearance</option>
+                <option value="system">System appearance</option>
+              </select>
+              <select
+                className={fieldClassName}
+                value={preferences.language}
+                onChange={(event) => {
+                  setPreferencesSaved(false);
+                  setPreferences((current) => ({
+                    ...current,
+                    language: event.target.value as LocalePreference,
+                  }));
+                }}
+              >
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+              </select>
+              <select
+                className={fieldClassName}
+                value={preferences.timezone}
+                onChange={(event) => {
+                  setPreferencesSaved(false);
+                  setPreferences((current) => ({
+                    ...current,
+                    timezone: event.target.value as TimezonePreference,
+                  }));
+                }}
+              >
+                <option value="america-tijuana">America/Tijuana</option>
+                <option value="america-los-angeles">America/Los_Angeles</option>
+              </select>
+              <select
+                className={fieldClassName}
+                value={preferences.density}
+                onChange={(event) => {
+                  setPreferencesSaved(false);
+                  setPreferences((current) => ({
+                    ...current,
+                    density: event.target.value as DensityPreference,
+                  }));
+                }}
+              >
+                <option value="comfortable">Comfortable density</option>
+                <option value="compact">Compact density</option>
+              </select>
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setPreferences(defaultPreferences);
+                  setPreferencesSaved(false);
+                }}
+                className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft"
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                onClick={persistPreferences}
+                className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-5 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)]"
+              >
+                <Save size={16} strokeWidth={1.8} />
+                Save preferences
+              </button>
+            </div>
+
+            {preferencesSaved ? (
+              <div className="mt-4 text-body-sm text-success">
+                Preferences saved for this device.
+              </div>
+            ) : null}
+          </SurfacePanel>
+
+          <SurfacePanel subtle className="p-4">
+            <div className="flex items-center gap-3">
+              <SectionIcon tone="soft">
+                <SlidersHorizontal size={18} strokeWidth={1.8} />
+              </SectionIcon>
+              <div className="text-title-md text-ink">On this device</div>
+            </div>
+            <div className="mt-4 space-y-3 text-body-sm text-ink-muted">
+              <div>Theme changes apply as soon as you save them.</div>
+              <div>Language, timezone and density are stored for this browser.</div>
+              <div>You can always switch the look again from the theme button in the header.</div>
+            </div>
+          </SurfacePanel>
+        </div>
       ) : null}
 
       {section === "notifications" ? (
-        <SurfacePanel className="p-4 sm:p-5">
-          <SectionHeader
-            title="Notification preferences"
-            description="Billing, outage and promotional settings stay inside the experience instead of being dropped during the redesign."
-          />
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_18rem]">
+          <SurfacePanel className="p-4 sm:p-5">
+            <SectionHeader
+              title="Notification preferences"
+              description="Choose which updates the portal should keep front and center for you."
+            />
 
-          <div className="mt-4 space-y-3">
-            {[
-              {
-                key: "billing" as const,
-                title: "Billing updates",
-                description: "Invoices, failed charges and payment confirmations.",
-              },
-              {
-                key: "outages" as const,
-                title: "Gateway and outage alerts",
-                description: "Connection issues, restarts and important service events.",
-              },
-              {
-                key: "promotions" as const,
-                title: "Offers and product news",
-                description: "Optional updates about plans, hardware and bundles.",
-              },
-            ].map((item) => (
-              <div
-                key={item.key}
-                className="theme-inline-surface flex items-center justify-between gap-4 rounded-[1.15rem] border border-white/75 bg-white/55 px-4 py-3.5"
-              >
-                <div>
-                  <div className="text-body-md font-medium text-ink">{item.title}</div>
-                  <div className="text-body-sm text-ink-muted">{item.description}</div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() =>
+            <div className="mt-4 space-y-3">
+              {notificationsList.map((item) => (
+                <ToggleRow
+                  key={item.key}
+                  title={item.title}
+                  description={item.description}
+                  checked={notifications[item.key]}
+                  onToggle={() => {
+                    setNotificationsSaved(false);
                     setNotifications((current) => ({
                       ...current,
                       [item.key]: !current[item.key],
-                    }))
-                  }
-                  className={`relative h-7 w-12 rounded-full transition-colors duration-200 ${
-                    notifications[item.key] ? "bg-success/85" : "bg-line-strong/70"
-                  }`}
-                >
-                  <span
-                    className={`theme-toggle-knob absolute top-1 h-5 w-5 rounded-full bg-white transition-all duration-200 ${
-                      notifications[item.key] ? "left-6" : "left-1"
-                    }`}
-                  />
-                </button>
+                    }));
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setNotifications(defaultNotifications);
+                  setNotificationsSaved(false);
+                }}
+                className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft"
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                onClick={persistNotifications}
+                className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-5 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)]"
+              >
+                <Bell size={16} strokeWidth={1.8} />
+                Save notifications
+              </button>
+            </div>
+
+            {notificationsSaved ? (
+              <div className="mt-4 text-body-sm text-success">
+                Notification preferences saved for this device.
               </div>
-            ))}
-          </div>
-        </SurfacePanel>
+            ) : null}
+          </SurfacePanel>
+
+          <SurfacePanel subtle className="p-4">
+            <div className="flex items-center gap-3">
+              <SectionIcon tone="soft">
+                <LockKeyhole size={18} strokeWidth={1.8} />
+              </SectionIcon>
+              <div className="text-title-md text-ink">What you will see</div>
+            </div>
+            <div className="mt-4 space-y-3 text-body-sm text-ink-muted">
+              <div>Billing reminders help you stay ahead of invoices and charges.</div>
+              <div>Outage alerts keep gateway events visible when they matter most.</div>
+              <div>Promotional updates are optional and can stay off if you prefer less noise.</div>
+            </div>
+          </SurfacePanel>
+        </div>
       ) : null}
 
       <SurfacePanel subtle className="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="text-body-md font-medium text-ink">Save bar</div>
+            <div className="text-body-md font-medium text-ink">Need help?</div>
             <div className="text-body-sm text-ink-muted">
-              On the backend pass, this becomes sticky and only appears when values change.
+              Visit the Help Center to review tickets, contact support, or submit a new request.
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <button
-              type="button"
-              className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="theme-cta rounded-pill bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-4 py-2.5 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)]"
-            >
-              Save changes
-            </button>
-          </div>
+          <Link
+            href="/support"
+            className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft transition-colors duration-200 hover:text-ink"
+          >
+            Open Help Center
+          </Link>
         </div>
       </SurfacePanel>
     </div>

@@ -3,35 +3,23 @@ import { PageIntro } from "@/src/components/ui/page-intro";
 import { PremiumTable } from "@/src/components/ui/premium-table";
 import { StatusPill } from "@/src/components/ui/status-pill";
 import { SurfacePanel } from "@/src/components/ui/surface-panel";
+import { getAuthenticatedPortalContext } from "@/src/server/auth/session";
+import { getTransactions } from "@/src/server/billing/api";
 
-const transactions = [
-  {
-    id: "TX-2194",
-    date: "Mar 4, 2026",
-    type: "Automatic payment",
-    method: "Visa ••42",
-    amount: "$220.00",
-    status: "Settled",
-  },
-  {
-    id: "TX-2058",
-    date: "Feb 3, 2026",
-    type: "Invoice payment",
-    method: "Visa ••42",
-    amount: "$55.00",
-    status: "Settled",
-  },
-  {
-    id: "TX-1910",
-    date: "Jan 4, 2026",
-    type: "Wallet credit applied",
-    method: "U-Wallet",
-    amount: "$45.00",
-    status: "Applied",
-  },
-];
+import { formatCurrency, formatDate } from "../billing-ui";
 
-export default function BillingTransactionsPage() {
+export default async function BillingTransactionsPage() {
+  const context = await getAuthenticatedPortalContext();
+
+  if (!context) {
+    return null;
+  }
+
+  const transactions = await getTransactions(
+    context.user.customerId,
+    context.accessToken,
+  );
+
   return (
     <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
       <PageIntro
@@ -70,18 +58,18 @@ export default function BillingTransactionsPage() {
               id: transaction.id,
               cells: [
                 <div key={`${transaction.id}-type`}>
-                  <div className="font-medium text-ink">{transaction.type}</div>
-                  <div className="text-label-md text-ink-muted">{transaction.id}</div>
+                  <div className="font-medium text-ink">{transaction.transactionType}</div>
+                  <div className="text-label-md text-ink-muted">{transaction.invoiceNumber}</div>
                 </div>,
-                transaction.date,
-                transaction.method,
+                formatDate(transaction.createdAt),
+                transaction.methodLabel,
                 <span key={`${transaction.id}-amount`} className="font-medium text-ink">
-                  {transaction.amount}
+                  {formatCurrency(transaction.amount)}
                 </span>,
                 <div key={`${transaction.id}-status`} className="flex justify-end">
                   <StatusPill
                     label={transaction.status}
-                    tone={transaction.status === "Applied" ? "brand" : "success"}
+                    tone={transaction.status === "Pending" ? "warning" : "success"}
                   />
                 </div>,
               ],

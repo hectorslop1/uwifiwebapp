@@ -1,5 +1,9 @@
 import { redirect } from "next/navigation";
 
-export default function Home() {
-  redirect("/login");
+import { getAuthenticatedPortalUser } from "@/src/server/auth/session";
+
+export default async function Home() {
+  const user = await getAuthenticatedPortalUser();
+
+  redirect(user ? "/overview" : "/login");
 }

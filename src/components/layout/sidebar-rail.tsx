@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import {
   FileText, 
   House,
+  LifeBuoy,
   LogOut,
   Menu,
   Router,
@@ -22,6 +23,7 @@ const navigation = [
   { label: "U-Wallet", href: "/wallet", icon: Wallet },
   { label: "Billing", href: "/billing", icon: FileText },
   { label: "U-Store", href: "/store", icon: ShoppingBag },
+  { label: "Support", href: "/support", icon: LifeBuoy },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -47,6 +49,7 @@ function SidebarItem({
   return (
     <Link
       href={href}
+      prefetch={false}
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
       className={cx(
@@ -94,11 +97,13 @@ function SidebarContent({
   pathname,
   onNavigate,
   onLogout,
+  isLoggingOut = false,
 }: {
   expanded: boolean;
   pathname: string;
   onNavigate?: () => void;
   onLogout?: () => void;
+  isLoggingOut?: boolean;
 }) {
   const currentPath = useMemo(() => pathname.replace(/\/$/, "") || "/", [pathname]);
 
@@ -129,6 +134,7 @@ function SidebarContent({
         <button
           type="button"
           onClick={onLogout}
+          disabled={isLoggingOut}
           className={cx(
             "theme-sidebar-item-idle group flex w-full items-center rounded-[1.3rem] text-left font-medium tracking-[-0.03em] text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(249,253,249,0.94),rgba(237,246,239,0.82))] hover:text-ink hover:shadow-[0_18px_30px_rgba(183,206,185,0.18),inset_0_1px_0_rgba(255,255,255,0.94)]",
             expanded ? "gap-3.5 px-4 py-3.5 text-[0.95rem]" : "justify-center px-2 py-3.5 text-[0.95rem]"
@@ -148,7 +154,7 @@ function SidebarContent({
                 transition={{ duration: 0.14, ease: "easeOut" }}
                 className="whitespace-nowrap"
               >
-                Log out
+                {isLoggingOut ? "Logging out..." : "Log out"}
               </motion.span>
             ) : null}
           </AnimatePresence>
@@ -163,10 +169,19 @@ export function SidebarRail() {
   const router = useRouter();
   const [desktopOpen, setDesktopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isLoggingOut, startLogoutTransition] = useTransition();
+
+  const performLogout = async () => {
+    setMobileOpen(false);
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+    router.refresh();
+  };
 
   const handleLogout = () => {
-    setMobileOpen(false);
-    router.push("/login");
+    startLogoutTransition(() => {
+      void performLogout();
+    });
   };
 
   return (
@@ -195,6 +210,7 @@ export function SidebarRail() {
             expanded={desktopOpen}
             pathname={pathname}
             onLogout={handleLogout}
+            isLoggingOut={isLoggingOut}
           />
         </motion.aside>
       </div>
@@ -240,6 +256,7 @@ export function SidebarRail() {
                 pathname={pathname}
                 onNavigate={() => setMobileOpen(false)}
                 onLogout={handleLogout}
+                isLoggingOut={isLoggingOut}
               />
             </motion.aside>
           </>
