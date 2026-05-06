@@ -1,4 +1,11 @@
-export type StoreCategory = "Gift Cards" | "Devices" | "Add-ons";
+export type StoreCategory = "Merchandise" | "IPTV" | "Phone" | "Add-ons";
+
+export type ProductVariant = {
+  id: string;
+  name: string;
+  imageSrc: string;
+  price?: number;
+};
 
 export type StoreProduct = {
   id: string;
@@ -13,59 +20,204 @@ export type StoreProduct = {
   period?: "monthly" | "one-time";
   accent: "success" | "brand" | "muted";
   featured?: boolean;
+  variants?: ProductVariant[];
+  selectedVariant?: string;
 };
 
 export const storeCatalog: StoreProduct[] = [
+  // Merchandise Products
   {
-    id: "visa-gift-card",
-    name: "Visa Gift Card",
-    category: "Gift Cards",
+    id: "hoodie",
+    name: "Hoodie",
+    category: "Merchandise",
+    price: 45,
+    priceLabel: "$45",
+    description: "Comfortable U-Wifi branded hoodie",
+    imageSrc: "/images/store/BlackHoodie.png",
+    highlights: ["Comfortable fit", "U-Wifi branded", "Premium quality"],
+    model: "Hoodie",
+    accent: "brand",
+    featured: true,
+    selectedVariant: "black",
+    variants: [
+      {
+        id: "black",
+        name: "Black",
+        imageSrc: "/images/store/BlackHoodie.png",
+      },
+      {
+        id: "white",
+        name: "White",
+        imageSrc: "/images/store/WhiteHoodie.png",
+      },
+    ],
+  },
+  {
+    id: "tshirt",
+    name: "T-Shirt",
+    category: "Merchandise",
     price: 25,
-    priceLabel: "$25 - $200",
-    description: "Use anywhere Visa is accepted.",
-    imageSrc: "/images/store/visa-gift-cardsm.png",
-    highlights: ["Flexible value", "Accepted widely", "Gift ready"],
-    model: "Gift card",
+    priceLabel: "$25",
+    description: "Classic U-Wifi t-shirt",
+    imageSrc: "/images/store/BlackShirt.png",
+    highlights: ["Classic design", "U-Wifi logo", "Cotton blend"],
+    model: "T-Shirt",
+    accent: "brand",
+    selectedVariant: "black",
+    variants: [
+      {
+        id: "black",
+        name: "Black",
+        imageSrc: "/images/store/BlackShirt.png",
+      },
+      {
+        id: "white",
+        name: "White",
+        imageSrc: "/images/store/WhiteShirt.png",
+      },
+    ],
+  },
+  {
+    id: "tumbler",
+    name: "Tumbler",
+    category: "Merchandise",
+    price: 20,
+    priceLabel: "$20",
+    description: "Insulated tumbler for hot or cold drinks",
+    imageSrc: "/images/store/BlackTumbler.png",
+    highlights: ["Insulated", "Hot & cold", "U-Wifi branded"],
+    model: "Tumbler",
+    accent: "muted",
+    selectedVariant: "black",
+    variants: [
+      {
+        id: "black",
+        name: "Black",
+        imageSrc: "/images/store/BlackTumbler.png",
+      },
+      {
+        id: "green",
+        name: "Green",
+        imageSrc: "/images/store/GreenTumbler.png",
+      },
+      {
+        id: "purple",
+        name: "Purple",
+        imageSrc: "/images/store/PurpleTumbler.png",
+      },
+    ],
+  },
+  {
+    id: "mug",
+    name: "Mug",
+    category: "Merchandise",
+    price: 15,
+    priceLabel: "$15",
+    description: "Ceramic mug with U-Wifi logo",
+    imageSrc: "/images/store/GreenMug.png",
+    highlights: ["Ceramic", "U-Wifi logo", "Dishwasher safe"],
+    model: "Mug",
+    accent: "success",
+    selectedVariant: "green",
+    variants: [
+      {
+        id: "green",
+        name: "Green",
+        imageSrc: "/images/store/GreenMug.png",
+      },
+      {
+        id: "purple",
+        name: "Purple",
+        imageSrc: "/images/store/PurpleMug.png",
+      },
+      {
+        id: "white",
+        name: "White",
+        imageSrc: "/images/store/WhiteMug.png",
+      },
+    ],
+  },
+  {
+    id: "tote-bag",
+    name: "Tote Bag",
+    category: "Merchandise",
+    price: 18,
+    priceLabel: "$18",
+    description: "Reusable tote bag",
+    imageSrc: "/images/store/GreenToteBag.png",
+    highlights: ["Reusable", "Eco-friendly", "U-Wifi branded"],
+    model: "Tote Bag",
+    accent: "success",
+    selectedVariant: "green",
+    variants: [
+      {
+        id: "green",
+        name: "Green",
+        imageSrc: "/images/store/GreenToteBag.png",
+      },
+      {
+        id: "white",
+        name: "White",
+        imageSrc: "/images/store/WhiteToteBag.png",
+      },
+    ],
+  },
+
+  // IPTV Options
+  {
+    id: "hdtv-antenna",
+    name: "HDTV Antenna",
+    category: "IPTV",
+    price: 0,
+    priceLabel: "External",
+    description: "Local Channels - GE Extendable HDTV Antenna",
+    highlights: ["Local channels", "No subscription", "One-time purchase"],
+    model: "External service",
     accent: "brand",
     featured: true,
   },
   {
-    id: "walmart-gift-card",
-    name: "Walmart Gift Card",
-    category: "Gift Cards",
-    price: 10,
-    priceLabel: "$10 - $500",
-    description: "Shop at Walmart stores or online.",
-    imageSrc: "/images/store/walmart.png",
-    highlights: ["In-store use", "Online use", "Wide value range"],
-    model: "Gift card",
+    id: "directv",
+    name: "DirectTV",
+    category: "IPTV",
+    price: 0,
+    priceLabel: "External",
+    description: "Premium satellite TV service",
+    imageSrc: "/images/store/directv.png",
+    highlights: ["Premium content", "Satellite service", "Multiple packages"],
+    model: "External service",
     accent: "success",
   },
   {
-    id: "signal-extender",
-    name: "Signal Extender",
-    category: "Devices",
-    price: 99,
-    priceLabel: "$99",
-    description: "Expand Wi‑Fi coverage into rooms where signal is weaker.",
-    imageSrc: "/images/store/signal_extender.jpeg",
-    highlights: ["Coverage boost", "Quick setup", "Home ready"],
-    model: "Signal extender",
+    id: "hulu",
+    name: "Hulu",
+    category: "IPTV",
+    price: 0,
+    priceLabel: "External",
+    description: "Stream TV shows and movies",
+    imageSrc: "/images/store/hulu.png",
+    highlights: ["Streaming service", "TV shows & movies", "On-demand"],
+    model: "External service",
+    accent: "brand",
+  },
+
+  // Phone Options
+  {
+    id: "t-mobile",
+    name: "T-Mobile",
+    category: "Phone",
+    price: 0,
+    priceLabel: "External",
+    description: "Get the latest smartphones and plans",
+    imageSrc: "/images/store/T-Mobile.png",
+    highlights: ["Latest smartphones", "Flexible plans", "5G network"],
+    model: "External service",
     accent: "brand",
     featured: true,
   },
-  {
-    id: "wifi-range-extender",
-    name: "Wi‑Fi Range Extender",
-    category: "Devices",
-    price: 39,
-    priceLabel: "$39",
-    description: "Improve signal reach for spots farther away from the gateway.",
-    imageSrc: "/images/store/wifi_range_extender.jpg",
-    highlights: ["Compact", "Easy placement", "Coverage support"],
-    model: "Range extender",
-    accent: "success",
-  },
+
+
+  // Add-ons
   {
     id: "premium-support",
     name: "Premium Support",
@@ -105,8 +257,9 @@ export const storeCatalog: StoreProduct[] = [
 ];
 
 export const storeCategories: StoreCategory[] = [
-  "Gift Cards",
-  "Devices",
+  "Merchandise",
+  "IPTV",
+  "Phone",
   "Add-ons",
 ];
 

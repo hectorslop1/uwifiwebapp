@@ -8,11 +8,14 @@ import {
   ArrowLeft,
   Gift,
   Minus,
+  Phone,
   Plus,
   Router,
+  ShoppingBag,
   ShoppingCart,
   ShieldCheck,
   Sparkles,
+  Tv,
 } from "lucide-react";
 
 import { InteractiveHoverButtonLink } from "@/src/components/magic/interactive-hover-button";
@@ -46,15 +49,18 @@ function AddDetailToCartButton({
 }
 
 function getStoreCategoryIcon(product: StoreProduct) {
-  if (product.category === "Gift Cards") {
-    return <Gift size={28} strokeWidth={1.7} />;
+  switch (product.category) {
+    case "Merchandise":
+      return <ShoppingBag size={28} strokeWidth={1.7} />;
+    case "IPTV":
+      return <Tv size={28} strokeWidth={1.7} />;
+    case "Phone":
+      return <Phone size={28} strokeWidth={1.7} />;
+    case "Add-ons":
+      return <Sparkles size={28} strokeWidth={1.7} />;
+    default:
+      return <Sparkles size={28} strokeWidth={1.7} />;
   }
-
-  if (product.category === "Devices") {
-    return <Router size={28} strokeWidth={1.7} />;
-  }
-
-  return <Sparkles size={28} strokeWidth={1.7} />;
 }
 
 export function ProductDetailShell({
@@ -224,15 +230,7 @@ export function ProductDetailShell({
             </div>
           </SurfacePanel>
 
-          <SurfacePanel subtle className="p-4">
-            <div className="text-title-md text-ink">Related actions</div>
-            <ActionCapsules className="mt-4">
-              <ActionCapsule href="/wallet" label="Review U-Wallet balance" />
-              <ActionCapsule href="/billing/payment-methods" label="Check payment method" />
-              <ActionCapsule href="/gateway" label="Compare with current gateway" />
-            </ActionCapsules>
-          </SurfacePanel>
-        </div>
+                  </div>
       </div>
     </div>
   );
