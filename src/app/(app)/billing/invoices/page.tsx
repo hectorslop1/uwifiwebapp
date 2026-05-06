@@ -25,7 +25,7 @@ export default async function BillingInvoicesPage() {
       <PageIntro
         eyebrow="Billing"
         title="Invoices"
-        description="This route replaces manual table layouts with a reusable SaaS table pattern: quiet header, clear filters and obvious document actions."
+        description="Open the invoice detail, review the status, and access the PDF from one place."
       />
 
       <SurfacePanel className="p-4 lg:min-h-0">
@@ -51,52 +51,78 @@ export default async function BillingInvoicesPage() {
           </div>
         </div>
 
-        <ProgressiveBlur className="mt-4" maxHeightClassName="max-h-[24rem]">
-          <PremiumTable
-            columns={[
-              { key: "invoice", label: "Invoice" },
-              { key: "date", label: "Date" },
-              { key: "amount", label: "Amount", align: "right" },
-              { key: "status", label: "Status", align: "center" },
-              { key: "actions", label: "Actions", align: "right" },
-            ]}
-            rows={invoices.map((invoice) => ({
-              id: invoice.invoiceNumber,
-              cells: [
-                <div key={`${invoice.invoiceNumber}-number`}>
-                  <div className="font-medium text-ink">{invoice.invoiceNumber}</div>
-                  <div className="text-label-md text-ink-muted">Monthly service invoice</div>
-                </div>,
-                formatDate(invoice.createdAt),
-                <span key={`${invoice.invoiceNumber}-amount`} className="font-medium text-ink">
-                  {formatCurrency(invoice.totalAmount)}
-                </span>,
-                <div key={`${invoice.invoiceNumber}-status`} className="flex justify-center">
-                  <StatusPill
-                    label={invoice.status}
-                    tone={invoice.status === "Pending" ? "warning" : "success"}
-                  />
-                </div>,
-                <div key={`${invoice.invoiceNumber}-actions`} className="flex justify-end gap-3">
-                  {invoice.fileUrl ? (
-                    <>
-                      <Link href={invoice.fileUrl} target="_blank" className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-ink">
+        <div className="relative mt-4">
+          <div className="max-h-[24rem] overflow-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="pb-14">
+              <PremiumTable
+                columns={[
+                  { key: "invoice", label: "Invoice" },
+                  { key: "date", label: "Date" },
+                  { key: "amount", label: "Amount", align: "right" },
+                  { key: "status", label: "Status", align: "center" },
+                  { key: "actions", label: "Actions", align: "right" },
+                ]}
+                rows={invoices.map((invoice) => ({
+                  id: invoice.invoiceNumber,
+                  cells: [
+                    <div key={`${invoice.invoiceNumber}-number`}>
+                      <Link
+                        href={`/billing/invoices/${encodeURIComponent(invoice.invoiceNumber)}`}
+                        className="font-medium text-ink transition-colors duration-200 hover:text-success"
+                      >
+                        {invoice.invoiceNumber}
+                      </Link>
+                      <div className="text-label-md text-ink-muted">
+                        Monthly service invoice
+                      </div>
+                    </div>,
+                    formatDate(invoice.createdAt),
+                    <span
+                      key={`${invoice.invoiceNumber}-amount`}
+                      className="font-medium text-ink"
+                    >
+                      {formatCurrency(invoice.totalAmount)}
+                    </span>,
+                    <div
+                      key={`${invoice.invoiceNumber}-status`}
+                      className="flex justify-center"
+                    >
+                      <StatusPill
+                        label={invoice.status}
+                        tone={invoice.status === "Pending" ? "warning" : "success"}
+                      />
+                    </div>,
+                    <div
+                      key={`${invoice.invoiceNumber}-actions`}
+                      className="flex justify-end gap-3"
+                    >
+                      <Link
+                        href={`/billing/invoices/${encodeURIComponent(invoice.invoiceNumber)}`}
+                        className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-ink"
+                      >
                         <Eye size={15} strokeWidth={1.8} />
-                        View
+                        Details
                       </Link>
-                      <Link href={invoice.fileUrl} target="_blank" className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-ink">
-                        <Download size={15} strokeWidth={1.8} />
-                        PDF
-                      </Link>
-                    </>
-                  ) : (
-                    <span className="text-body-sm text-ink-faint">No file</span>
-                  )}
-                </div>,
-              ],
-            }))}
-          />
-        </ProgressiveBlur>
+                      {invoice.fileUrl ? (
+                        <Link
+                          href={invoice.fileUrl}
+                          target="_blank"
+                          className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-ink"
+                        >
+                          <Download size={15} strokeWidth={1.8} />
+                          PDF
+                        </Link>
+                      ) : (
+                        <span className="text-body-sm text-ink-faint">No file</span>
+                      )}
+                    </div>,
+                  ],
+                }))}
+              />
+            </div>
+          </div>
+          <ProgressiveBlur position="bottom" height="38%" />
+        </div>
       </SurfacePanel>
     </div>
   );

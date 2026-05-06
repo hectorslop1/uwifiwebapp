@@ -17,7 +17,7 @@ import {
 import type { SettingsFlashMessage, SettingsSection } from "./settings-ui";
 
 const fieldClassName =
-  "theme-input w-full rounded-[1rem] border border-white/80 bg-white/65 px-4 py-3 text-body-sm text-ink outline-none placeholder:text-ink-faint shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]";
+  "theme-input w-full rounded-[1rem] border px-4 py-3 text-body-sm text-ink outline-none placeholder:text-ink-faint";
 
 const settingsKey = "uwifi-settings-v1";
 
@@ -40,7 +40,7 @@ type PortalNotifications = {
 };
 
 const defaultPreferences: PortalPreferences = {
-  theme: "light",
+  theme: "system",
   language: "en",
   timezone: "america-tijuana",
   density: "comfortable",
@@ -75,8 +75,8 @@ function SettingsFlash({
     <div
       className={`rounded-[1.25rem] border px-4 py-3 text-body-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] ${
         tone === "success"
-          ? "border-[#d5eed2] bg-[rgba(242,251,241,0.9)] text-[#319c39]"
-          : "border-[#f0d4cf] bg-[rgba(252,244,241,0.9)] text-[#c86c58]"
+          ? "border-[rgba(52,196,59,0.22)] bg-[rgba(52,196,59,0.12)] text-success"
+          : "border-[rgba(230,91,74,0.24)] bg-[rgba(230,91,74,0.12)] text-[#d95b49]"
       }`}
     >
       {children}
@@ -96,7 +96,7 @@ function SectionIcon({
       className={`flex h-10 w-10 items-center justify-center rounded-[0.95rem] ${
         tone === "green"
           ? "bg-[linear-gradient(180deg,#78dc60_0%,#6bcf54_100%)] text-white shadow-[0_18px_35px_rgba(109,201,89,0.32)]"
-          : "border border-white/90 bg-[#f4faf3] text-[#42b53f]"
+          : "theme-icon-surface border border-white/70 text-success"
       }`}
     >
       {children}
@@ -117,7 +117,7 @@ function FormSubmitButton({
     <button
       type="submit"
       disabled={pending}
-      className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-5 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)] disabled:cursor-not-allowed disabled:opacity-70"
+      className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] px-5 text-body-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-70"
     >
       <Save size={16} strokeWidth={1.8} />
       {pending ? pendingLabel : idleLabel}
@@ -137,7 +137,7 @@ function ToggleRow({
   onToggle: () => void;
 }>) {
   return (
-    <div className="theme-inline-surface flex items-center justify-between gap-4 rounded-[1.15rem] border border-white/75 bg-white/55 px-4 py-3.5">
+    <div className="theme-inline-surface flex items-center justify-between gap-4 rounded-[1.15rem] border border-line/35 px-4 py-3.5">
       <div>
         <div className="text-body-md font-medium text-ink">{title}</div>
         <div className="text-body-sm text-ink-muted">{description}</div>
@@ -158,6 +158,20 @@ function ToggleRow({
       </button>
     </div>
   );
+}
+
+function getInitialThemePreference(): ThemePreference {
+  if (typeof window === "undefined") {
+    return defaultPreferences.theme;
+  }
+
+  const storedTheme = window.localStorage.getItem("uwifi-theme");
+
+  if (storedTheme === "light" || storedTheme === "dark") {
+    return storedTheme;
+  }
+
+  return document.documentElement.dataset.theme === "dark" ? "dark" : "system";
 }
 
 function getStoredSettings() {
@@ -236,6 +250,7 @@ export function SettingsShell({
 
     return {
       ...defaultPreferences,
+      theme: getInitialThemePreference(),
       ...stored?.preferences,
     };
   });
@@ -360,7 +375,7 @@ export function SettingsShell({
               <div className="mt-5 flex flex-wrap gap-3">
                 <button
                   type="reset"
-                  className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft"
+                  className="theme-ghost-action rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
                 >
                   Reset
                 </button>
@@ -420,7 +435,7 @@ export function SettingsShell({
               <div className="mt-5 flex flex-wrap gap-3">
                 <button
                   type="reset"
-                  className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft"
+                  className="theme-ghost-action rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
                 >
                   Clear
                 </button>
@@ -523,14 +538,14 @@ export function SettingsShell({
                   setPreferences(defaultPreferences);
                   setPreferencesSaved(false);
                 }}
-                className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft"
+                className="theme-ghost-action rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
               >
                 Reset
               </button>
               <button
                 type="button"
                 onClick={persistPreferences}
-                className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-5 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)]"
+                className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] px-5 text-body-sm font-medium text-white"
               >
                 <Save size={16} strokeWidth={1.8} />
                 Save preferences
@@ -593,14 +608,14 @@ export function SettingsShell({
                   setNotifications(defaultNotifications);
                   setNotificationsSaved(false);
                 }}
-                className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft"
+                className="theme-ghost-action rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
               >
                 Reset
               </button>
               <button
                 type="button"
                 onClick={persistNotifications}
-                className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-5 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)]"
+                className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] px-5 text-body-sm font-medium text-white"
               >
                 <Bell size={16} strokeWidth={1.8} />
                 Save notifications
@@ -641,7 +656,7 @@ export function SettingsShell({
 
           <Link
             href="/support"
-            className="theme-control rounded-pill border border-white/80 bg-white/60 px-4 py-2.5 text-body-sm text-ink-soft transition-colors duration-200 hover:text-ink"
+            className="theme-secondary-action inline-flex items-center justify-center rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
           >
             Open Help Center
           </Link>

@@ -104,8 +104,7 @@ export const storeCatalog: StoreProduct[] = [
   },
 ];
 
-export const storeCategories: Array<"All" | StoreCategory> = [
-  "All",
+export const storeCategories: StoreCategory[] = [
   "Gift Cards",
   "Devices",
   "Add-ons",

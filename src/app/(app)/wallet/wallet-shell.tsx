@@ -13,13 +13,16 @@ import {
   Plus,
   Share2,
   Users,
+  WalletCards,
   X,
 } from "lucide-react";
 
 import { NumberTicker } from "@/src/components/magic/number-ticker";
 import { PREMIUM_EASE } from "@/src/components/magic/motion-tokens";
+import { ActionCapsule, ActionCapsules } from "@/src/components/layout/action-capsules";
 import { AnimatedTooltip } from "@/src/components/ui/animated-tooltip";
 import { PageIntro } from "@/src/components/ui/page-intro";
+import { SegmentedControl } from "@/src/components/ui/segmented-control";
 import type { WalletDashboardData } from "@/src/server/wallet/types";
 import { cn } from "@/src/lib/cn";
 
@@ -31,25 +34,29 @@ const actions = [
     href: "/billing",
     label: "Pay now",
     icon: CreditCard,
-    iconClassName: "bg-success-soft text-success",
+    iconClassName:
+      "border border-[#dfe9de] bg-[linear-gradient(180deg,rgba(246,252,246,0.98),rgba(235,247,236,0.92))] text-[#4ba64d] shadow-[inset_0_1px_0_rgba(255,255,255,0.96)]",
   },
   {
     href: "/billing/invoices",
     label: "View invoices",
     icon: BarChart3,
-    iconClassName: "bg-surface-raised/80 text-ink-soft",
+    iconClassName:
+      "border border-[#e3def5] bg-[linear-gradient(180deg,rgba(247,244,255,0.98),rgba(238,235,252,0.92))] text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.96)]",
   },
   {
     href: "/billing/payment-methods",
     label: "Manage cards",
-    icon: Users,
-    iconClassName: "bg-brand-soft text-brand",
+    icon: WalletCards,
+    iconClassName:
+      "border border-[#dfe9de] bg-[linear-gradient(180deg,rgba(246,252,246,0.98),rgba(235,247,236,0.92))] text-[#4ba64d] shadow-[inset_0_1px_0_rgba(255,255,255,0.96)]",
   },
   {
     href: "/invite",
     label: "Invite friends",
     icon: Share2,
-    iconClassName: "bg-[rgba(108,69,255,0.12)] text-[#6c45ff]",
+    iconClassName:
+      "border border-[#e3def5] bg-[linear-gradient(180deg,rgba(247,244,255,0.98),rgba(238,235,252,0.92))] text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.96)]",
   },
 ] as const;
 
@@ -153,35 +160,6 @@ function OutlineAction({
     >
       <Plus size={16} strokeWidth={1.9} />
       {label}
-    </Link>
-  );
-}
-
-function ActionCard({
-  href,
-  label,
-  icon: Icon,
-  iconClassName,
-}: Readonly<{
-  href: string;
-  label: string;
-  icon: typeof CreditCard;
-  iconClassName: string;
-}>) {
-  return (
-    <Link
-      href={href}
-      className="theme-panel group flex items-center gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,251,0.82))] px-3.5 py-3.5 shadow-[0_16px_32px_rgba(201,203,213,0.09),inset_0_1px_0_rgba(255,255,255,0.94)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_38px_rgba(193,196,206,0.14),inset_0_1px_0_rgba(255,255,255,0.96)]"
-    >
-      <span
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.85rem] ${iconClassName}`}
-      >
-        <Icon size={17} strokeWidth={1.9} />
-      </span>
-
-      <span className="min-w-0 flex-1 text-[0.92rem] font-medium tracking-[-0.035em] text-ink-soft transition-colors duration-200 group-hover:text-ink">
-        {label}
-      </span>
     </Link>
   );
 }
@@ -300,6 +278,10 @@ export function WalletShell({
               My accumulated U-Points
             </div>
 
+            <div className="mt-2 text-[0.86rem] leading-6 text-[#6a706d]">
+              Milestones show the dollar value you have unlocked toward your next reward level.
+            </div>
+
             <div className="relative mt-4 px-2 sm:px-4">
               <div className="absolute left-[9%] right-[9%] top-[1rem] h-[3px] rounded-full bg-[#dfe9da]" />
               <motion.div
@@ -357,6 +339,7 @@ export function WalletShell({
                         )}
                       </motion.span>
                       <span
+                        title={`Reward milestone at $${milestone}`}
                         className={cn(
                           "text-[0.8rem] font-medium",
                           achieved
@@ -417,102 +400,104 @@ export function WalletShell({
               </h2>
             </div>
 
-                <OutlineAction href="/billing/payment-methods" label="Add Card" />
+            <OutlineAction href="/billing/payment-methods" label="Add Card" />
           </div>
 
           {primaryCard ? (
-            <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-              <div className="flex w-full justify-center md:justify-center">
-                <div className="w-full max-w-[20rem]">
-                  <div className="relative aspect-[1.58] overflow-hidden rounded-[1.6rem] shadow-[0_24px_46px_rgba(97,80,170,0.18)]">
-                    <Image
-                      src="/images/CreditCardUI.png"
-                      alt=""
-                      fill
-                      sizes="(max-width: 768px) 100vw, 352px"
-                      className="object-cover"
-                      priority
-                    />
+            <div className="mt-4">
+              <div className="flex w-full justify-center">
+                <div className="flex w-full max-w-[23.75rem] items-start justify-center gap-3 sm:gap-4">
+                  <div className="w-full max-w-[20rem]">
+                    <div className="relative aspect-[1.58] overflow-hidden rounded-[1.6rem] shadow-[0_24px_46px_rgba(97,80,170,0.18)]">
+                      <Image
+                        src="/images/CreditCardUI.png"
+                        alt=""
+                        fill
+                        sizes="(max-width: 768px) 100vw, 352px"
+                        className="object-cover"
+                        priority
+                      />
 
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,16,29,0.02),rgba(6,8,22,0.16))]" />
+                      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,16,29,0.02),rgba(6,8,22,0.16))]" />
 
-                    <div className="absolute inset-0 flex flex-col p-3.5 text-white">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="text-[0.92rem] font-semibold uppercase tracking-[-0.02em]">
-                          {primaryCard.cardBrand || "Credit Card"}
-                        </div>
-                        {primaryCard.isDefault ? (
-                          <span className="rounded-[0.55rem] bg-white/92 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.04em] text-[#53b947]">
-                            Default
-                          </span>
-                        ) : null}
-                      </div>
-
-                      <div className="mt-5">
-                        <Image
-                          src="/images/silverchip.png"
-                          alt="Card chip"
-                          width={37}
-                          height={28}
-                          className="object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.12)]"
-                          style={{ width: "auto", height: "auto" }}
-                        />
-                      </div>
-
-                      <div className="mt-2.5 text-[1.02rem] tracking-[0.12em] text-white/96">
-                        **** **** **** {primaryCard.last4Digits}
-                      </div>
-
-                      <div className="mt-auto grid grid-cols-2 gap-3 pt-3 text-white">
-                        <div>
-                          <div className="text-[0.58rem] font-semibold uppercase tracking-[0.06em] text-white/80">
-                            Card Holder
+                      <div className="absolute inset-0 flex flex-col p-3.5 text-white">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="text-[0.92rem] font-semibold uppercase tracking-[-0.02em]">
+                            {primaryCard.cardBrand || "Credit Card"}
                           </div>
-                          <div className="mt-1 text-[0.84rem] font-semibold uppercase tracking-[-0.02em]">
-                            {primaryCard.cardHolder}
-                          </div>
+                          {primaryCard.isDefault ? (
+                            <span className="rounded-[0.55rem] bg-white/92 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.04em] text-[#53b947]">
+                              Default
+                            </span>
+                          ) : null}
                         </div>
 
-                        <div className="justify-self-end text-right">
-                          <div className="text-[0.58rem] font-semibold uppercase tracking-[0.06em] text-white/80">
-                            Expires
+                        <div className="mt-5">
+                          <Image
+                            src="/images/silverchip.png"
+                            alt="Card chip"
+                            width={37}
+                            height={28}
+                            className="object-contain drop-shadow-[0_8px_12px_rgba(0,0,0,0.12)]"
+                            style={{ width: "auto", height: "auto" }}
+                          />
+                        </div>
+
+                        <div className="mt-2.5 text-[1.02rem] tracking-[0.12em] text-white/96">
+                          **** **** **** {primaryCard.last4Digits}
+                        </div>
+
+                        <div className="mt-auto grid grid-cols-2 gap-3 pt-3 text-white">
+                          <div>
+                            <div className="text-[0.58rem] font-semibold uppercase tracking-[0.06em] text-white/80">
+                              Card Holder
+                            </div>
+                            <div className="mt-1 text-[0.84rem] font-semibold uppercase tracking-[-0.02em]">
+                              {primaryCard.cardHolder}
+                            </div>
                           </div>
-                          <div className="mt-1 text-[0.84rem] font-semibold tracking-[-0.02em]">
-                            {primaryCard.expirationMonth || "--"}/{primaryCard.expirationYear || "--"}
+
+                          <div className="justify-self-end text-right">
+                            <div className="text-[0.58rem] font-semibold uppercase tracking-[0.06em] text-white/80">
+                              Expires
+                            </div>
+                            <div className="mt-1 text-[0.84rem] font-semibold tracking-[-0.02em]">
+                              {primaryCard.expirationMonth || "--"}/{primaryCard.expirationYear || "--"}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
+
+                    <div className="wallet-card-glow mx-auto -mt-1 h-6 w-[82%] rounded-full bg-[radial-gradient(circle,rgba(121,232,166,0.28)_0%,rgba(123,90,255,0.22)_38%,rgba(255,255,255,0)_72%)] blur-2xl" />
                   </div>
 
-                  <div className="wallet-card-glow mx-auto -mt-1 h-6 w-[82%] rounded-full bg-[radial-gradient(circle,rgba(121,232,166,0.28)_0%,rgba(123,90,255,0.22)_38%,rgba(255,255,255,0)_72%)] blur-2xl" />
-                </div>
-              </div>
-
-              <div ref={cardMenuRef} className="relative shrink-0 self-start md:self-center">
-                <button
-                  type="button"
-                  aria-label="More card actions"
-                  aria-expanded={cardMenuOpen}
-                  onClick={() => setCardMenuOpen((current) => !current)}
-                  className="wallet-icon-button flex h-11 w-11 items-center justify-center rounded-full border border-[#efebe4] bg-white/90 text-[#2b3036] shadow-[0_10px_22px_rgba(221,215,205,0.28)] transition-transform duration-200 hover:-translate-y-0.5"
-                >
-                  <MoreHorizontal size={20} strokeWidth={2.2} />
-                </button>
-
-                {cardMenuOpen ? (
-                  <div className="wallet-menu-panel absolute right-0 top-[calc(100%+0.75rem)] z-20 min-w-[12rem] rounded-[1rem] border border-[#ebe6dd] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,248,245,0.95))] p-2 shadow-[0_18px_38px_rgba(214,207,196,0.28)] backdrop-blur-xl">
-                    <div className="px-3 py-2 text-[0.84rem] text-[#6f7578]">
-                      {formatCardBrandLabel(primaryCard.cardBrand, primaryCard.last4Digits)}
-                    </div>
-                    <Link
-                      href="/billing/payment-methods"
-                      className="flex w-full items-center rounded-[0.8rem] px-3 py-2.5 text-left text-[0.95rem] font-medium text-[#343a40] transition-colors duration-200 hover:bg-[#f2fbef] hover:text-[#41b044]"
+                  <div ref={cardMenuRef} className="relative shrink-0 pt-3">
+                    <button
+                      type="button"
+                      aria-label="More card actions"
+                      aria-expanded={cardMenuOpen}
+                      onClick={() => setCardMenuOpen((current) => !current)}
+                      className="wallet-icon-button flex h-10 w-10 items-center justify-center rounded-full border border-[#dce5e8] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(246,248,250,0.92))] text-[#5a6672] shadow-[0_14px_28px_rgba(205,210,217,0.18),inset_0_1px_0_rgba(255,255,255,0.98)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#cdd8dc] hover:text-ink"
                     >
-                      Manage cards
-                    </Link>
+                      <MoreHorizontal size={18} strokeWidth={2.1} />
+                    </button>
+
+                    {cardMenuOpen ? (
+                      <div className="wallet-menu-panel absolute right-0 top-[calc(100%+0.75rem)] z-20 min-w-[12rem] rounded-[1rem] border border-[#ebe6dd] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,248,245,0.95))] p-2 shadow-[0_18px_38px_rgba(214,207,196,0.28)] backdrop-blur-xl">
+                        <div className="px-3 py-2 text-[0.84rem] text-[#6f7578]">
+                          {formatCardBrandLabel(primaryCard.cardBrand, primaryCard.last4Digits)}
+                        </div>
+                        <Link
+                          href="/billing/payment-methods"
+                          className="flex w-full items-center rounded-[0.8rem] px-3 py-2.5 text-left text-[0.95rem] font-medium text-[#343a40] transition-colors duration-200 hover:bg-[#f2fbef] hover:text-[#41b044]"
+                        >
+                          Manage cards
+                        </Link>
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
+                </div>
               </div>
             </div>
           ) : (
@@ -528,36 +513,24 @@ export function WalletShell({
               <SectionIcon tone="soft">
                 <BarChart3 size={18} strokeWidth={2.1} />
               </SectionIcon>
-              <h2 className="wallet-strong-text text-[1.02rem] font-medium tracking-[-0.03em] text-[#1f2428]">
-                Points History
-              </h2>
+              <div>
+                <h2 className="wallet-strong-text text-[1.02rem] font-medium tracking-[-0.03em] text-[#1f2428]">
+                  Points History
+                </h2>
+                <div className="mt-1 text-[0.84rem] text-[#6a706d]">Points earned</div>
+              </div>
             </div>
 
-            <div className="wallet-segment inline-flex rounded-[0.9rem] border border-[#e3e9df] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(246,250,245,0.92))] p-1 shadow-[0_12px_26px_rgba(216,211,201,0.12),inset_0_1px_0_rgba(255,255,255,0.94)]">
-              <button
-                type="button"
-                onClick={() => setChartView("weekly")}
-                className={cn(
-                  "wallet-segment-button rounded-[0.75rem] px-5 py-2 text-[0.94rem] font-medium transition-all duration-200 hover:-translate-y-0.5",
-                  chartView === "weekly"
-                    ? "wallet-segment-button-active border border-[#63c65d] bg-white text-[#2f9837] shadow-[0_10px_20px_rgba(177,215,172,0.18)]"
-                    : "text-[#5c6467] hover:bg-white/80 hover:text-[#2f9837]",
-                )}
-              >
-                Weekly
-              </button>
-              <button
-                type="button"
-                onClick={() => setChartView("monthly")}
-                className={cn(
-                  "wallet-segment-button rounded-[0.75rem] px-5 py-2 text-[0.94rem] font-medium transition-all duration-200 hover:-translate-y-0.5",
-                  chartView === "monthly"
-                    ? "wallet-segment-button-active border border-[#63c65d] bg-white text-[#2f9837] shadow-[0_10px_20px_rgba(177,215,172,0.18)]"
-                    : "text-[#5c6467] hover:bg-white/80 hover:text-[#2f9837]",
-                )}
-              >
-                Monthly
-              </button>
+            <div className="w-full sm:w-auto">
+              <SegmentedControl
+                value={chartView}
+                onChange={setChartView}
+                className="wallet-segment"
+                options={[
+                  { value: "weekly", label: "Weekly" },
+                  { value: "monthly", label: "Monthly" },
+                ]}
+              />
             </div>
           </div>
 
@@ -715,11 +688,18 @@ export function WalletShell({
             ))}
           </div>
           <div className="mt-4 border-t border-line/25 pt-4">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <ActionCapsules className="grid gap-3 sm:grid-cols-2">
               {actions.map((action) => (
-                <ActionCard key={action.href} {...action} />
+                <ActionCapsule
+                  key={action.href}
+                  href={action.href}
+                  label={action.label}
+                  icon={<action.icon size={17} strokeWidth={1.9} />}
+                  iconClassName={action.iconClassName}
+                  className="rounded-[1.35rem] px-3.5 py-3.5"
+                />
               ))}
-            </div>
+            </ActionCapsules>
           </div>
         </section>
       </div>

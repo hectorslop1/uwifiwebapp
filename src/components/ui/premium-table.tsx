@@ -46,16 +46,16 @@ export function PremiumTable({
           ))}
         </div>
 
-        {rows.map((row, rowIndex) => (
+        {rows.map((row) => (
           <div
             key={row.id}
-            className="grid gap-4 px-4 py-3 text-body-sm text-ink-soft transition-all duration-200 hover:bg-white/64 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
+            className="grid gap-4 border-b border-line/20 px-4 py-3 text-body-sm text-ink-soft transition-colors duration-200 hover:bg-[rgba(var(--color-surface-raised),0.54)]"
             style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))` }}
           >
             {row.cells.map((cell, index) => (
               <div
                 key={`${row.id}-${columns[index]?.key ?? index}`}
-                className={`${alignmentClass(columns[index]?.align)} ${rowIndex !== rows.length - 1 ? "" : ""}`}
+                className={alignmentClass(columns[index]?.align)}
               >
                 {cell}
               </div>

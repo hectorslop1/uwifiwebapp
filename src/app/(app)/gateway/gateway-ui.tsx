@@ -50,7 +50,7 @@ export function getGatewayFlashMessage(
 }
 
 export function getConnectionTone(connectionStatus: string) {
-  return connectionStatus.toLowerCase() === "connected" ? "success" : "brand";
+  return connectionStatus.toLowerCase() === "connected" ? "success" : "error";
 }
 
 export function getConnectionLabel(connectionStatus: string) {

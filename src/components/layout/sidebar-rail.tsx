@@ -50,6 +50,7 @@ function SidebarItem({
     <Link
       href={href}
       prefetch={false}
+      aria-label={!expanded ? label : undefined}
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
       className={cx(
@@ -88,6 +89,12 @@ function SidebarItem({
           </motion.span>
         ) : null}
       </AnimatePresence>
+
+      {!expanded ? (
+        <span className="theme-sidebar-tooltip pointer-events-none absolute left-[calc(100%+0.85rem)] top-1/2 z-30 -translate-y-1/2 rounded-[0.95rem] border px-3 py-2 text-[0.82rem] font-medium tracking-[-0.02em] whitespace-nowrap opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100">
+          {label}
+        </span>
+      ) : null}
     </Link>
   );
 }
@@ -135,8 +142,9 @@ function SidebarContent({
           type="button"
           onClick={onLogout}
           disabled={isLoggingOut}
+          aria-label={!expanded ? "Log out" : undefined}
           className={cx(
-            "theme-sidebar-item-idle group flex w-full items-center rounded-[1.3rem] text-left font-medium tracking-[-0.03em] text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(249,253,249,0.94),rgba(237,246,239,0.82))] hover:text-ink hover:shadow-[0_18px_30px_rgba(183,206,185,0.18),inset_0_1px_0_rgba(255,255,255,0.94)]",
+            "theme-sidebar-item-idle group relative flex w-full items-center rounded-[1.3rem] text-left font-medium tracking-[-0.03em] text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(249,253,249,0.94),rgba(237,246,239,0.82))] hover:text-ink hover:shadow-[0_18px_30px_rgba(183,206,185,0.18),inset_0_1px_0_rgba(255,255,255,0.94)]",
             expanded ? "gap-3.5 px-4 py-3.5 text-[0.95rem]" : "justify-center px-2 py-3.5 text-[0.95rem]"
           )}
         >
@@ -158,6 +166,12 @@ function SidebarContent({
               </motion.span>
             ) : null}
           </AnimatePresence>
+
+          {!expanded ? (
+            <span className="theme-sidebar-tooltip pointer-events-none absolute left-[calc(100%+0.85rem)] top-1/2 z-30 -translate-y-1/2 rounded-[0.95rem] border px-3 py-2 text-[0.82rem] font-medium tracking-[-0.02em] whitespace-nowrap opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100">
+              {isLoggingOut ? "Logging out..." : "Log out"}
+            </span>
+          ) : null}
         </button>
       </div>
     </>
@@ -197,14 +211,22 @@ export function SidebarRail() {
         </button>
       </div>
 
-      <div className="relative hidden w-[92px] shrink-0 lg:block">
+      <motion.div
+        animate={{ width: desktopOpen ? 232 : 92 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+        className="relative hidden shrink-0 lg:block"
+      >
         <motion.aside
           onMouseEnter={() => setDesktopOpen(true)}
           onMouseLeave={() => setDesktopOpen(false)}
-          animate={{ width: desktopOpen ? 232 : 92 }}
-          transition={{ duration: 0.18, ease: "easeOut" }}
+          onFocusCapture={() => setDesktopOpen(true)}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+              setDesktopOpen(false);
+            }
+          }}
           style={{ willChange: "width" }}
-          className="theme-sidebar-rail absolute inset-y-0 left-0 z-20 flex min-h-[calc(100dvh-5.4rem)] flex-col border-r border-line/25 bg-white/12 px-3 py-4 backdrop-blur-xl"
+          className="theme-sidebar-rail z-20 flex h-full min-h-[calc(100dvh-5.4rem)] flex-col border-r border-line/25 bg-white/12 px-3 py-4 backdrop-blur-xl"
         >
           <SidebarContent
             expanded={desktopOpen}
@@ -213,7 +235,7 @@ export function SidebarRail() {
             isLoggingOut={isLoggingOut}
           />
         </motion.aside>
-      </div>
+      </motion.div>
 
       <AnimatePresence>
         {mobileOpen ? (
@@ -226,7 +248,7 @@ export function SidebarRail() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setMobileOpen(false)}
-              className="theme-overlay fixed inset-0 z-40 backdrop-blur-sm lg:hidden"
+              className="theme-overlay fixed inset-0 z-40 bg-[rgba(11,14,18,0.18)] backdrop-blur-sm lg:hidden"
             />
 
             <motion.aside

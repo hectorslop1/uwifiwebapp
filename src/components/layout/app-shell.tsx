@@ -12,7 +12,7 @@ export function AppShell({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="theme-shell relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,#fbfaf7_0%,#f5f4ef_100%)]">
+    <div className="theme-shell relative min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#fbfaf7_0%,#f5f4ef_100%)]">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="theme-shell-orb-primary absolute -left-24 top-0 h-[28rem] w-[28rem] rounded-full bg-white/90 blur-3xl" />
         <div className="theme-shell-orb-secondary absolute right-[-8rem] top-32 h-[30rem] w-[30rem] rounded-full bg-[#f0edf8] blur-3xl" />
@@ -22,7 +22,7 @@ export function AppShell({
       <div className="relative">
         <TopUtilityBar user={user} />
 
-        <div className="mx-auto max-w-[1560px] lg:flex lg:h-[calc(100dvh-5.4rem)]">
+        <div className="mx-auto max-w-[1560px] lg:flex lg:min-h-[calc(100dvh-5.4rem)] lg:items-stretch">
           <SidebarRail />
 
           <main className="min-w-0 flex-1 lg:min-h-0">

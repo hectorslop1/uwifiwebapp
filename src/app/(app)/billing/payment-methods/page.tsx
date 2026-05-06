@@ -81,7 +81,7 @@ export default async function BillingPaymentMethodsPage({
                     {method.isDefault ? <StatusPill label="Default" tone="success" /> : null}
 
                     {method.isDefault ? (
-                      <span className="theme-control rounded-pill border border-white/80 bg-white/65 px-4 py-2 text-body-sm text-ink-muted">
+                      <span className="theme-control-button inline-flex items-center rounded-full border px-4 py-2.5 text-body-sm text-ink-muted">
                         Default card
                       </span>
                     ) : (
@@ -89,7 +89,7 @@ export default async function BillingPaymentMethodsPage({
                         <input type="hidden" name="cardId" value={String(method.id)} />
                         <button
                           type="submit"
-                          className="theme-control rounded-pill border border-white/80 bg-white/65 px-4 py-2 text-body-sm text-ink-soft transition-colors duration-200 hover:text-ink"
+                          className="theme-control-button inline-flex items-center rounded-full border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
                         >
                           Set as default
                         </button>
@@ -100,7 +100,7 @@ export default async function BillingPaymentMethodsPage({
                       <input type="hidden" name="cardId" value={String(method.id)} />
                       <button
                         type="submit"
-                        className="theme-control rounded-pill border border-white/80 bg-white/65 px-3 py-2 text-body-sm text-ink-soft transition-colors duration-200 hover:text-ink"
+                        className="theme-control-button inline-flex items-center rounded-full border px-3.5 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
                       >
                         <span className="inline-flex items-center gap-2">
                           <Trash2 size={14} strokeWidth={1.8} />

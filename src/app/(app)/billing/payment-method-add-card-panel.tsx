@@ -36,7 +36,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="theme-cta mt-2 w-full rounded-pill bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-4 py-3 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)] disabled:cursor-not-allowed disabled:opacity-70"
+      className="theme-primary-action mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border px-4 py-3 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70"
     >
       {pending ? "Saving payment method..." : "Save payment method"}
     </button>
@@ -70,7 +70,7 @@ export function PaymentMethodAddCardPanel() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 18 }}
             transition={{ duration: 0.22, ease: "easeOut" }}
-            className="mx-auto max-w-[62rem]"
+            className="w-full"
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 text-title-md text-ink">
@@ -80,7 +80,7 @@ export function PaymentMethodAddCardPanel() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="theme-control rounded-pill border border-white/80 bg-white/65 px-3 py-1.5 text-[0.78rem] text-ink-soft transition-colors duration-200 hover:text-ink"
+                className="theme-control-button inline-flex items-center rounded-full border px-3.5 py-2 text-[0.78rem] font-medium text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
               >
                 <span className="inline-flex items-center gap-2">
                   <X size={14} strokeWidth={1.8} />
@@ -259,7 +259,7 @@ export function PaymentMethodAddCardPanel() {
               <button
                 type="button"
                 onClick={() => setIsOpen(true)}
-                className="theme-control mt-4 inline-flex rounded-pill border border-white/80 bg-white/70 px-4 py-2 text-body-sm text-ink-soft transition-colors duration-200 hover:text-ink"
+                className="theme-control-button mt-4 inline-flex rounded-full border px-4 py-2.5 text-body-sm font-medium text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
               >
                 Add payment method
               </button>
@@ -273,7 +273,7 @@ export function PaymentMethodAddCardPanel() {
 
 function SurfaceWrapper({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <div className="theme-panel-subtle mx-auto max-w-[72rem] rounded-[1.6rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,248,250,0.82))] p-4 shadow-[0_22px_48px_rgba(203,207,216,0.12),inset_0_1px_0_rgba(255,255,255,0.94)] sm:p-5">
+    <div className="theme-panel-subtle w-full rounded-[1.6rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,248,250,0.82))] p-4 shadow-[0_22px_48px_rgba(203,207,216,0.12),inset_0_1px_0_rgba(255,255,255,0.94)] sm:p-5">
       {children}
     </div>
   );

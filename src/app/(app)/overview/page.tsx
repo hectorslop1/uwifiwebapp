@@ -3,14 +3,15 @@ import {
   ChevronRight,
   DollarSign,
   FileText,
+  Router,
   Wifi,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
-import { InteractiveHoverButtonLink } from "@/src/components/magic/interactive-hover-button";
 import { NumberTicker } from "@/src/components/magic/number-ticker";
+import { ProgressiveBlur } from "@/src/components/magic/progressive-blur";
 import { StatusBeacon } from "@/src/components/magic/status-beacon";
 import { TextReveal } from "@/src/components/magic/text-reveal";
+import { ActionCapsule, ActionCapsules } from "@/src/components/layout/action-capsules";
 import { getAuthenticatedPortalContext } from "@/src/server/auth/session";
 import { getBillingOverviewData } from "@/src/server/billing/api";
 import { getGatewayOverviewData } from "@/src/server/gateway/api";
@@ -22,21 +23,54 @@ const actions = [
     href: "/billing",
     label: "Pay now",
     icon: DollarSign,
-    iconClassName: "bg-success-soft text-success",
+    iconClassName:
+      "border border-[#dbead9] bg-[linear-gradient(180deg,rgba(245,252,244,0.98),rgba(236,248,235,0.94))] text-success shadow-[inset_0_1px_0_rgba(255,255,255,0.96)]",
   },
   {
     href: "/billing/invoices",
     label: "View invoices",
     icon: FileText,
-    iconClassName: "bg-surface-raised/80 text-ink-soft",
+    iconClassName:
+      "border border-[#e6ddff] bg-[linear-gradient(180deg,rgba(247,244,255,0.98),rgba(239,235,252,0.94))] text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.96)]",
   },
   {
     href: "/gateway",
     label: "Manage gateway",
-    icon: Wifi,
-    iconClassName: "bg-brand-soft text-brand",
+    icon: Router,
+    iconClassName:
+      "border border-[#d9ebdf] bg-[linear-gradient(180deg,rgba(241,252,243,0.98),rgba(232,247,236,0.94))] text-success shadow-[inset_0_1px_0_rgba(255,255,255,0.96)]",
   },
 ];
+
+function getBandStyles(band: string) {
+  if (band.startsWith("2.4")) {
+    return {
+      icon: "bg-[linear-gradient(180deg,rgba(247,243,255,0.98),rgba(236,231,252,0.94))] text-brand",
+      chip: "bg-[rgba(108,69,255,0.12)] text-brand",
+      line: "from-[rgba(108,69,255,0.18)] to-[rgba(108,69,255,0)]",
+    };
+  }
+
+  return {
+    icon: "bg-[linear-gradient(180deg,rgba(241,252,243,0.98),rgba(232,247,236,0.94))] text-success",
+    chip: "bg-[rgba(52,196,59,0.12)] text-success",
+    line: "from-[rgba(52,196,59,0.18)] to-[rgba(52,196,59,0)]",
+  };
+}
+
+function getServiceStatusValue(connectionStatus?: string | null) {
+  const normalized = connectionStatus?.trim().toLowerCase() ?? "";
+
+  if (normalized === "connected") {
+    return "Active";
+  }
+
+  if (normalized === "disconnected") {
+    return "Inactive";
+  }
+
+  return connectionStatus?.trim() || "Unavailable";
+}
 
 function NetworkCard({
   label,
@@ -49,13 +83,15 @@ function NetworkCard({
   band: string;
   connected: boolean;
 }) {
+  const bandStyles = getBandStyles(band);
+
   return (
     <div className="theme-panel-soft rounded-[1.3rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(251,251,253,0.44))] px-4 py-4 shadow-[0_14px_28px_rgba(201,204,214,0.07),inset_0_1px_0_rgba(255,255,255,0.9)]">
       <div className="flex items-center gap-2.5 text-[0.95rem] font-medium tracking-[-0.035em] text-ink-soft">
         <span
           className={`flex h-8 w-8 items-center justify-center rounded-[0.85rem] ${
             connected
-              ? "bg-[#eef9f0] text-success"
+              ? bandStyles.icon
               : "bg-[#fff0ed] text-[#e65b4a]"
           }`}
         >
@@ -64,64 +100,18 @@ function NetworkCard({
         {label}
       </div>
 
-      <div className="mt-3 space-y-1 text-[0.86rem] tracking-[-0.02em] text-ink-muted">
+      <div className="mt-3 space-y-2 text-[0.86rem] tracking-[-0.02em] text-ink-muted">
         <div>{devices}</div>
-        <div>{band}</div>
+        <div className="flex items-center gap-2">
+          <span
+            className={`inline-flex rounded-full px-2.5 py-1 text-[0.74rem] font-medium ${connected ? bandStyles.chip : "bg-[rgba(230,91,74,0.12)] text-[#d95b49]"}`}
+          >
+            {band}
+          </span>
+          <span className={`hidden h-px flex-1 bg-gradient-to-r ${connected ? bandStyles.line : "from-[rgba(230,91,74,0.18)] to-[rgba(230,91,74,0)]"} sm:block`} />
+        </div>
       </div>
     </div>
-  );
-}
-
-function ActionCard({
-  href,
-  label,
-  icon: Icon,
-  iconClassName,
-}: {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  iconClassName: string;
-}) {
-  const content = (
-    <>
-      <span
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.85rem] ${iconClassName}`}
-      >
-        <Icon size={17} strokeWidth={1.9} />
-      </span>
-
-      <span className="min-w-0 flex-1 text-[0.92rem] font-medium tracking-[-0.035em] text-ink-soft transition-colors duration-200 group-hover:text-ink">
-        {label}
-      </span>
-
-      <ChevronRight
-        size={17}
-        strokeWidth={1.9}
-        className="shrink-0 text-ink-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-ink-muted"
-      />
-    </>
-  );
-
-  if (label === "Pay now") {
-    return (
-      <InteractiveHoverButtonLink
-        href={href}
-        className="theme-panel group flex items-center gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,251,0.82))] px-3.5 py-3.5 shadow-[0_16px_32px_rgba(201,203,213,0.09),inset_0_1px_0_rgba(255,255,255,0.94)] backdrop-blur-xl"
-        containerClassName="rounded-[1.35rem]"
-      >
-        {content}
-      </InteractiveHoverButtonLink>
-    );
-  }
-
-  return (
-    <Link
-      href={href}
-      className="theme-panel group flex items-center gap-3 rounded-[1.35rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,251,0.82))] px-3.5 py-3.5 shadow-[0_16px_32px_rgba(201,203,213,0.09),inset_0_1px_0_rgba(255,255,255,0.94)] backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_38px_rgba(193,196,206,0.14),inset_0_1px_0_rgba(255,255,255,0.96)]"
-    >
-      {content}
-    </Link>
   );
 }
 
@@ -137,7 +127,7 @@ export default async function OverviewPage() {
     getBillingOverviewData(context.user.customerId, context.accessToken),
   ]);
   const gatewayConnected = gateway?.isConnected ?? false;
-  const gatewayStatusLabel = gatewayConnected ? "connected" : "disconnected";
+  const serviceStatusValue = getServiceStatusValue(gateway?.connectionStatus);
   const nextBillingDate = billing.billingPeriod?.dueDate
     ? new Intl.DateTimeFormat("en-US", {
         month: "short",
@@ -146,8 +136,10 @@ export default async function OverviewPage() {
     : "Unavailable";
   const recentPayments = billing.transactions
     .filter((entry) => entry.status === "Settled")
-    .slice(0, 3)
     .map((entry) => ({
+      id: entry.id,
+      href: `/billing/invoices/${encodeURIComponent(entry.invoiceNumber)}`,
+      invoiceNumber: entry.invoiceNumber,
       date: new Intl.DateTimeFormat("en-US", {
         month: "short",
         day: "numeric",
@@ -171,24 +163,24 @@ export default async function OverviewPage() {
     ];
 
   return (
-    <div className="flex flex-col gap-4 lg:h-[calc(100dvh-5.4rem-2rem)] lg:min-h-0 lg:gap-4 xl:h-[calc(100dvh-5.4rem-2.5rem)]">
-      <section className="theme-panel relative overflow-hidden rounded-[2rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(247,247,249,0.62))] px-4 py-4 shadow-[0_22px_48px_rgba(205,207,214,0.11),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-5 sm:py-5 lg:px-7 lg:py-5">
+    <div className="flex flex-col gap-4 lg:min-h-0 lg:gap-4">
+      <section className="theme-panel relative overflow-hidden rounded-[2rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(247,247,249,0.62))] px-4 py-4 shadow-[0_22px_48px_rgba(205,207,214,0.11),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-5 sm:py-5 lg:px-7 lg:py-4">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="theme-shell-orb-primary absolute left-[8%] top-5 h-36 w-36 rounded-full blur-3xl" />
           <div className="theme-shell-orb-secondary absolute bottom-6 left-[30%] h-14 w-36 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative grid items-center gap-5 lg:grid-cols-[minmax(15rem,20rem)_minmax(0,1fr)] lg:gap-8">
+        <div className="relative grid items-center gap-5 lg:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)] lg:gap-6">
           <div className="flex min-w-0 flex-col justify-center lg:pl-2">
             <div className="inline-flex max-w-full items-center gap-2.5 lg:gap-3">
               <StatusBeacon active={gatewayConnected} />
               <span className="text-[1.35rem] font-medium tracking-[-0.05em] text-ink-soft">
-                <TextReveal text={gatewayStatusLabel} />
+                <TextReveal text={`Service Status: ${serviceStatusValue}`} />
               </span>
               <span className="hidden h-px flex-1 bg-[linear-gradient(90deg,rgba(222,225,231,0.8),rgba(222,225,231,0))] lg:block" />
             </div>
 
-            <div className="mt-4 text-[3.35rem] font-medium leading-[0.92] tracking-[-0.075em] text-ink sm:text-[4rem] xl:text-[4.3rem]">
+            <div className="mt-4 text-[3.15rem] font-medium leading-[0.94] tracking-[-0.075em] text-ink sm:text-[3.8rem] xl:text-[4.1rem]">
               <NumberTicker value={billing.amountDue} prefix="$" decimals={2} />
             </div>
 
@@ -224,23 +216,54 @@ export default async function OverviewPage() {
             </div>
 
             <div className="border-t border-line/40 pt-4">
-              <div className="space-y-2.5">
-                {recentPayments.length ? recentPayments.map((payment) => (
-                  <div
-                    key={payment.date}
-                    className="flex items-baseline justify-between gap-4 text-[0.9rem] tracking-[-0.03em]"
-                  >
-                    <span className="text-ink-muted">{payment.date}</span>
-                    <span className="text-[0.94rem] font-medium text-success">
-                      {payment.amount}
-                    </span>
-                  </div>
-                )) : (
-                  <div className="text-[0.9rem] text-ink-muted">
-                    No recent payments have been recorded yet.
-                  </div>
-                )}
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="text-[0.82rem] font-medium uppercase tracking-[0.14em] text-ink-faint">
+                  Recent payments
+                </div>
+                <div className="text-[0.82rem] text-ink-muted">
+                  {recentPayments.length || 0} records
+                </div>
               </div>
+              {recentPayments.length ? (
+                <div className="relative">
+                  <div className="max-h-[18.5rem] overflow-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="space-y-2 pb-14">
+                      {recentPayments.map((payment) => (
+                        <Link
+                          key={payment.id}
+                          href={payment.href}
+                          className="theme-inline-surface group flex items-center justify-between gap-4 rounded-[1rem] border border-line/35 px-3.5 py-3 text-[0.9rem] tracking-[-0.03em] transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(52,196,59,0.22)] hover:shadow-[0_16px_30px_rgba(193,196,206,0.1),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                        >
+                          <div>
+                            <div className="text-[0.88rem] font-medium text-ink-soft">
+                              Payment received
+                            </div>
+                            <div className="mt-0.5 text-[0.82rem] text-ink-muted">
+                              {payment.invoiceNumber}
+                            </div>
+                            <span className="text-ink-muted">{payment.date}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[0.94rem] font-medium text-success">
+                              {payment.amount}
+                            </span>
+                            <ChevronRight
+                              size={16}
+                              strokeWidth={1.9}
+                              className="text-ink-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-ink-soft"
+                            />
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  <ProgressiveBlur position="bottom" height="42%" />
+                </div>
+              ) : (
+                <div className="text-[0.9rem] text-ink-muted">
+                  No recent payments have been recorded yet.
+                </div>
+              )}
             </div>
           </div>
 
@@ -260,13 +283,13 @@ export default async function OverviewPage() {
             </div>
 
             <div className="flex items-baseline justify-between gap-4 border-b border-line/25 pb-2.5">
-              <span className="text-[0.84rem] text-ink-muted">Status</span>
+              <span className="text-[0.84rem] text-ink-muted">Service status</span>
               <span
                 className={`text-[0.9rem] font-medium tracking-[-0.03em] ${
                   gatewayConnected ? "text-success" : "text-[#e65b4a]"
                 }`}
               >
-                {gatewayStatusLabel}
+                {serviceStatusValue}
               </span>
             </div>
 
@@ -279,11 +302,18 @@ export default async function OverviewPage() {
             </Link>
           </div>
 
-          <div className="space-y-2.5 xl:border-l xl:border-line/35 xl:pl-5">
+          <ActionCapsules className="space-y-2.5 xl:border-l xl:border-line/35 xl:pl-5">
             {actions.map((action) => (
-              <ActionCard key={action.href} {...action} />
+              <ActionCapsule
+                key={action.href}
+                href={action.href}
+                label={action.label}
+                icon={<action.icon size={17} strokeWidth={1.9} />}
+                iconClassName={action.iconClassName}
+                className="rounded-[1.35rem] px-3.5 py-3.5"
+              />
             ))}
-          </div>
+          </ActionCapsules>
         </div>
       </section>
     </div>

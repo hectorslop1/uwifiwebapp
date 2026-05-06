@@ -1,9 +1,15 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import {
+  ArrowUpRight,
+  ChevronRight,
+  CreditCard,
+  DollarSign,
+  ReceiptText,
+  WalletCards,
+} from "lucide-react";
 
+import { ProgressiveBlur } from "@/src/components/magic/progressive-blur";
 import { NumberTicker } from "@/src/components/magic/number-ticker";
-import { ActionCapsule, ActionCapsules } from "@/src/components/layout/action-capsules";
-import { KeyValueList } from "@/src/components/ui/key-value-list";
 import { PageIntro } from "@/src/components/ui/page-intro";
 import { StatTile } from "@/src/components/ui/stat-tile";
 import { StatusPill } from "@/src/components/ui/status-pill";
@@ -37,10 +43,13 @@ export default async function BillingPage({
   ]);
   const flash = getFlashMessage(query);
   const primaryMethod = overview.paymentMethods.find((card) => card.isDefault) ?? overview.paymentMethods[0] ?? null;
-  const recentActivity = overview.transactions.slice(0, 3);
+  const recentActivityFeed = overview.transactions.slice(0, 5);
   const openInvoices = overview.invoices.filter((invoice) => invoice.status === "Pending");
   const dueDateLabel = formatDate(overview.billingPeriod?.dueDate);
   const cycleEndLabel = formatDate(overview.billingPeriod?.currentBillingPeriod.endDate);
+  const lastSuccessfulCharge = overview.transactions.find(
+    (entry) => entry.status === "Settled",
+  );
   const autoPayLabel =
     overview.autoPayEnabled === true
       ? "Autopay active"
@@ -65,19 +74,23 @@ export default async function BillingPage({
                     ? "brand"
                     : "warning"
               }
+              pulse={overview.autoPayEnabled === true}
+              variant={overview.autoPayEnabled === true ? "plain" : "soft"}
             />
             <form action={payBalanceNowAction}>
               <button
                 type="submit"
-                className="theme-control rounded-pill border border-[#dfe9de] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(245,251,244,0.9))] px-4 py-2.5 text-body-sm font-medium text-ink shadow-[0_14px_30px_rgba(196,199,208,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(246,255,245,0.98),rgba(237,250,236,0.94))]"
+                className="theme-primary-action inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
               >
+                <DollarSign size={16} strokeWidth={1.8} />
                 Pay current balance
               </button>
             </form>
             <Link
               href="/billing/payment-methods"
-              className="theme-control rounded-pill border border-[#dfe9de] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(245,251,244,0.9))] px-4 py-2.5 text-body-sm font-medium text-ink shadow-[0_14px_30px_rgba(196,199,208,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(246,255,245,0.98),rgba(237,250,236,0.94))]"
+              className="theme-control-button inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
             >
+              <WalletCards size={16} strokeWidth={1.8} />
               Manage payment methods
             </Link>
           </>
@@ -97,7 +110,7 @@ export default async function BillingPage({
           <div className="mt-3 flex items-center gap-3 text-body-sm text-ink-muted">
             <StatusPill
               label={`Due ${dueDateLabel}`}
-              tone="warning"
+              tone={overview.amountDue > 0 ? "warning" : "muted"}
             />
             <span>Cycle closes {cycleEndLabel}.</span>
           </div>
@@ -124,7 +137,7 @@ export default async function BillingPage({
         />
       </div>
 
-      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.1fr)_17rem]">
+      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.14fr)_minmax(18.5rem,0.86fr)]">
         <SurfacePanel className="p-4 sm:p-5">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -135,87 +148,173 @@ export default async function BillingPage({
             </div>
 
             <Link
-              href="/billing/transactions"
+              href="/billing/invoices"
               className="inline-flex items-center gap-2 text-body-sm text-ink-soft transition-colors duration-200 hover:text-ink"
             >
-              View full history
+              Open invoices
               <ArrowUpRight size={15} strokeWidth={1.8} />
             </Link>
           </div>
 
-          <div className="mt-4 space-y-2.5">
-            {recentActivity.length ? (
-              recentActivity.map((entry) => (
-                <div
-                  key={entry.id}
-                  className="theme-inline-surface flex flex-col gap-2 rounded-[1.15rem] border border-white/75 bg-white/55 px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <div className="text-body-md font-medium text-ink">{entry.transactionType}</div>
-                    <div className="text-body-sm text-ink-muted">{formatDate(entry.createdAt)}</div>
-                  </div>
-                  <div className={entry.status === "Settled" ? "text-title-md text-success" : "text-title-md text-ink"}>
-                    {formatCurrency(entry.amount)}
+          <div className="mt-4">
+            {recentActivityFeed.length ? (
+              <div className="relative">
+                <div className="max-h-[14.5rem] overflow-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="space-y-2.5 pb-14">
+                    {recentActivityFeed.map((entry) => (
+                      <Link
+                        key={entry.id}
+                        href={`/billing/invoices/${encodeURIComponent(entry.invoiceNumber)}`}
+                        className="theme-inline-surface group flex flex-col gap-3 rounded-[1.15rem] border border-line/35 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(52,196,59,0.22)] hover:shadow-[0_16px_30px_rgba(193,196,206,0.1),inset_0_1px_0_rgba(255,255,255,0.08)] sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-body-md font-medium text-ink">
+                            {entry.transactionType}
+                          </div>
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-body-sm text-ink-muted">
+                            <span>{entry.invoiceNumber}</span>
+                            <span className="h-1 w-1 rounded-full bg-line-strong/80" />
+                            <span>{formatDate(entry.createdAt)}</span>
+                            <span className="h-1 w-1 rounded-full bg-line-strong/80" />
+                            <span>{entry.status}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={
+                              entry.status === "Settled"
+                                ? "text-title-md text-success"
+                                : "text-title-md text-ink"
+                            }
+                          >
+                            {formatCurrency(entry.amount)}
+                          </div>
+                          <ArrowUpRight
+                            size={15}
+                            strokeWidth={1.8}
+                            className="text-ink-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-ink-soft"
+                          />
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 </div>
-              ))
+                <ProgressiveBlur position="bottom" height="40%" />
+              </div>
             ) : (
-              <div className="theme-inline-surface rounded-[1.15rem] border border-white/75 bg-white/55 px-4 py-4 text-body-sm text-ink-muted shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+              <div className="theme-inline-surface rounded-[1.15rem] border border-line/35 px-4 py-4 text-body-sm text-ink-muted">
                 No billing activity has been generated yet.
               </div>
             )}
           </div>
         </SurfacePanel>
 
-        <div className="space-y-3">
-          <SurfacePanel subtle className="p-4">
-            <div className="text-title-md text-ink">Account snapshot</div>
-            <div className="mt-4">
-              <KeyValueList
-                items={[
-                  {
-                    label: "Autopay status",
-                    value: overview.autoPayEnabled ? "Active" : "Manual",
-                    tone: overview.autoPayEnabled ? "success" : "default",
-                  },
-                  {
-                    label: "Primary method",
-                    value: primaryMethod
-                      ? `${primaryMethod.cardBrand} ending in ${primaryMethod.last4Digits}`
-                      : "No saved card",
-                  },
-                  {
-                    label: "Last successful charge",
-                    value: recentActivity.find((entry) => entry.status === "Settled")
-                      ? formatDate(recentActivity.find((entry) => entry.status === "Settled")?.createdAt)
-                      : "No charge yet",
-                  },
-                  { label: "Invoice delivery", value: "Email + portal" },
-                ]}
-              />
-            </div>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <form action={toggleAutopayAction}>
-                <input
-                  type="hidden"
-                  name="enable"
-                  value={overview.autoPayEnabled ? "false" : "true"}
-                />
-                <button
-                  type="submit"
-                  className="theme-control rounded-pill border border-[#dfe9de] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(245,251,244,0.9))] px-4 py-2 text-body-sm font-medium text-ink shadow-[0_14px_30px_rgba(196,199,208,0.1)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(246,255,245,0.98),rgba(237,250,236,0.94))]"
-                >
-                  {overview.autoPayEnabled ? "Disable AutoPay" : "Enable AutoPay"}
-                </button>
-              </form>
-            </div>
-            <div className="mt-4 border-t border-line/25 pt-4">
-              <div className="text-title-md text-ink">Quick paths</div>
-              <ActionCapsules className="mt-4">
-                <ActionCapsule href="/billing/invoices" label="Open invoices" />
-                <ActionCapsule href="/billing/payment-methods" label="Update payment method" />
-                <ActionCapsule href="/billing/transactions" label="View transactions" />
-              </ActionCapsules>
+        <div>
+          <SurfacePanel subtle className="relative overflow-hidden p-4 sm:p-5">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(108,69,255,0.08),transparent_74%)]" />
+            <div className="relative">
+              <div className="text-title-md text-ink">Billing tools</div>
+              <div className="mt-1 text-body-sm text-ink-muted">
+                Keep the essentials in view without stretching the sidebar.
+              </div>
+
+              <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+                <div className="theme-inline-surface rounded-[1rem] border border-line/35 px-3.5 py-3">
+                  <div className="text-[0.74rem] uppercase tracking-[0.14em] text-ink-faint">Autopay</div>
+                  <div className="mt-1.5">
+                    <StatusPill
+                      label={overview.autoPayEnabled ? "Active" : "Manual"}
+                      tone={overview.autoPayEnabled ? "success" : "warning"}
+                      pulse={overview.autoPayEnabled === true}
+                      variant={overview.autoPayEnabled ? "plain" : "soft"}
+                      className="text-[0.96rem] font-medium"
+                    />
+                  </div>
+                </div>
+                <div className="theme-inline-surface rounded-[1rem] border border-line/35 px-3.5 py-3">
+                  <div className="text-[0.74rem] uppercase tracking-[0.14em] text-ink-faint">Primary method</div>
+                  <div className="mt-1 text-[0.96rem] font-medium text-ink-soft">
+                    {primaryMethod ? formatCardLabel(primaryMethod.cardBrand, primaryMethod.last4Digits) : "No saved card"}
+                  </div>
+                </div>
+                <div className="theme-inline-surface rounded-[1rem] border border-line/35 px-3.5 py-3">
+                  <div className="text-[0.74rem] uppercase tracking-[0.14em] text-ink-faint">Due date</div>
+                  <div className="mt-1 text-[0.96rem] font-medium text-ink-soft">
+                    {dueDateLabel}
+                  </div>
+                </div>
+                <div className="theme-inline-surface rounded-[1rem] border border-line/35 px-3.5 py-3">
+                  <div className="text-[0.74rem] uppercase tracking-[0.14em] text-ink-faint">Last successful charge</div>
+                  <div className="mt-1 text-[0.96rem] font-medium text-ink-soft">
+                    {lastSuccessfulCharge ? formatDate(lastSuccessfulCharge.createdAt) : "No charge yet"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="theme-soft-well mt-3 rounded-[1.1rem] border border-line/30 px-4 py-3.5">
+                <div className="mb-2 text-[0.8rem] font-medium uppercase tracking-[0.16em] text-ink-faint">
+                  AutoPay controls
+                </div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="max-w-[15rem] text-body-sm text-ink-muted">
+                    {overview.autoPayEnabled
+                      ? "AutoPay is active. Keep this separate from your routine actions."
+                      : "Enable AutoPay when you want billing to run automatically."}
+                  </div>
+                  <form action={toggleAutopayAction}>
+                    <input
+                      type="hidden"
+                      name="enable"
+                      value={overview.autoPayEnabled ? "false" : "true"}
+                    />
+                    <button
+                        type="submit"
+                        className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] ${overview.autoPayEnabled ? "theme-sensitive-action" : "theme-control-button"}`}
+                      >
+                      {overview.autoPayEnabled ? "Disable AutoPay" : "Enable AutoPay"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+              <div className="mt-3 border-t border-line/25 pt-3">
+                <div className="text-[0.8rem] font-medium uppercase tracking-[0.16em] text-ink-faint">
+                  Quick paths
+                </div>
+                <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+                  <Link
+                    href="/billing/invoices"
+                    className="theme-control-button group flex min-h-[3rem] items-center gap-3 rounded-[1.05rem] border px-3.5 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
+                  >
+                    <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-[0.95rem] text-brand">
+                      <ReceiptText size={16} strokeWidth={1.8} />
+                    </span>
+                    <span className="min-w-0 flex-1 text-[0.92rem] font-medium text-ink-soft transition-colors duration-200 group-hover:text-ink">
+                      Open invoices
+                    </span>
+                    <ChevronRight
+                      size={16}
+                      strokeWidth={1.8}
+                      className="text-ink-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-ink-soft"
+                    />
+                  </Link>
+                  <Link
+                    href="/billing/payment-methods"
+                    className="theme-control-button group flex min-h-[3rem] items-center gap-3 rounded-[1.05rem] border px-3.5 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
+                  >
+                    <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-[0.95rem] text-success">
+                      <CreditCard size={16} strokeWidth={1.8} />
+                    </span>
+                    <span className="min-w-0 flex-1 text-[0.92rem] font-medium text-ink-soft transition-colors duration-200 group-hover:text-ink">
+                      Update payment method
+                    </span>
+                    <ChevronRight
+                      size={16}
+                      strokeWidth={1.8}
+                      className="text-ink-faint transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-ink-soft"
+                    />
+                  </Link>
+                </div>
+              </div>
             </div>
           </SurfacePanel>
         </div>

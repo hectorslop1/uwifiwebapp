@@ -206,7 +206,7 @@ export function ProductDetailShell({
             <form action={addStoreCartItemAction}>
               <input type="hidden" name="productId" value={product.id} />
               <input type="hidden" name="quantity" value={String(quantity)} />
-              <input type="hidden" name="redirectTo" value={`/store/product/${product.id}`} />
+              <input type="hidden" name="redirectTo" value={`/store/${product.id}`} />
               <AddDetailToCartButton quantity={quantity} />
             </form>
 

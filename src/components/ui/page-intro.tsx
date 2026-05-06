@@ -40,7 +40,7 @@ export function PageIntro({
         </p>
       </div>
 
-      {actions ? <div className="flex flex-wrap gap-3">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-stretch gap-3 sm:items-center">{actions}</div> : null}
     </div>
   );
 }

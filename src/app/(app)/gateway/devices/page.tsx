@@ -103,47 +103,58 @@ export default async function GatewayDevicesPage() {
         </div>
 
         {rows.length ? (
-          <ProgressiveBlur className="mt-4" maxHeightClassName="max-h-[30rem]">
-            <div className="overflow-x-auto">
-              <div className="min-w-[56rem]">
-                <PremiumTable
-                  columns={[
-                    { key: "device", label: "Device" },
-                    { key: "band", label: "Band" },
-                    { key: "ip", label: "IP address" },
-                    { key: "mac", label: "MAC address" },
-                    { key: "status", label: "Connection", align: "right" },
-                  ]}
-                  rows={rows.map((row) => ({
-                    id: row.id,
-                    cells: [
-                      <div key={`${row.id}-device`} className="flex min-w-[14rem] items-center gap-3">
-                        <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-[0.95rem] bg-white/80 text-ink-soft">
-                          {getDeviceIcon(row.name)}
-                        </span>
-                        <div>
-                          <div className="font-medium text-ink">{row.name}</div>
-                          <div className="text-label-md text-ink-muted">
-                            {row.connectionType || "Wi‑Fi device"}
+          <div className="relative mt-4">
+            <div className="max-h-[30rem] overflow-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="overflow-x-auto pb-14">
+                <div className="min-w-[56rem]">
+                  <PremiumTable
+                    columns={[
+                      { key: "device", label: "Device" },
+                      { key: "band", label: "Band" },
+                      { key: "ip", label: "IP address" },
+                      { key: "mac", label: "MAC address" },
+                      { key: "status", label: "Connection", align: "right" },
+                    ]}
+                    rows={rows.map((row) => ({
+                      id: row.id,
+                      cells: [
+                        <div
+                          key={`${row.id}-device`}
+                          className="flex min-w-[14rem] items-center gap-3"
+                        >
+                          <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-[0.95rem] text-ink-soft">
+                            {getDeviceIcon(row.name)}
+                          </span>
+                          <div>
+                            <div className="font-medium text-ink">{row.name}</div>
+                            <div className="text-label-md text-ink-muted">
+                              {row.connectionType || "Wi‑Fi device"}
+                            </div>
                           </div>
-                        </div>
-                      </div>,
-                      <span key={`${row.id}-radio`} className="whitespace-nowrap">{row.band}</span>,
-                      <span key={`${row.id}-ip`} className="whitespace-nowrap">
-                        {row.ipAddress || "Unavailable"}
-                      </span>,
-                      <span key={`${row.id}-mac`} className="whitespace-nowrap">
-                        {row.macAddress || "Unavailable"}
-                      </span>,
-                      <div key={`${row.id}-band`} className="flex justify-end">
-                        <StatusPill label={row.band} tone={row.band === "5 GHz" ? "success" : "brand"} />
-                      </div>,
-                    ],
-                  }))}
-                />
+                        </div>,
+                        <span key={`${row.id}-radio`} className="whitespace-nowrap">
+                          {row.band}
+                        </span>,
+                        <span key={`${row.id}-ip`} className="whitespace-nowrap">
+                          {row.ipAddress || "Unavailable"}
+                        </span>,
+                        <span key={`${row.id}-mac`} className="whitespace-nowrap">
+                          {row.macAddress || "Unavailable"}
+                        </span>,
+                        <div key={`${row.id}-band`} className="flex justify-end">
+                          <StatusPill
+                            label={row.band}
+                            tone={row.band === "5 GHz" ? "success" : "brand"}
+                          />
+                        </div>,
+                      ],
+                    }))}
+                  />
+                </div>
               </div>
             </div>
-          </ProgressiveBlur>
+            <ProgressiveBlur position="bottom" height="34%" />
+          </div>
         ) : (
           <FeedbackState
             className="mt-4 min-h-[12rem]"
