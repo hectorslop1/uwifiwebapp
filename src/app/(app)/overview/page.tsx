@@ -163,7 +163,7 @@ export default async function OverviewPage() {
     ];
 
   return (
-    <div className="flex flex-col gap-4 lg:min-h-0 lg:gap-4">
+    <div className="flex flex-col gap-4 pb-2 lg:min-h-0 lg:gap-4">
       <section className="theme-panel relative overflow-hidden rounded-[2rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(247,247,249,0.62))] px-4 py-4 shadow-[0_22px_48px_rgba(205,207,214,0.11),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-5 sm:py-5 lg:px-7 lg:py-4">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="theme-shell-orb-primary absolute left-[8%] top-5 h-36 w-36 rounded-full blur-3xl" />
@@ -226,8 +226,8 @@ export default async function OverviewPage() {
               </div>
               {recentPayments.length ? (
                 <div className="relative">
-                  <div className="max-h-[18.5rem] overflow-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="space-y-2 pb-14">
+                  <div className="max-h-[16.75rem] overflow-auto pr-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <div className="space-y-2.5 pb-6">
                       {recentPayments.map((payment) => (
                         <Link
                           key={payment.id}
@@ -257,7 +257,7 @@ export default async function OverviewPage() {
                       ))}
                     </div>
                   </div>
-                  <ProgressiveBlur position="bottom" height="42%" />
+                  <ProgressiveBlur position="bottom" height="28%" />
                 </div>
               ) : (
                 <div className="text-[0.9rem] text-ink-muted">

@@ -6,11 +6,9 @@ import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
   ArrowLeft,
-  Gift,
   Minus,
   Phone,
   Plus,
-  Router,
   ShoppingBag,
   ShoppingCart,
   ShieldCheck,
@@ -19,12 +17,16 @@ import {
 } from "lucide-react";
 
 import { InteractiveHoverButtonLink } from "@/src/components/magic/interactive-hover-button";
-import { ActionCapsule, ActionCapsules } from "@/src/components/layout/action-capsules";
 import { KeyValueList } from "@/src/components/ui/key-value-list";
 import { PageIntro } from "@/src/components/ui/page-intro";
 import { StatusPill } from "@/src/components/ui/status-pill";
 import { SurfacePanel } from "@/src/components/ui/surface-panel";
-import type { StoreProduct } from "@/src/lib/store-catalog";
+import {
+  getStoreVariantColors,
+  getStoreVariantSizes,
+  getStoreProductVariant,
+  type StoreProduct,
+} from "@/src/lib/store-catalog";
 import { cn } from "@/src/lib/cn";
 
 import { addStoreCartItemAction } from "../actions";
@@ -75,8 +77,42 @@ export function ProductDetailShell({
   flash: { status: "success" | "error"; message: string } | null;
 }>) {
   const [quantity, setQuantity] = useState(1);
+  const initialVariant = getStoreProductVariant(
+    product,
+    product.selectedVariant || product.variants?.[0]?.id || "",
+  );
+  const [selectedColor, setSelectedColor] = useState(initialVariant?.color || "");
+  const [selectedSize, setSelectedSize] = useState(initialVariant?.size || "");
+  const [selectedVariant, setSelectedVariant] = useState(initialVariant?.id || "");
+  const currentVariant = getStoreProductVariant(product, selectedVariant);
+  const colorOptions = useMemo(() => getStoreVariantColors(product), [product]);
+  const sizeOptions = useMemo(
+    () => getStoreVariantSizes(product, selectedColor || currentVariant?.color),
+    [currentVariant?.color, product, selectedColor],
+  );
+  const total = useMemo(() => {
+    const unitPrice = currentVariant?.price ?? product.price;
+    return unitPrice * quantity;
+  }, [currentVariant?.price, product.price, quantity]);
 
-  const total = useMemo(() => product.price * quantity, [product.price, quantity]);
+  const updateVariantSelection = (nextColor: string, nextSize: string) => {
+    const matchingVariant =
+      product.variants?.find(
+        (variant) =>
+          (!nextColor || variant.color === nextColor) &&
+          (!nextSize || variant.size === nextSize),
+      ) ??
+      product.variants?.find((variant) => !nextColor || variant.color === nextColor) ??
+      product.variants?.[0];
+
+    if (!matchingVariant) {
+      return;
+    }
+
+    setSelectedColor(matchingVariant.color || nextColor);
+    setSelectedSize(matchingVariant.size || nextSize);
+    setSelectedVariant(matchingVariant.id);
+  };
 
   return (
     <div className="space-y-3 pb-2 xl:[zoom:0.92] 2xl:[zoom:1]">
@@ -115,7 +151,7 @@ export function ProductDetailShell({
               <div className="mx-auto flex h-[13rem] w-full max-w-[14rem] items-center justify-center overflow-hidden rounded-[1.4rem]">
                 {product.imageSrc ? (
                   <Image
-                    src={product.imageSrc}
+                    src={currentVariant?.imageSrc || product.imageSrc}
                     alt={product.name}
                     width={280}
                     height={220}
@@ -140,10 +176,70 @@ export function ProductDetailShell({
 
             <div className="space-y-3">
               <SurfacePanel subtle className="p-4">
-                <div className="text-title-md text-ink">Why it exists</div>
-                <div className="mt-3 text-body-sm text-ink-muted">
-                  {product.description}
-                </div>
+              <div className="text-title-md text-ink">Why it exists</div>
+              <div className="mt-3 text-body-sm text-ink-muted">
+                {product.description}
+              </div>
+                {colorOptions.length ? (
+                  <div className="mt-4">
+                    <div className="mb-2 text-[0.78rem] font-medium uppercase tracking-[0.14em] text-ink-faint">
+                      Color
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {colorOptions.map((option) => {
+                        const active = (currentVariant?.color || selectedColor) === option.color;
+
+                        return (
+                          <button
+                            key={option.color}
+                            type="button"
+                            onClick={() => updateVariantSelection(option.color, selectedSize)}
+                            className={cn(
+                              "inline-flex items-center gap-2 rounded-pill px-3 py-1.5 text-[0.78rem] font-medium transition-all duration-200",
+                              active
+                                ? "theme-control-button-active border border-transparent text-ink"
+                                : "theme-secondary-action border border-transparent text-ink-soft hover:text-ink",
+                            )}
+                          >
+                            <span
+                              className="h-3 w-3 rounded-full border border-black/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]"
+                              style={{ backgroundColor: option.colorHex }}
+                            />
+                            {option.color}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+                {sizeOptions.length ? (
+                  <div className="mt-4">
+                    <div className="mb-2 text-[0.78rem] font-medium uppercase tracking-[0.14em] text-ink-faint">
+                      Size
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {sizeOptions.map((size) => {
+                        const active = (currentVariant?.size || selectedSize) === size;
+
+                        return (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => updateVariantSelection(selectedColor, size)}
+                            className={cn(
+                              "rounded-pill px-3 py-1.5 text-[0.78rem] font-medium transition-all duration-200",
+                              active
+                                ? "theme-control-button-active border border-transparent text-ink"
+                                : "theme-secondary-action border border-transparent text-ink-soft hover:text-ink",
+                            )}
+                          >
+                            {size}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
                 <div className="mt-4 flex flex-wrap gap-2">
                   {product.highlights.slice(0, 3).map((highlight) => (
                     <span
@@ -163,6 +259,9 @@ export function ProductDetailShell({
                     items={[
                       { label: "Category", value: product.category },
                       { label: "Model", value: product.model },
+                      { label: "Variant", value: currentVariant?.name ?? "Default" },
+                      { label: "Color", value: currentVariant?.color ?? "Default" },
+                      { label: "Size", value: currentVariant?.size ?? "Standard" },
                       { label: "Price", value: product.priceLabel },
                       { label: "Billing", value: product.period ?? "one-time" },
                     ]}
@@ -211,6 +310,7 @@ export function ProductDetailShell({
 
             <form action={addStoreCartItemAction}>
               <input type="hidden" name="productId" value={product.id} />
+              <input type="hidden" name="variantId" value={currentVariant?.id ?? ""} />
               <input type="hidden" name="quantity" value={String(quantity)} />
               <input type="hidden" name="redirectTo" value={`/store/${product.id}`} />
               <AddDetailToCartButton quantity={quantity} />

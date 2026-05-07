@@ -2,12 +2,17 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
-import { getStoreProductById } from "@/src/lib/store-catalog";
+import {
+  getStoreProductById,
+  getStoreProductVariant,
+} from "@/src/lib/store-catalog";
 import type {
   StoreCartCookieItem,
+  StoreCartLineItem,
   StoreCartSnapshot,
   StoreCartState,
 } from "@/src/lib/store-types";
+import { buildStoreCartLineId } from "@/src/lib/store-types";
 
 const STORE_CART_COOKIE_NAME = "uwifi-store-cart";
 const STORE_CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
@@ -27,7 +32,7 @@ function normalizeStoreCartItems(items: unknown): StoreCartCookieItem[] {
     return [];
   }
 
-  const quantitiesByProductId = new Map<string, number>();
+  const quantitiesByLineId = new Map<string, StoreCartCookieItem>();
 
   for (const item of items) {
     if (!item || typeof item !== "object") {
@@ -40,23 +45,29 @@ function normalizeStoreCartItems(items: unknown): StoreCartCookieItem[] {
         : "";
     const quantity =
       "quantity" in item ? normalizeQuantity(item.quantity) : 0;
+    const product = getStoreProductById(productId);
 
-    if (!productId || quantity <= 0 || !getStoreProductById(productId)) {
+    if (!productId || quantity <= 0 || !product) {
       continue;
     }
 
-    quantitiesByProductId.set(
+    const rawVariantId =
+      "variantId" in item && typeof item.variantId === "string"
+        ? item.variantId
+        : null;
+    const variant = getStoreProductVariant(product, rawVariantId);
+    const variantId = variant?.id ?? null;
+    const lineId = buildStoreCartLineId(productId, variantId);
+    const existing = quantitiesByLineId.get(lineId);
+
+    quantitiesByLineId.set(lineId, {
       productId,
-      (quantitiesByProductId.get(productId) ?? 0) + quantity,
-    );
+      quantity: (existing?.quantity ?? 0) + quantity,
+      variantId,
+    });
   }
 
-  return Array.from(quantitiesByProductId.entries()).map(
-    ([productId, quantity]) => ({
-      productId,
-      quantity,
-    }),
-  );
+  return Array.from(quantitiesByLineId.values());
 }
 
 function normalizeStoreCartState(value: unknown): StoreCartState {
@@ -126,27 +137,32 @@ export async function getStoreCartSnapshot(): Promise<StoreCartSnapshot> {
   const state = await readStoreCartState();
   const quantitiesByProductId: Record<string, number> = {};
 
-  const items = state.items
-    .map((item) => {
+  const items = state.items.reduce<StoreCartLineItem[]>((list, item) => {
       const product = getStoreProductById(item.productId);
 
       if (!product) {
-        return null;
+        return list;
       }
 
-      quantitiesByProductId[item.productId] = item.quantity;
+      quantitiesByProductId[item.productId] =
+        (quantitiesByProductId[item.productId] ?? 0) + item.quantity;
+      const variant = getStoreProductVariant(product, item.variantId);
+      const unitPrice = variant?.price ?? product.price;
 
-      return {
-        product,
+      list.push({
+        id: buildStoreCartLineId(product.id, variant?.id),
+        product: {
+          ...product,
+          imageSrc: variant?.imageSrc || product.imageSrc,
+        },
+        variant,
+        unitPrice,
         quantity: item.quantity,
-        total: product.price * item.quantity,
-      };
-    })
-    .filter(
-      (
-        item,
-      ): item is StoreCartSnapshot["items"][number] => item !== null,
-    );
+        total: unitPrice * item.quantity,
+      });
+
+      return list;
+    }, []);
 
   const subtotal = items.reduce((sum, item) => sum + item.total, 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);

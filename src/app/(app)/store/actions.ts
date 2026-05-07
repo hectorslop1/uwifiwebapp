@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { getStoreProductById } from "@/src/lib/store-catalog";
+import {
+  getStoreProductById,
+  getStoreProductVariant,
+} from "@/src/lib/store-catalog";
+import {
+  buildStoreCartLineId,
+  parseStoreCartLineId,
+} from "@/src/lib/store-types";
 import { getAuthenticatedPortalContext } from "@/src/server/auth/session";
 import { getPaymentMethods } from "@/src/server/billing/api";
 import { getWalletPointsSummary } from "@/src/server/wallet/api";
@@ -77,21 +84,32 @@ export async function addStoreCartItemAction(formData: FormData) {
     );
   }
 
+  const variant = getStoreProductVariant(
+    product,
+    String(formData.get("variantId") ?? "").trim() || null,
+  );
+  const lineId = buildStoreCartLineId(productId, variant?.id);
+
   await mutateStoreCartState((current) => {
-    const existing = current.items.find((item) => item.productId === productId);
+    const existing = current.items.find(
+      (item) => buildStoreCartLineId(item.productId, item.variantId) === lineId,
+    );
 
     if (existing) {
       return {
         items: current.items.map((item) =>
-          item.productId === productId
-            ? { ...item, quantity: Math.min(item.quantity + quantity, 99) }
+          buildStoreCartLineId(item.productId, item.variantId) === lineId
+            ? {
+                ...item,
+                quantity: Math.min(item.quantity + quantity, 99),
+              }
             : item,
         ),
       };
     }
 
     return {
-      items: [...current.items, { productId, quantity }],
+      items: [...current.items, { productId, quantity, variantId: variant?.id ?? null }],
     };
   });
 
@@ -101,14 +119,18 @@ export async function addStoreCartItemAction(formData: FormData) {
     getPathWithFlash(
       redirectTo,
       "success",
-      `${product.name} was added to your cart.`,
+      `${product.name}${variant ? ` (${variant.name})` : ""} was added to your cart.`,
     ),
   );
 }
 
 export async function updateStoreCartQuantityAction(formData: FormData) {
   const redirectTo = getRedirectPath(formData, "/store/checkout");
-  const productId = String(formData.get("productId") ?? "").trim();
+  const parsedLine = parseStoreCartLineId(
+    String(formData.get("lineId") ?? "").trim(),
+  );
+  const productId =
+    parsedLine?.productId || String(formData.get("productId") ?? "").trim();
   const product = getStoreProductById(productId);
 
   if (!product) {
@@ -119,9 +141,13 @@ export async function updateStoreCartQuantityAction(formData: FormData) {
 
   const delta = parseInteger(formData.get("delta"), 0);
   const explicitQuantity = parseQuantity(formData.get("quantity"));
+  const resolvedVariant = getStoreProductVariant(product, parsedLine?.variantId);
+  const targetLineId = buildStoreCartLineId(product.id, resolvedVariant?.id);
 
   await mutateStoreCartState((current) => {
-    const existing = current.items.find((item) => item.productId === productId);
+    const existing = current.items.find(
+      (item) => buildStoreCartLineId(item.productId, item.variantId) === targetLineId,
+    );
 
     if (!existing) {
       return current;
@@ -135,9 +161,12 @@ export async function updateStoreCartQuantityAction(formData: FormData) {
     return {
       items:
         nextQuantity <= 0
-          ? current.items.filter((item) => item.productId !== productId)
+          ? current.items.filter(
+              (item) =>
+                buildStoreCartLineId(item.productId, item.variantId) !== targetLineId,
+            )
           : current.items.map((item) =>
-              item.productId === productId
+              buildStoreCartLineId(item.productId, item.variantId) === targetLineId
                 ? { ...item, quantity: nextQuantity }
                 : item,
             ),
@@ -150,10 +179,21 @@ export async function updateStoreCartQuantityAction(formData: FormData) {
 
 export async function removeStoreCartItemAction(formData: FormData) {
   const redirectTo = getRedirectPath(formData, "/store/checkout");
-  const productId = String(formData.get("productId") ?? "").trim();
+  const parsedLine = parseStoreCartLineId(
+    String(formData.get("lineId") ?? "").trim(),
+  );
+  const productId =
+    parsedLine?.productId || String(formData.get("productId") ?? "").trim();
+  const product = getStoreProductById(productId);
+  const resolvedVariant = product
+    ? getStoreProductVariant(product, parsedLine?.variantId)
+    : null;
+  const targetLineId = buildStoreCartLineId(productId, resolvedVariant?.id);
 
   await mutateStoreCartState((current) => ({
-    items: current.items.filter((item) => item.productId !== productId),
+    items: current.items.filter(
+      (item) => buildStoreCartLineId(item.productId, item.variantId) !== targetLineId,
+    ),
   }));
 
   revalidateStorePaths(productId);

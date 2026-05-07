@@ -13,23 +13,23 @@ type ToneMap = Record<StatusVariant, string>;
 
 const toneMap: Record<StatusTone | "error", ToneMap> = {
   success: {
-    soft: "border border-[#d7eed9] bg-success-soft text-success",
+    soft: "bg-success-soft text-success shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]",
     plain: "bg-transparent text-success",
   },
   brand: {
-    soft: "border border-[#e6ddff] bg-brand-soft text-brand",
+    soft: "bg-brand-soft text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]",
     plain: "bg-transparent text-brand",
   },
   muted: {
-    soft: "theme-status-muted border border-[#e7eaee] bg-[#f7f8fa] text-ink-soft",
+    soft: "theme-status-muted bg-[#f7f8fa] text-ink-soft shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]",
     plain: "bg-transparent text-ink-soft",
   },
   warning: {
-    soft: "theme-status-warning border border-[#f0e1c6] bg-[#f8f0df] text-[#996a16]",
+    soft: "theme-status-warning bg-[#f8f0df] text-[#996a16] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]",
     plain: "bg-transparent text-[#996a16]",
   },
   error: {
-    soft: "border border-[#f2d8d4] bg-[#fff4f2] text-[#d95b49]",
+    soft: "bg-[#fff4f2] text-[#d95b49] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]",
     plain: "bg-transparent text-[#d95b49]",
   },
 };

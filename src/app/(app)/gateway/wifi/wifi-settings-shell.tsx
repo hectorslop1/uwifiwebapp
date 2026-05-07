@@ -26,7 +26,7 @@ type NetworkConfig = {
 };
 
 const inputClassName =
-  "theme-input w-full rounded-[1rem] border px-4 py-3 text-body-sm text-ink outline-none transition-all duration-200 placeholder:text-ink-faint focus:border-[rgba(52,196,59,0.42)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]";
+  "theme-input w-full rounded-[1.05rem] border px-4 py-2.5 text-[0.9rem] text-ink outline-none transition-all duration-200 placeholder:text-ink-faint focus:border-[rgba(52,196,59,0.42)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]";
 
 function buildNetworks(gateway: GatewayOverviewData): Record<NetworkKey, NetworkConfig> {
   return {
@@ -61,7 +61,7 @@ function NetworkSettingsCard({
   passwordName: string;
 }) {
   return (
-    <SurfacePanel subtle className="overflow-hidden p-5">
+    <SurfacePanel subtle className="overflow-hidden p-4">
       <div className="pointer-events-none absolute inset-x-6 top-0 h-20 rounded-b-[2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.14),transparent_74%)]" />
 
       <div className="relative flex items-center gap-3">
@@ -69,12 +69,12 @@ function NetworkSettingsCard({
           <WifiHigh size={18} strokeWidth={1.8} />
         </span>
         <div>
-          <div className="text-title-md text-ink">{title}</div>
-          <div className="text-body-sm text-ink-muted">{subtitle}</div>
+          <div className="text-[1.02rem] font-medium tracking-[-0.04em] text-ink">{title}</div>
+          <div className="text-[0.82rem] text-ink-muted">{subtitle}</div>
         </div>
       </div>
 
-      <div className="relative mt-5 space-y-4">
+      <div className="relative mt-4 space-y-3.5">
         <label className="space-y-1.5">
           <span className="text-label-md text-ink-muted">SSID</span>
           <input
@@ -87,7 +87,7 @@ function NetworkSettingsCard({
 
         <label className="space-y-1.5">
           <span className="text-label-md text-ink-muted">Password</span>
-          <div className="theme-input flex items-center rounded-[1rem] border px-4 py-3 transition-all duration-200 focus-within:border-[rgba(52,196,59,0.42)] focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]">
+          <div className="theme-input flex items-center rounded-[1.05rem] border px-4 py-2.5 transition-all duration-200 focus-within:border-[rgba(52,196,59,0.42)] focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]">
             <input
               name={passwordName}
               type={showPassword ? "text" : "password"}
@@ -161,7 +161,7 @@ export function WifiSettingsShell({
   };
 
   return (
-    <div className="space-y-5 pb-2 lg:flex lg:min-h-0 lg:flex-col lg:pb-4">
+    <div className="space-y-4 pb-2 xl:[zoom:0.88] 2xl:[zoom:0.94] 3xl:[zoom:1] lg:flex lg:min-h-0 lg:flex-col lg:pb-4">
       <PageIntro
         eyebrow="Gateway"
         title="Wi‑Fi settings"
@@ -177,10 +177,10 @@ export function WifiSettingsShell({
 
       <form
         action={formAction}
-        className="grid gap-4 lg:min-h-0 lg:flex-1 xl:grid-cols-[minmax(0,1.15fr)_19rem]"
+        className="grid gap-3 lg:min-h-0 lg:flex-1 xl:grid-cols-[minmax(0,1.15fr)_16.5rem]"
       >
         <input type="hidden" name="redirectTo" value="/gateway/wifi" />
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-3 lg:grid-cols-2">
           <NetworkSettingsCard
             title={gateway.wifi5GName || "5 GHz network"}
             subtitle={`${gateway.devices5G.length} devices currently connected`}
@@ -223,13 +223,13 @@ export function WifiSettingsShell({
                 Review both networks before saving the updated names and passwords.
               </div>
 
-              <div className="theme-soft-well mt-4 rounded-[1.15rem] border px-4 py-3">
+              <div className="theme-soft-well mt-3 rounded-[1.05rem] border px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-label-md uppercase tracking-[0.14em] text-ink-faint">
                     Status
                   </span>
                   <span
-                    className={`rounded-pill px-2.5 py-1 text-label-md ${
+                    className={`rounded-pill px-2.5 py-1 text-[0.76rem] font-medium ${
                       isDirty
                         ? "bg-[rgba(255,243,220,0.98)] text-[#b67a17]"
                         : "bg-success-soft text-success"
@@ -242,18 +242,18 @@ export function WifiSettingsShell({
                 <div className="mt-3 text-body-sm text-ink-muted">{savedAt}</div>
               </div>
 
-              <div className="mt-4 flex flex-col gap-3">
+              <div className="mt-3 flex flex-col gap-2.5">
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="theme-cta rounded-pill px-4 py-3 text-body-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_42px_rgba(111,191,118,0.34),inset_0_1px_0_rgba(255,255,255,0.22)] disabled:cursor-not-allowed disabled:opacity-70"
+                  className="theme-cta rounded-[1.1rem] px-4 py-3 text-body-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] hover:shadow-[0_24px_42px_rgba(111,191,118,0.34),inset_0_1px_0_rgba(255,255,255,0.22)] disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isPending ? "Saving network updates..." : "Save network updates"}
                 </button>
                 <button
                   type="submit"
                   formAction={rebootGatewayAction}
-                  className="theme-control-button w-full rounded-pill border px-4 py-3 text-body-sm transition-all duration-200 hover:-translate-y-0.5"
+                  className="theme-control-button w-full rounded-[1.1rem] border px-4 py-3 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
                 >
                   Restart gateway
                 </button>
@@ -264,9 +264,9 @@ export function WifiSettingsShell({
           <SurfacePanel subtle className="p-4">
             <div className="text-title-md text-ink">Related actions</div>
             <ActionCapsules className="mt-4">
-              <ActionCapsule href="/gateway/devices" label="Review connected devices" />
-              <ActionCapsule href="/billing/payment-methods" label="Open payment methods" />
-              <ActionCapsule href="/overview" label="Back to account overview" />
+              <ActionCapsule href="/gateway/devices" label="Review connected devices" className="min-h-[3.1rem] rounded-[1.1rem] px-3.5 py-2.5" />
+              <ActionCapsule href="/billing/payment-methods" label="Open payment methods" className="min-h-[3.1rem] rounded-[1.1rem] px-3.5 py-2.5" />
+              <ActionCapsule href="/overview" label="Back to account overview" className="min-h-[3.1rem] rounded-[1.1rem] px-3.5 py-2.5" />
             </ActionCapsules>
           </SurfacePanel>
 

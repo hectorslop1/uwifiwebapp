@@ -16,13 +16,19 @@ type SectionTabsProps = {
 
 export function SectionTabs({ items }: Readonly<SectionTabsProps>) {
   const pathname = usePathname();
+  const activeHref =
+    items
+      .filter(
+        (item) =>
+          pathname === item.href ||
+          (item.href !== "/" && pathname.startsWith(`${item.href}/`)),
+      )
+      .sort((left, right) => right.href.length - left.href.length)[0]?.href ?? "";
 
   return (
     <div className="theme-tab-shell inline-flex w-full max-w-full gap-2 overflow-x-auto rounded-[1.35rem] border p-1.5 backdrop-blur-xl sm:flex-wrap">
       {items.map((item) => {
-        const active =
-          pathname === item.href ||
-          (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+        const active = item.href === activeHref;
 
         return (
           <Link

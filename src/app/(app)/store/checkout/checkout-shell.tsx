@@ -10,6 +10,7 @@ import {
   Gift,
   Minus,
   Plus,
+  ShieldCheck,
   ShoppingBag,
   Trash2,
 } from "lucide-react";
@@ -73,7 +74,7 @@ function CheckoutSubmitButton({
         onClick={onAdvance}
         className="theme-cta mt-5 w-full rounded-pill bg-[linear-gradient(180deg,rgba(98,201,89,0.95),rgba(72,177,69,0.98))] px-4 py-3 text-body-sm font-medium text-white shadow-[0_18px_32px_rgba(95,185,89,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_40px_rgba(95,185,89,0.28)]"
       >
-        Continue to review
+        Review order
       </button>
     );
   }
@@ -189,7 +190,7 @@ export function CheckoutShell({
             <div className="mt-4 space-y-3">
               {cart.items.map((item) => (
                 <div
-                  key={item.product.id}
+                  key={item.id}
                   className="theme-inline-surface flex items-center justify-between gap-4 rounded-[1.25rem] border border-white/75 bg-white/55 px-4 py-4"
                 >
                   <div className="min-w-0 flex-1">
@@ -197,11 +198,11 @@ export function CheckoutShell({
                       {item.product.name}
                     </div>
                     <div className="mt-1 text-body-sm text-ink-muted">
-                      {item.product.category}
+                      {item.variant?.name || item.product.category}
                     </div>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                       <form action={updateStoreCartQuantityAction}>
-                        <input type="hidden" name="productId" value={item.product.id} />
+                        <input type="hidden" name="lineId" value={item.id} />
                         <input type="hidden" name="delta" value="-1" />
                         <input type="hidden" name="redirectTo" value="/store/checkout" />
                         <CartMutationButton
@@ -217,7 +218,7 @@ export function CheckoutShell({
                       </span>
 
                       <form action={updateStoreCartQuantityAction}>
-                        <input type="hidden" name="productId" value={item.product.id} />
+                        <input type="hidden" name="lineId" value={item.id} />
                         <input type="hidden" name="delta" value="1" />
                         <input type="hidden" name="redirectTo" value="/store/checkout" />
                         <CartMutationButton className="theme-icon-surface flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-ink-soft">
@@ -226,7 +227,7 @@ export function CheckoutShell({
                       </form>
 
                       <form action={removeStoreCartItemAction}>
-                        <input type="hidden" name="productId" value={item.product.id} />
+                        <input type="hidden" name="lineId" value={item.id} />
                         <input type="hidden" name="redirectTo" value="/store/checkout" />
                         <CartMutationButton className="theme-control inline-flex items-center gap-2 rounded-pill border border-[#dfe9de] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(245,251,244,0.9))] px-3 py-1.5 text-body-sm font-medium text-ink transition-all duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(246,255,245,0.98),rgba(237,250,236,0.94))]">
                           <Trash2 size={14} strokeWidth={1.8} />
@@ -343,7 +344,9 @@ export function CheckoutShell({
           <input type="hidden" name="redirectTo" value="/store/checkout" />
 
           <SurfacePanel subtle className="p-4">
-            <div className="text-title-md text-ink">Order total</div>
+            <div className="text-title-md text-ink">
+              {step === "payment" ? "Order total" : "Review & confirm"}
+            </div>
             <div className="mt-4 space-y-3 text-body-sm text-ink-soft">
               <div className="flex items-center justify-between">
                 <span>Subtotal</span>
@@ -372,12 +375,34 @@ export function CheckoutShell({
             />
 
             {step === "review" ? (
-              <div className="theme-inline-surface mt-4 rounded-[1.2rem] border border-white/75 bg-white/55 px-4 py-4 text-body-sm text-ink-muted">
-                {total > 0 && selectedCardId > 0
-                  ? `Your saved card will cover ${formatStoreCurrency(total)} after U-Wallet credit is applied.`
-                  : total === 0
-                    ? "Your U-Wallet credit covers the full order total."
-                    : "Select a saved card before placing the order."}
+              <div className="mt-4 space-y-3">
+                <div className="theme-inline-surface rounded-[1.2rem] border border-white/75 bg-white/55 px-4 py-4">
+                  <div className="flex items-center gap-2 text-body-md font-medium text-ink">
+                    <ShieldCheck size={16} strokeWidth={1.8} className="text-success" />
+                    Confirmation summary
+                  </div>
+                  <div className="mt-3 space-y-2 text-body-sm text-ink-muted">
+                    {cart.items.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between gap-3">
+                        <span className="min-w-0">
+                          {item.quantity}x {item.product.name}
+                          {item.variant ? ` · ${item.variant.name}` : ""}
+                        </span>
+                        <span className="shrink-0 text-ink-soft">
+                          {formatStoreCurrency(item.total)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="theme-inline-surface rounded-[1.2rem] border border-white/75 bg-white/55 px-4 py-4 text-body-sm text-ink-muted">
+                  {total > 0 && selectedCardId > 0
+                    ? `Your saved card will cover ${formatStoreCurrency(total)} after U-Wallet credit is applied.`
+                    : total === 0
+                      ? "Your U-Wallet credit covers the full order total."
+                      : "Select a saved card before placing the order."}
+                </div>
               </div>
             ) : null}
 

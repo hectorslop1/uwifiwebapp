@@ -58,7 +58,7 @@ export default async function BillingPage({
         : "No payment method";
 
   return (
-    <div className="space-y-3 pb-2 xl:[zoom:0.94] 2xl:[zoom:1]">
+    <div className="space-y-4 pb-4 xl:[zoom:0.98] 2xl:[zoom:1]">
       <PageIntro
         eyebrow="Billing"
         title="Billing overview"
@@ -80,7 +80,7 @@ export default async function BillingPage({
             <form action={payBalanceNowAction}>
               <button
                 type="submit"
-                className="theme-primary-action inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
+                className="inline-flex items-center gap-2 rounded-pill border border-[#5cd05f] bg-[linear-gradient(180deg,rgba(69,211,81,0.98),rgba(42,184,59,0.98))] px-4 py-2.5 text-body-sm font-semibold text-white shadow-[0_18px_34px_rgba(80,190,88,0.28),inset_0_1px_0_rgba(255,255,255,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-[0_24px_40px_rgba(77,185,87,0.34),inset_0_1px_0_rgba(255,255,255,0.3)]"
               >
                 <DollarSign size={16} strokeWidth={1.8} />
                 Pay current balance
@@ -99,20 +99,25 @@ export default async function BillingPage({
 
       {flash ? <BillingFlash tone={flash.status}>{flash.message}</BillingFlash> : null}
 
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_repeat(3,minmax(0,1fr))]">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.05fr)_repeat(3,minmax(0,0.95fr))]">
         <SurfacePanel className="p-4 sm:p-5">
-          <div className="text-label-md uppercase tracking-[0.14em] text-ink-faint">
+          <div className="flex items-center gap-2 text-label-md uppercase tracking-[0.14em] text-ink-faint">
+            <span className="theme-icon-surface flex h-8 w-8 items-center justify-center rounded-full text-success">
+              <DollarSign size={14} strokeWidth={1.9} />
+            </span>
             Amount due
           </div>
-          <div className="mt-2 text-[2.8rem] font-medium tracking-[-0.08em] text-ink">
+          <div className="mt-3 text-[2.35rem] font-medium tracking-[-0.075em] text-ink sm:text-[2.7rem]">
             <NumberTicker value={overview.amountDue} prefix="$" decimals={2} />
           </div>
-          <div className="mt-3 flex items-center gap-3 text-body-sm text-ink-muted">
+          <div className="mt-3 flex flex-wrap items-center gap-2.5 text-body-sm text-ink-muted">
             <StatusPill
               label={`Due ${dueDateLabel}`}
               tone={overview.amountDue > 0 ? "warning" : "muted"}
             />
-            <span>Cycle closes {cycleEndLabel}.</span>
+            <span className="rounded-pill bg-[rgba(108,69,255,0.08)] px-3 py-1.5 text-[0.78rem] text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
+              Cycle closes {cycleEndLabel}
+            </span>
           </div>
         </SurfacePanel>
 
@@ -159,8 +164,8 @@ export default async function BillingPage({
           <div className="mt-4">
             {recentActivityFeed.length ? (
               <div className="relative">
-                <div className="max-h-[14.5rem] overflow-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <div className="space-y-2.5 pb-14">
+                  <div className="max-h-[13.25rem] overflow-auto pr-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="space-y-2.5 pb-6">
                     {recentActivityFeed.map((entry) => (
                       <Link
                         key={entry.id}
@@ -199,7 +204,7 @@ export default async function BillingPage({
                     ))}
                   </div>
                 </div>
-                <ProgressiveBlur position="bottom" height="40%" />
+                <ProgressiveBlur position="bottom" height="28%" />
               </div>
             ) : (
               <div className="theme-inline-surface rounded-[1.15rem] border border-line/35 px-4 py-4 text-body-sm text-ink-muted">
@@ -210,10 +215,15 @@ export default async function BillingPage({
         </SurfacePanel>
 
         <div>
-          <SurfacePanel subtle className="relative overflow-hidden p-4 sm:p-5">
+          <SurfacePanel subtle className="relative overflow-hidden p-4 pb-5 sm:p-5 sm:pb-6">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(108,69,255,0.08),transparent_74%)]" />
             <div className="relative">
-              <div className="text-title-md text-ink">Billing tools</div>
+              <div className="flex items-center gap-2 text-title-md text-ink">
+                <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-full text-brand">
+                  <WalletCards size={16} strokeWidth={1.8} />
+                </span>
+                Billing tools
+              </div>
               <div className="mt-1 text-body-sm text-ink-muted">
                 Keep the essentials in view without stretching the sidebar.
               </div>

@@ -5,6 +5,9 @@ export type ProductVariant = {
   name: string;
   imageSrc: string;
   price?: number;
+  color?: string;
+  colorHex?: string;
+  size?: string;
 };
 
 export type StoreProduct = {
@@ -24,6 +27,25 @@ export type StoreProduct = {
   selectedVariant?: string;
 };
 
+function createApparelVariants({
+  colors,
+  sizes,
+}: {
+  colors: Array<{ id: string; name: string; imageSrc: string; colorHex: string }>;
+  sizes: string[];
+}) {
+  return colors.flatMap((color) =>
+    sizes.map((size) => ({
+      id: `${color.id}-${size.toLowerCase()}`,
+      name: `${color.name} / ${size}`,
+      imageSrc: color.imageSrc,
+      color: color.name,
+      colorHex: color.colorHex,
+      size,
+    })),
+  );
+}
+
 export const storeCatalog: StoreProduct[] = [
   // Merchandise Products
   {
@@ -38,19 +60,24 @@ export const storeCatalog: StoreProduct[] = [
     model: "Hoodie",
     accent: "brand",
     featured: true,
-    selectedVariant: "black",
-    variants: [
-      {
-        id: "black",
-        name: "Black",
-        imageSrc: "/images/store/BlackHoodie.png",
-      },
-      {
-        id: "white",
-        name: "White",
-        imageSrc: "/images/store/WhiteHoodie.png",
-      },
-    ],
+    selectedVariant: "black-m",
+    variants: createApparelVariants({
+      colors: [
+        {
+          id: "black",
+          name: "Black",
+          imageSrc: "/images/store/BlackHoodie.png",
+          colorHex: "#111111",
+        },
+        {
+          id: "white",
+          name: "White",
+          imageSrc: "/images/store/WhiteHoodie.png",
+          colorHex: "#F5F5F5",
+        },
+      ],
+      sizes: ["S", "M", "L", "XL"],
+    }),
   },
   {
     id: "tshirt",
@@ -63,19 +90,24 @@ export const storeCatalog: StoreProduct[] = [
     highlights: ["Classic design", "U-Wifi logo", "Cotton blend"],
     model: "T-Shirt",
     accent: "brand",
-    selectedVariant: "black",
-    variants: [
-      {
-        id: "black",
-        name: "Black",
-        imageSrc: "/images/store/BlackShirt.png",
-      },
-      {
-        id: "white",
-        name: "White",
-        imageSrc: "/images/store/WhiteShirt.png",
-      },
-    ],
+    selectedVariant: "black-m",
+    variants: createApparelVariants({
+      colors: [
+        {
+          id: "black",
+          name: "Black",
+          imageSrc: "/images/store/BlackShirt.png",
+          colorHex: "#111111",
+        },
+        {
+          id: "white",
+          name: "White",
+          imageSrc: "/images/store/WhiteShirt.png",
+          colorHex: "#F5F5F5",
+        },
+      ],
+      sizes: ["S", "M", "L", "XL"],
+    }),
   },
   {
     id: "tumbler",
@@ -94,16 +126,22 @@ export const storeCatalog: StoreProduct[] = [
         id: "black",
         name: "Black",
         imageSrc: "/images/store/BlackTumbler.png",
+        color: "Black",
+        colorHex: "#111111",
       },
       {
         id: "green",
         name: "Green",
         imageSrc: "/images/store/GreenTumbler.png",
+        color: "Green",
+        colorHex: "#4CAF50",
       },
       {
         id: "purple",
         name: "Purple",
         imageSrc: "/images/store/PurpleTumbler.png",
+        color: "Purple",
+        colorHex: "#8E44AD",
       },
     ],
   },
@@ -124,16 +162,22 @@ export const storeCatalog: StoreProduct[] = [
         id: "green",
         name: "Green",
         imageSrc: "/images/store/GreenMug.png",
+        color: "Green",
+        colorHex: "#4CAF50",
       },
       {
         id: "purple",
         name: "Purple",
         imageSrc: "/images/store/PurpleMug.png",
+        color: "Purple",
+        colorHex: "#8E44AD",
       },
       {
         id: "white",
         name: "White",
         imageSrc: "/images/store/WhiteMug.png",
+        color: "White",
+        colorHex: "#F5F5F5",
       },
     ],
   },
@@ -154,11 +198,15 @@ export const storeCatalog: StoreProduct[] = [
         id: "green",
         name: "Green",
         imageSrc: "/images/store/GreenToteBag.png",
+        color: "Green",
+        colorHex: "#4CAF50",
       },
       {
         id: "white",
         name: "White",
         imageSrc: "/images/store/WhiteToteBag.png",
+        color: "White",
+        colorHex: "#F5F5F5",
       },
     ],
   },
@@ -265,4 +313,51 @@ export const storeCategories: StoreCategory[] = [
 
 export function getStoreProductById(productId: string) {
   return storeCatalog.find((product) => product.id === productId) ?? null;
+}
+
+export function getStoreProductVariant(
+  product: StoreProduct,
+  variantId?: string | null,
+) {
+  if (!product.variants?.length) {
+    return null;
+  }
+
+  if (!variantId) {
+    return product.variants[0] ?? null;
+  }
+
+  return (
+    product.variants.find((variant) => variant.id === variantId) ??
+    product.variants[0] ??
+    null
+  );
+}
+
+export function getStoreVariantColors(product: StoreProduct) {
+  return Array.from(
+    new Map(
+      (product.variants ?? [])
+        .filter((variant) => variant.color)
+        .map((variant) => [
+          variant.color as string,
+          {
+            color: variant.color as string,
+            colorHex: variant.colorHex ?? "#DADDE4",
+            imageSrc: variant.imageSrc,
+          },
+        ]),
+    ).values(),
+  );
+}
+
+export function getStoreVariantSizes(product: StoreProduct, color?: string | null) {
+  return Array.from(
+    new Set(
+      (product.variants ?? [])
+        .filter((variant) => !color || variant.color === color)
+        .map((variant) => variant.size)
+        .filter((size): size is string => Boolean(size)),
+    ),
+  );
 }

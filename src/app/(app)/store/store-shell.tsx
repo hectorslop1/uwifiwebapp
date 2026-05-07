@@ -2,22 +2,23 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
   ArrowRight,
   BadgePlus,
   ExternalLink,
-  Gift,
   Headset,
+  Minus,
   Phone,
   Plus,
-  Router,
   Search,
   ShoppingBag,
+  ShoppingCart,
   Sparkles,
   Tv,
   UsersRound,
+  X,
   Zap,
 } from "lucide-react";
 
@@ -27,15 +28,22 @@ import { FeedbackState } from "@/src/components/ui/feedback-state";
 import { StatusPill } from "@/src/components/ui/status-pill";
 import { SurfacePanel } from "@/src/components/ui/surface-panel";
 import {
+  getStoreVariantColors,
+  getStoreProductVariant,
   storeCategories,
   type StoreCategory,
   type StoreProduct,
 } from "@/src/lib/store-catalog";
-import type { StoreCartSnapshot } from "@/src/lib/store-types";
+import type { StoreCartLineItem, StoreCartSnapshot } from "@/src/lib/store-types";
 import { cn } from "@/src/lib/cn";
 
-import { addStoreCartItemAction } from "./actions";
-import { StoreFlash } from "./store-ui";
+import {
+  addStoreCartItemAction,
+  clearStoreCartAction,
+  removeStoreCartItemAction,
+  updateStoreCartQuantityAction,
+} from "./actions";
+import { formatStoreCurrency, StoreFlash } from "./store-ui";
 
 function AddToCartButton({
   inCartQuantity,
@@ -48,7 +56,7 @@ function AddToCartButton({
     <button
       type="submit"
       disabled={pending}
-      className="theme-control inline-flex items-center justify-center gap-2 rounded-pill border border-[#cfe8cf] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(241,252,240,0.94))] px-4 py-2.5 text-body-sm font-medium text-[#2f9837] shadow-[0_12px_26px_rgba(177,215,172,0.16)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(248,255,247,1),rgba(233,249,231,0.96))] disabled:cursor-not-allowed disabled:opacity-70"
+      className="theme-primary-action inline-flex min-h-[2.9rem] items-center justify-center gap-2 rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70"
     >
       <Plus size={15} strokeWidth={1.8} />
       {pending
@@ -60,18 +68,52 @@ function AddToCartButton({
   );
 }
 
+function StoreProductImage({
+  imageSrc,
+  alt,
+  imageRef,
+}: Readonly<{
+  imageSrc?: string;
+  alt: string;
+  imageRef?: React.RefObject<HTMLDivElement | null>;
+}>) {
+  return (
+    <div className="relative overflow-hidden rounded-[1.55rem] border border-white/70 bg-[radial-gradient(circle_at_top,rgba(124,225,128,0.18),transparent_52%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(245,247,244,0.86))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.96)]">
+      <div className="absolute inset-x-6 top-0 h-16 rounded-b-[1.4rem] bg-[radial-gradient(circle_at_top,rgba(108,69,255,0.12),transparent_72%)]" />
+      <div
+        ref={imageRef}
+        className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[1.3rem] bg-white/92 px-4 py-5 shadow-[0_18px_36px_rgba(194,199,208,0.12)]"
+      >
+        {imageSrc ? (
+          <Image
+            src={imageSrc}
+            alt={alt}
+            width={340}
+            height={260}
+            className="h-full w-full rounded-[1.25rem] object-contain"
+          />
+        ) : (
+          <div className="flex h-16 w-16 items-center justify-center rounded-[1.2rem] bg-[linear-gradient(180deg,rgba(244,240,255,0.98),rgba(238,235,252,0.94))] text-brand">
+            <ShoppingBag size={28} strokeWidth={1.7} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function getStoreCategoryIcon(category: StoreCategory) {
   switch (category) {
     case "Merchandise":
-      return <ShoppingBag size={28} strokeWidth={1.7} />;
+      return <ShoppingBag size={18} strokeWidth={1.8} />;
     case "IPTV":
-      return <Tv size={28} strokeWidth={1.7} />;
+      return <Tv size={18} strokeWidth={1.8} />;
     case "Phone":
-      return <Phone size={28} strokeWidth={1.7} />;
+      return <Phone size={18} strokeWidth={1.8} />;
     case "Add-ons":
-      return <Sparkles size={28} strokeWidth={1.7} />;
+      return <BadgePlus size={18} strokeWidth={1.8} />;
     default:
-      return <Sparkles size={28} strokeWidth={1.7} />;
+      return <Sparkles size={18} strokeWidth={1.8} />;
   }
 }
 
@@ -87,6 +129,190 @@ function getAddOnIcon(productId: string) {
   return <UsersRound size={22} strokeWidth={1.8} />;
 }
 
+function CartLineEditor({
+  item,
+}: Readonly<{
+  item: StoreCartLineItem;
+}>) {
+  return (
+    <div className="theme-inline-surface rounded-[1.2rem] border border-white/80 bg-white/78 p-3.5 shadow-[0_14px_26px_rgba(199,203,212,0.08)]">
+      <div className="flex gap-3">
+        <div className="flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center overflow-hidden rounded-[1rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.88))] p-2">
+          {item.product.imageSrc ? (
+            <Image
+              src={item.product.imageSrc}
+              alt={item.product.name}
+              width={90}
+              height={90}
+              className="h-full w-full object-contain"
+            />
+          ) : (
+            <span className="text-success">{getStoreCategoryIcon(item.product.category)}</span>
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="truncate text-[0.95rem] font-medium tracking-[-0.03em] text-ink">
+                {item.product.name}
+              </div>
+              <div className="mt-1 text-[0.8rem] text-ink-muted">
+                {item.variant?.name || item.product.category}
+              </div>
+            </div>
+            <div className="text-[0.92rem] font-medium text-ink">
+              {formatStoreCurrency(item.total)}
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 rounded-full bg-white/72 px-2 py-1">
+              <form action={updateStoreCartQuantityAction}>
+                <input type="hidden" name="lineId" value={item.id} />
+                <input type="hidden" name="delta" value="-1" />
+                <input type="hidden" name="redirectTo" value="/store" />
+                <button
+                  type="submit"
+                  className="theme-icon-surface flex h-8 w-8 items-center justify-center rounded-full text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:text-ink"
+                >
+                  <Minus size={14} strokeWidth={1.8} />
+                </button>
+              </form>
+
+              <span className="min-w-6 text-center text-[0.86rem] font-medium text-ink">
+                {item.quantity}
+              </span>
+
+              <form action={updateStoreCartQuantityAction}>
+                <input type="hidden" name="lineId" value={item.id} />
+                <input type="hidden" name="delta" value="1" />
+                <input type="hidden" name="redirectTo" value="/store" />
+                <button
+                  type="submit"
+                  className="theme-icon-surface flex h-8 w-8 items-center justify-center rounded-full text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:text-ink"
+                >
+                  <Plus size={14} strokeWidth={1.8} />
+                </button>
+              </form>
+            </div>
+
+            <form action={removeStoreCartItemAction}>
+              <input type="hidden" name="lineId" value={item.id} />
+              <input type="hidden" name="redirectTo" value="/store" />
+              <button
+                type="submit"
+                className="theme-secondary-action inline-flex items-center gap-2 rounded-pill border px-3 py-1.5 text-[0.78rem] font-medium transition-all duration-200 hover:-translate-y-0.5"
+              >
+                Remove
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StoreCartDrawer({
+  cart,
+  open,
+  onClose,
+}: Readonly<{
+  cart: StoreCartSnapshot;
+  open: boolean;
+  onClose: () => void;
+}>) {
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="Close cart drawer"
+        onClick={onClose}
+        className={cn(
+          "fixed inset-0 z-40 bg-[rgba(8,12,16,0.16)] backdrop-blur-sm transition-all duration-200",
+          open ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+        )}
+      />
+
+      <aside
+        className={cn(
+          "theme-panel fixed right-0 top-0 z-50 flex h-dvh w-full max-w-[27rem] flex-col border-l border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,248,246,0.94))] px-4 py-4 shadow-[0_28px_72px_rgba(166,173,184,0.22)] transition-transform duration-300 ease-out sm:px-5",
+          open ? "translate-x-0" : "translate-x-full",
+        )}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-line/20 pb-3">
+          <div>
+            <div className="text-[1.15rem] font-medium tracking-[-0.04em] text-ink">
+              Your cart
+            </div>
+            <div className="mt-1 text-[0.86rem] text-ink-muted">
+              Review quantities, variants and totals before checkout.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="theme-control-button flex h-10 w-10 items-center justify-center rounded-full border text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:text-ink"
+          >
+            <X size={17} strokeWidth={1.9} />
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto py-4">
+          {cart.items.length ? (
+            <div className="space-y-3 pr-1">
+              {cart.items.map((item) => (
+                <CartLineEditor key={item.id} item={item} />
+              ))}
+            </div>
+          ) : (
+            <div className="theme-inline-surface mt-2 rounded-[1.25rem] border border-white/80 px-4 py-5 text-[0.9rem] text-ink-muted">
+              Your cart is empty. Add something from the store to start a real checkout flow.
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-3 border-t border-line/20 pt-4">
+          <div className="theme-soft-well rounded-[1.2rem] border border-line/20 px-4 py-3.5">
+            <div className="flex items-center justify-between text-[0.84rem] text-ink-muted">
+              <span>Subtotal</span>
+              <span className="text-[1.1rem] font-medium tracking-[-0.04em] text-ink">
+                {formatStoreCurrency(cart.subtotal)}
+              </span>
+            </div>
+            <div className="mt-2 text-[0.78rem] text-ink-faint">
+              {cart.itemCount} {cart.itemCount === 1 ? "item" : "items"} ready for review.
+            </div>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+            <Link
+              href="/store/checkout"
+              onClick={onClose}
+              className="theme-primary-action inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
+            >
+              <ShoppingCart size={16} strokeWidth={1.8} />
+              Review order
+            </Link>
+
+            <form action={clearStoreCartAction}>
+              <input type="hidden" name="redirectTo" value="/store" />
+              <button
+                type="submit"
+                className="theme-secondary-action inline-flex min-h-[3rem] w-full items-center justify-center rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
+              >
+                Clear cart
+              </button>
+            </form>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
+
 function StoreProductCard({
   product,
   cartQuantity,
@@ -94,101 +320,151 @@ function StoreProductCard({
   product: StoreProduct;
   cartQuantity: number;
 }>) {
-  const [selectedVariant, setSelectedVariant] = useState(product.selectedVariant || product.variants?.[0]?.id || '');
-
-  const currentVariant = product.variants?.find(v => v.id === selectedVariant) || product.variants?.[0];
+  const imageRef = useRef<HTMLDivElement | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState(
+    product.selectedVariant || product.variants?.[0]?.id || "",
+  );
+  const currentVariant = getStoreProductVariant(product, selectedVariant);
+  const colorOptions = useMemo(() => getStoreVariantColors(product), [product]);
   const displayImage = currentVariant?.imageSrc || product.imageSrc;
 
+  const handleVariantChange = (color: string) => {
+    const matchingVariant =
+      product.variants?.find((variant) => variant.color === color) ??
+      product.variants?.[0];
+
+    if (matchingVariant) {
+      setSelectedVariant(matchingVariant.id);
+    }
+  };
+
+  const handleAnimatedSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const form = event.currentTarget;
+
+    if (form.dataset.animated === "1") {
+      form.dataset.animated = "0";
+      return;
+    }
+
+    const source = imageRef.current;
+    const target = document.getElementById("store-cart-trigger");
+
+    if (!source || !target) {
+      return;
+    }
+
+    event.preventDefault();
+    const sourceRect = source.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const ghost = document.createElement("div");
+
+    ghost.style.position = "fixed";
+    ghost.style.left = `${sourceRect.left + sourceRect.width / 2 - 22}px`;
+    ghost.style.top = `${sourceRect.top + sourceRect.height / 2 - 22}px`;
+    ghost.style.width = "44px";
+    ghost.style.height = "44px";
+    ghost.style.borderRadius = "9999px";
+    ghost.style.background = "linear-gradient(180deg, rgba(69,211,81,0.98), rgba(42,184,59,0.98))";
+    ghost.style.boxShadow = "0 18px 34px rgba(80,190,88,0.28)";
+    ghost.style.zIndex = "9999";
+    ghost.style.pointerEvents = "none";
+    ghost.style.transition = "transform 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 420ms ease-out";
+    document.body.appendChild(ghost);
+
+    requestAnimationFrame(() => {
+      ghost.style.transform = `translate(${targetRect.left - sourceRect.left + 12}px, ${targetRect.top - sourceRect.top - 18}px) scale(0.32)`;
+      ghost.style.opacity = "0.16";
+    });
+
+    window.setTimeout(() => {
+      ghost.remove();
+      form.dataset.animated = "1";
+      form.requestSubmit();
+    }, 260);
+  };
+
   return (
-    <SurfacePanel className="flex h-full flex-col p-3.5">
-      <div className="theme-inline-surface rounded-[1.15rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(244,248,244,0.78))] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.94)]">
-        <div className="theme-panel-soft mx-auto flex h-36 w-full items-center justify-center overflow-hidden rounded-[1.2rem] bg-white/90 p-3 shadow-[0_16px_34px_rgba(198,202,212,0.14)]">
-          {displayImage ? (
-            <Image
-              src={displayImage}
-              alt={product.name}
-              width={140}
-              height={140}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <span
-              className={cn(
-                "theme-icon-surface flex h-16 w-16 items-center justify-center rounded-[1.15rem]",
-                product.accent === "brand"
-                  ? "bg-[linear-gradient(180deg,rgba(122,99,255,0.14),rgba(122,99,255,0.08))] text-[#6c45ff]"
-                  : product.accent === "success"
-                    ? "bg-[linear-gradient(180deg,rgba(89,195,79,0.16),rgba(89,195,79,0.08))] text-[#3ba745]"
-                    : "bg-[linear-gradient(180deg,rgba(57,64,78,0.08),rgba(57,64,78,0.04))] text-ink-soft",
-              )}
-            >
-              {getStoreCategoryIcon(product.category)}
-            </span>
-          )}
-        </div>
-      </div>
+    <SurfacePanel className="group flex h-full flex-col p-4 transition-transform duration-200 hover:-translate-y-1">
+      <StoreProductImage imageSrc={displayImage} alt={product.name} imageRef={imageRef} />
 
-      {product.variants && product.variants.length > 1 && (
-        <div className="mt-3">
-          <div className="text-body-sm font-medium text-ink mb-2">Select variant:</div>
-          <div className="flex flex-wrap gap-2">
-            {product.variants.map((variant) => (
-              <button
-                key={variant.id}
-                onClick={() => setSelectedVariant(variant.id)}
-                className={cn(
-                  "theme-control-muted rounded-pill border px-3 py-1.5 text-[0.74rem] transition-all duration-200",
-                  selectedVariant === variant.id
-                    ? "border-success bg-success/10 text-success"
-                    : "border-[#dfe9de] bg-white hover:bg-[#f8faf8]"
-                )}
-              >
-                {variant.name}
-              </button>
-            ))}
+      <div className="mt-4 flex flex-1 flex-col">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-[1.08rem] font-medium tracking-[-0.04em] text-ink">
+              {product.name}
+            </div>
+            <div className="mt-1 text-[0.86rem] leading-5 text-ink-muted">
+              {product.description}
+            </div>
           </div>
-        </div>
-      )}
 
-      <div className="mt-3 flex flex-1 flex-col">
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-[1rem] font-medium tracking-[-0.03em] text-ink">
-            {product.name}
-          </div>
           {cartQuantity ? (
             <StatusPill label={`In cart (${cartQuantity})`} tone="success" />
           ) : product.featured ? (
             <StatusPill label="Featured" tone="brand" />
           ) : null}
         </div>
-        <div className="mt-1 min-h-[2.6rem] text-[0.86rem] leading-5 text-ink-muted">
-          {product.description}
-        </div>
-        <div className="mt-2 min-h-[2.25rem] flex flex-wrap gap-2">
-          {product.highlights.slice(0, 2).map((highlight) => (
+
+        {colorOptions.length ? (
+          <div className="mt-4">
+            <div className="mb-2 text-[0.78rem] font-medium uppercase tracking-[0.14em] text-ink-faint">
+              Select variant
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {colorOptions.map((option) => {
+                const active = currentVariant?.color === option.color || currentVariant?.name === option.color;
+
+                return (
+                  <button
+                    key={option.color}
+                    type="button"
+                    onClick={() => handleVariantChange(option.color)}
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-pill px-3 py-1.5 text-[0.76rem] font-medium transition-all duration-200",
+                      active
+                        ? "theme-control-button-active border border-transparent text-ink"
+                        : "theme-secondary-action border border-transparent text-ink-soft hover:text-ink",
+                    )}
+                  >
+                    <span
+                      className="h-3 w-3 rounded-full border border-black/8 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]"
+                      style={{ backgroundColor: option.colorHex }}
+                    />
+                    {option.color}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {product.highlights.slice(0, 3).map((highlight) => (
             <span
               key={highlight}
-              className="theme-control-muted rounded-pill bg-white/65 px-2.5 py-1 text-[0.74rem] text-ink-muted"
+              className="rounded-pill bg-[rgba(255,255,255,0.7)] px-2.5 py-1 text-[0.74rem] text-ink-muted shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
             >
               {highlight}
             </span>
           ))}
         </div>
-        <div className="mt-auto pt-3">
-          <div className="flex items-end justify-between gap-4">
+
+        <div className="mt-auto pt-5">
+          <div className="flex items-end justify-between gap-3">
             <div>
-              <div className="text-[0.75rem] uppercase tracking-[0.12em] text-ink-faint">
+              <div className="text-[0.74rem] uppercase tracking-[0.14em] text-ink-faint">
                 {product.category}
               </div>
-              <div className="mt-1 text-[1.18rem] font-medium tracking-[-0.05em] text-ink">
+              <div className="mt-1 text-[1.28rem] font-medium tracking-[-0.05em] text-ink">
                 {product.priceLabel}
               </div>
             </div>
           </div>
 
-          <div className="mt-3 flex gap-2">
-            <form action={addStoreCartItemAction}>
+          <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+            <form action={addStoreCartItemAction} onSubmitCapture={handleAnimatedSubmit}>
               <input type="hidden" name="productId" value={product.id} />
+              <input type="hidden" name="variantId" value={currentVariant?.id ?? ""} />
               <input type="hidden" name="quantity" value="1" />
               <input type="hidden" name="redirectTo" value="/store" />
               <AddToCartButton inCartQuantity={cartQuantity} />
@@ -196,7 +472,7 @@ function StoreProductCard({
 
             <Link
               href={`/store/${product.id}`}
-              className="theme-secondary-action inline-flex items-center justify-center gap-2 rounded-pill border px-3.5 py-2 text-[0.86rem] font-medium transition-all duration-200 hover:-translate-y-0.5"
+              className="theme-secondary-action inline-flex min-h-[2.9rem] items-center justify-center gap-2 rounded-pill border px-4 py-2.5 text-[0.86rem] font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
             >
               View details
               <ArrowRight size={16} strokeWidth={1.8} />
@@ -260,7 +536,7 @@ function ExternalServiceRow({
               {product.highlights.slice(0, 3).map((highlight) => (
                 <span
                   key={highlight}
-                  className="theme-control-muted rounded-pill bg-white/65 px-2.5 py-1 text-[0.74rem] text-ink-muted"
+                  className="rounded-pill bg-white/65 px-2.5 py-1 text-[0.74rem] text-ink-muted"
                 >
                   {highlight}
                 </span>
@@ -328,7 +604,7 @@ function AddOnRow({
               {product.highlights.slice(0, 3).map((highlight) => (
                 <span
                   key={highlight}
-                  className="theme-control-muted rounded-pill bg-white/65 px-2.5 py-1 text-[0.74rem] text-ink-muted"
+                  className="rounded-pill bg-white/65 px-2.5 py-1 text-[0.74rem] text-ink-muted"
                 >
                   {highlight}
                 </span>
@@ -373,68 +649,65 @@ export function StoreShell({
 }>) {
   const [category, setCategory] = useState<StoreCategory>(storeCategories[0]);
   const [query, setQuery] = useState("");
+  const [cartOpen, setCartOpen] = useState(false);
+  const deferredQuery = useDeferredValue(query);
 
   const products = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
+    const normalized = deferredQuery.trim().toLowerCase();
 
     return allProducts.filter((product) => {
       const matchesCategory = product.category === category;
+      const variantSearch = product.variants?.map((variant) => variant.name).join(" ") || "";
       const matchesQuery =
         normalized.length === 0
           ? true
-          : `${product.name} ${product.description} ${product.category}`
+          : `${product.name} ${product.description} ${product.category} ${variantSearch}`
               .toLowerCase()
               .includes(normalized);
 
       return matchesCategory && matchesQuery;
     });
-  }, [allProducts, category, query]);
-
-  const selectedCategoryIcon = useMemo(() => {
-    switch (category) {
-      case "Merchandise":
-        return <ShoppingBag size={18} strokeWidth={1.8} />;
-      case "IPTV":
-        return <Tv size={18} strokeWidth={1.8} />;
-      case "Phone":
-        return <Phone size={18} strokeWidth={1.8} />;
-      case "Add-ons":
-        return <BadgePlus size={18} strokeWidth={1.8} />;
-      default:
-        return <BadgePlus size={18} strokeWidth={1.8} />;
-    }
-  }, [category]);
+  }, [allProducts, category, deferredQuery]);
 
   return (
-    <div className="space-y-3 pb-2 xl:[zoom:0.92] 2xl:[zoom:1]">
+    <div className="space-y-4 pb-3 xl:[zoom:0.95] 2xl:[zoom:1]">
       <PageIntro
         eyebrow="Store"
         title="U-Store"
-        description="Browse complete U-WiFi store lineup of merchandise, IPTV, phone services, and account add-ons."
+        description="Browse curated merchandise, partner services and account add-ons with a cleaner shopping flow."
         actions={
-          <div className="theme-tab-shell flex flex-wrap items-center gap-2 rounded-[1.2rem] border p-2">
+          <div className="flex flex-wrap items-center gap-2">
             <StatusPill label={`${products.length} items visible`} tone="brand" />
-            <Link
-              href="/store/checkout"
-              className="theme-secondary-action inline-flex items-center gap-2 rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
+            <button
+              type="button"
+              onClick={() => setCartOpen(true)}
+              className="theme-primary-action inline-flex items-center gap-2 rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
             >
-              Cart {cart.itemCount ? `(${cart.itemCount})` : ""}
-            </Link>
+              <ShoppingCart size={16} strokeWidth={1.8} />
+              Cart
+              {cart.itemCount ? (
+                <span className="rounded-full bg-white/80 px-2 py-0.5 text-[0.76rem] text-success shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+                  {cart.itemCount}
+                </span>
+              ) : null}
+            </button>
           </div>
         }
       />
 
       {flash ? <StoreFlash tone={flash.status}>{flash.message}</StoreFlash> : null}
 
-      <SurfacePanel className="p-4">
-        <div className="grid gap-3 xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)_auto] xl:items-center">
-          <div className="theme-input-shell rounded-[1.3rem] border px-4 py-3">
+      <SurfacePanel className="overflow-hidden p-4 sm:p-5">
+        <div className="pointer-events-none absolute inset-x-6 top-0 h-24 rounded-b-[2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.12),transparent_72%)]" />
+
+        <div className="relative grid gap-4 xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)_auto] xl:items-center">
+          <div className="theme-input-shell rounded-[1.35rem] border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
             <div className="flex items-center gap-3 text-ink-muted">
               <Search size={18} strokeWidth={1.8} />
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search products..."
+                placeholder="Search products, services or variants..."
                 className="w-full bg-transparent text-body-sm text-ink outline-none placeholder:text-ink-faint"
               />
             </div>
@@ -446,13 +719,12 @@ export function StoreShell({
             options={storeCategories.map((value) => ({ value, label: value }))}
           />
 
-          <div className="theme-inline-surface inline-flex items-center gap-2 rounded-[1.1rem] border border-white/75 bg-white/70 px-3.5 py-2.5 text-body-sm text-ink-soft shadow-[inset_0_1px_0_rgba(255,255,255,0.94)]">
-            <span className="text-success">{selectedCategoryIcon}</span>
+          <div className="theme-inline-surface inline-flex items-center gap-2 rounded-[1.15rem] border border-white/75 bg-white/72 px-3.5 py-2.5 text-body-sm text-ink-soft shadow-[inset_0_1px_0_rgba(255,255,255,0.94)]">
+            <span className="text-success">{getStoreCategoryIcon(category)}</span>
             {category}
           </div>
         </div>
       </SurfacePanel>
-
 
       {products.length ? (
         <>
@@ -460,15 +732,15 @@ export function StoreShell({
             <SurfacePanel className="p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-title-md text-ink">Available Products</div>
+                  <div className="text-title-md text-ink">Premium merchandise</div>
                   <div className="mt-1 text-body-sm text-ink-muted">
-                    U-Wifi branded merchandise and accessories.
+                    Cleaner cards, consistent imagery and direct variant selection.
                   </div>
                 </div>
                 <StatusPill label={`${products.length} products`} tone="brand" />
               </div>
 
-              <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {products.map((product) => (
                   <StoreProductCard
                     key={product.id}
@@ -484,9 +756,9 @@ export function StoreShell({
             <SurfacePanel className="p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-title-md text-ink">IPTV Options</div>
+                  <div className="text-title-md text-ink">IPTV options</div>
                   <div className="mt-1 text-body-sm text-ink-muted">
-                    TV and streaming services available through U-Store partners.
+                    Partner services presented with clearer actions and stronger hierarchy.
                   </div>
                 </div>
                 <StatusPill label={`${products.length} services`} tone="brand" />
@@ -494,10 +766,7 @@ export function StoreShell({
 
               <div className="mt-4 space-y-3">
                 {products.map((product) => (
-                  <ExternalServiceRow
-                    key={product.id}
-                    product={product}
-                  />
+                  <ExternalServiceRow key={product.id} product={product} />
                 ))}
               </div>
             </SurfacePanel>
@@ -507,9 +776,9 @@ export function StoreShell({
             <SurfacePanel className="p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-title-md text-ink">Phone Services</div>
+                  <div className="text-title-md text-ink">Phone services</div>
                   <div className="mt-1 text-body-sm text-ink-muted">
-                    Mobile phone plans and devices from U-Store partners.
+                    Mobile partners and plans with a tighter, more polished browsing flow.
                   </div>
                 </div>
                 <StatusPill label={`${products.length} services`} tone="brand" />
@@ -517,10 +786,7 @@ export function StoreShell({
 
               <div className="mt-4 space-y-3">
                 {products.map((product) => (
-                  <ExternalServiceRow
-                    key={product.id}
-                    product={product}
-                  />
+                  <ExternalServiceRow key={product.id} product={product} />
                 ))}
               </div>
             </SurfacePanel>
@@ -530,9 +796,9 @@ export function StoreShell({
             <SurfacePanel className="p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-title-md text-ink">Available add-ons</div>
+                  <div className="text-title-md text-ink">Account add-ons</div>
                   <div className="mt-1 text-body-sm text-ink-muted">
-                    Account upgrades and support options reflected in the mobile U-Store.
+                    Extras that fit the same purchase flow without feeling bolted on.
                   </div>
                 </div>
                 <StatusPill label={`${products.length} add-ons`} tone="brand" />
@@ -557,6 +823,12 @@ export function StoreShell({
           icon={<Search size={20} strokeWidth={1.8} />}
         />
       )}
+
+      <StoreCartDrawer
+        cart={cart}
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+      />
     </div>
   );
 }

@@ -200,11 +200,11 @@ export default async function GatewayPage({
       <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
         <SurfacePanel className="overflow-hidden p-4 sm:p-5">
           <div className="pointer-events-none absolute inset-x-8 top-0 h-28 rounded-b-[2.2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.14),transparent_74%)]" />
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="relative">
-              <div className="text-title-md text-ink">Radio summary</div>
+              <div className="text-title-md text-ink">Network overview</div>
               <div className="mt-1 text-body-sm text-ink-muted">
-                Review both Wi-Fi bands at a glance without expanding the whole panel.
+                Keep both Wi-Fi bands and the key network details visible without crowding the panel.
               </div>
             </div>
 
@@ -212,7 +212,7 @@ export default async function GatewayPage({
           </div>
 
           <div className="mt-4 grid gap-3">
-            <div className="grid gap-3 lg:grid-cols-[repeat(2,minmax(0,1fr))_minmax(14rem,0.82fr)]">
+            <div className="grid gap-3 xl:grid-cols-2">
               {gateway.networks.map((network) => (
                 <div
                   key={network.key}
@@ -249,33 +249,35 @@ export default async function GatewayPage({
                   </div>
                 </div>
               ))}
+            </div>
 
-              <div className="theme-soft-well rounded-[1.25rem] border border-line/30 px-4 py-3.5">
-                <div className="flex items-center gap-2 text-body-md text-ink">
-                  <Activity size={17} strokeWidth={1.8} />
-                  Network summary
-                </div>
-                <div className="mt-3 grid gap-2.5">
-                  {radioHighlights.map((item) => (
-                    <div
-                      key={item.label}
-                      className="theme-inline-surface flex items-start justify-between gap-3 rounded-[1rem] border border-line/35 px-3.5 py-3"
-                    >
+            <div className="theme-soft-well rounded-[1.25rem] border border-line/30 px-4 py-3.5">
+              <div className="flex items-center gap-2 text-body-md text-ink">
+                <Activity size={17} strokeWidth={1.8} />
+                Connection summary
+              </div>
+              <div className="mt-3 grid gap-2.5 md:grid-cols-3">
+                {radioHighlights.map((item) => (
+                  <div
+                    key={item.label}
+                    className="theme-inline-surface rounded-[1rem] border border-line/35 px-3.5 py-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="text-[0.74rem] uppercase tracking-[0.14em] text-ink-faint">
                           {item.label}
                         </div>
-                        <div className="mt-1 text-[0.92rem] font-medium text-ink-soft">
+                        <div className="mt-1 text-[1rem] font-medium text-ink-soft">
                           {item.value}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-right text-[0.78rem] text-ink-muted">
-                        <span className={`h-2 w-2 rounded-full ${item.palette.dot}`} />
-                        <span>{item.meta}</span>
-                      </div>
+                      <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${item.palette.dot}`} />
                     </div>
-                  ))}
-                </div>
+                    <div className="mt-2 break-words text-[0.78rem] leading-5 text-ink-muted">
+                      {item.meta}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

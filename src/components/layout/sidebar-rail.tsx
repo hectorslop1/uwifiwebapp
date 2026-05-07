@@ -49,7 +49,6 @@ function SidebarItem({
   return (
     <Link
       href={href}
-      prefetch={false}
       aria-label={!expanded ? label : undefined}
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
@@ -75,20 +74,14 @@ function SidebarItem({
         <Icon size={19} strokeWidth={1.8} />
       </span>
 
-      <AnimatePresence initial={false}>
-        {expanded ? (
-          <motion.span
-            key="label"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            transition={{ duration: 0.14, ease: "easeOut" }}
-            className="min-w-0 whitespace-nowrap text-[0.95rem] font-medium tracking-[-0.03em]"
-          >
-            {label}
-          </motion.span>
-        ) : null}
-      </AnimatePresence>
+      <span
+        className={cx(
+          "min-w-0 overflow-hidden whitespace-nowrap text-[0.95rem] font-medium tracking-[-0.03em] transition-all duration-150 ease-out",
+          expanded ? "max-w-[10rem] translate-x-0 opacity-100" : "max-w-0 -translate-x-1 opacity-0",
+        )}
+      >
+        {label}
+      </span>
 
       {!expanded ? (
         <span className="theme-sidebar-tooltip pointer-events-none absolute left-[calc(100%+0.85rem)] top-1/2 z-30 -translate-y-1/2 rounded-[0.95rem] border px-3 py-2 text-[0.82rem] font-medium tracking-[-0.02em] whitespace-nowrap opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100">
@@ -211,12 +204,13 @@ export function SidebarRail() {
         </button>
       </div>
 
-      <motion.div
-        animate={{ width: desktopOpen ? 232 : 92 }}
-        transition={{ duration: 0.22, ease: "easeOut" }}
-        className="relative hidden shrink-0 lg:block"
+      <div
+        className={cx(
+          "relative hidden shrink-0 transition-[width] duration-200 ease-out lg:block",
+          desktopOpen ? "w-[232px]" : "w-[92px]",
+        )}
       >
-        <motion.aside
+        <aside
           onMouseEnter={() => setDesktopOpen(true)}
           onMouseLeave={() => setDesktopOpen(false)}
           onFocusCapture={() => setDesktopOpen(true)}
@@ -225,7 +219,7 @@ export function SidebarRail() {
               setDesktopOpen(false);
             }
           }}
-          style={{ willChange: "width" }}
+          style={{ willChange: "width, transform" }}
           className="theme-sidebar-rail z-20 flex h-full min-h-[calc(100dvh-5.4rem)] flex-col border-r border-line/25 bg-white/12 px-3 py-4 backdrop-blur-xl"
         >
           <SidebarContent
@@ -234,8 +228,8 @@ export function SidebarRail() {
             onLogout={handleLogout}
             isLoggingOut={isLoggingOut}
           />
-        </motion.aside>
-      </motion.div>
+        </aside>
+      </div>
 
       <AnimatePresence>
         {mobileOpen ? (
