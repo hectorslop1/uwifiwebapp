@@ -1,13 +1,13 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BadgeCheck,
   CreditCard,
   LifeBuoy,
   Mail,
   Phone,
   Router,
   Shield,
-  Sparkles,
   Ticket,
   Users,
 } from "lucide-react";
@@ -189,12 +189,12 @@ export default async function SupportPage() {
           <SurfacePanel subtle className="p-4">
             <div className="flex items-start gap-3">
               <span className="theme-icon-surface flex h-10 w-10 items-center justify-center rounded-[0.95rem] bg-white/85 text-ink-soft">
-                <Sparkles size={16} strokeWidth={1.8} />
+                <BadgeCheck size={16} strokeWidth={1.8} />
               </span>
               <div>
-                <div className="text-title-md text-ink">Fastest path</div>
+                <div className="text-title-md text-ink">Helpful details</div>
                 <div className="mt-3 text-body-sm text-ink-muted">
-                  A clear ticket with the right category and a screenshot usually gets routed faster than a generic request.
+                  Include the affected service, device, and a screenshot when available so the right team can pick it up faster.
                 </div>
               </div>
             </div>

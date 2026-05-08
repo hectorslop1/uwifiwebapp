@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { ChevronRight, Link2 } from "lucide-react";
 
 type ActionCapsulesProps = {
   children: ReactNode;
@@ -63,7 +63,7 @@ export function ActionCapsule({
           iconClassName,
         )}
       >
-        {icon ?? <Sparkles size={16} strokeWidth={1.8} />}
+        {icon ?? <Link2 size={16} strokeWidth={1.8} />}
       </span>
 
       <span className="min-w-0 flex-1 text-[0.95rem] font-medium text-current">

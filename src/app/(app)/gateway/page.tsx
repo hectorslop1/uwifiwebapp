@@ -3,7 +3,6 @@ import {
   Activity,
   ChevronRight,
   Gauge,
-  Radio,
   RotateCcw,
   Wifi,
 } from "lucide-react";
@@ -11,7 +10,6 @@ import {
 import { FeedbackState } from "@/src/components/ui/feedback-state";
 import { PageIntro } from "@/src/components/ui/page-intro";
 import { RefreshRouteButton } from "@/src/components/ui/refresh-route-button";
-import { StatTile } from "@/src/components/ui/stat-tile";
 import { StatusPill } from "@/src/components/ui/status-pill";
 import { SurfacePanel } from "@/src/components/ui/surface-panel";
 import { getAuthenticatedPortalContext } from "@/src/server/auth/session";
@@ -116,24 +114,30 @@ export default async function GatewayPage({
 
   const gatewayStatusTone = getConnectionTone(gateway.connectionStatus);
   const gatewayStatusLabel = getConnectionLabel(gateway.connectionStatus);
-  const radioHighlights = [
+  const connectionSummary = [
     {
-      label: "5 GHz devices",
-      value: String(gateway.devices5G.length),
-      meta: gateway.wifi5GName || "5 GHz network",
-      palette: getBandPalette("5 GHz"),
-    },
-    {
-      label: "2.4 GHz devices",
-      value: String(gateway.devices24G.length),
-      meta: gateway.wifi24GName || "2.4 GHz network",
-      palette: getBandPalette("2.4 GHz"),
+      label: "Connected devices",
+      value: String(gateway.totalDevices),
+      meta: "Across both Wi-Fi bands",
+      dot: "bg-success",
     },
     {
       label: "Primary Wi-Fi",
       value: gateway.wifiName || "Unavailable",
       meta: gateway.serialNumber,
-      palette: getBandPalette("5 GHz"),
+      dot: "bg-brand",
+    },
+    {
+      label: "5 GHz devices",
+      value: String(gateway.devices5G.length),
+      meta: gateway.wifi5GName || "5 GHz network",
+      dot: getBandPalette("5 GHz").dot,
+    },
+    {
+      label: "2.4 GHz devices",
+      value: String(gateway.devices24G.length),
+      meta: gateway.wifi24GName || "2.4 GHz network",
+      dot: getBandPalette("2.4 GHz").dot,
     },
   ];
 
@@ -164,47 +168,14 @@ export default async function GatewayPage({
 
       {flash ? <GatewayFlash tone={flash.status}>{flash.message}</GatewayFlash> : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatTile
-          label="Gateway status"
-          value={
-            <StatusPill
-              label={gatewayStatusLabel}
-              tone={gatewayStatusTone}
-              pulse
-              variant="plain"
-              className="text-[1.1rem] font-medium tracking-[-0.045em]"
-            />
-          }
-          meta={gateway.isConnected ? "Connection looks healthy" : "Review the gateway status"}
-        />
-        <StatTile
-          label="Connected devices"
-          value={String(gateway.totalDevices)}
-          meta="Across both Wi-Fi bands"
-        />
-        <StatTile
-          label="5 GHz devices"
-          value={String(gateway.devices5G.length)}
-          meta={gateway.wifi5GName || "5 GHz network"}
-          className="border-[rgba(52,196,59,0.18)] bg-[linear-gradient(180deg,rgba(var(--color-surface-raised),0.74),rgba(52,196,59,0.08))]"
-        />
-        <StatTile
-          label="2.4 GHz devices"
-          value={String(gateway.devices24G.length)}
-          meta={gateway.wifi24GName || "2.4 GHz network"}
-          className="border-[rgba(108,69,255,0.18)] bg-[linear-gradient(180deg,rgba(var(--color-surface-raised),0.74),rgba(108,69,255,0.08))]"
-        />
-      </div>
-
-      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.18fr)_minmax(18rem,0.82fr)]">
+      <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.16fr)_minmax(18rem,0.84fr)]">
         <SurfacePanel className="overflow-hidden p-4 sm:p-5">
           <div className="pointer-events-none absolute inset-x-8 top-0 h-28 rounded-b-[2.2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.14),transparent_74%)]" />
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="relative">
               <div className="text-title-md text-ink">Network overview</div>
               <div className="mt-1 text-body-sm text-ink-muted">
-                Keep both Wi-Fi bands and the key network details visible without crowding the panel.
+                Keep both Wi-Fi bands in view and surface only the details that help you act quickly.
               </div>
             </div>
 
@@ -256,8 +227,8 @@ export default async function GatewayPage({
                 <Activity size={17} strokeWidth={1.8} />
                 Connection summary
               </div>
-              <div className="mt-3 grid gap-2.5 md:grid-cols-3">
-                {radioHighlights.map((item) => (
+              <div className="mt-3 grid gap-2.5 md:grid-cols-2">
+                {connectionSummary.map((item) => (
                   <div
                     key={item.label}
                     className="theme-inline-surface rounded-[1rem] border border-line/35 px-3.5 py-3"
@@ -271,7 +242,7 @@ export default async function GatewayPage({
                           {item.value}
                         </div>
                       </div>
-                      <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${item.palette.dot}`} />
+                      <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${item.dot}`} />
                     </div>
                     <div className="mt-2 break-words text-[0.78rem] leading-5 text-ink-muted">
                       {item.meta}
@@ -279,22 +250,8 @@ export default async function GatewayPage({
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div className="theme-inline-surface rounded-[1rem] border border-[rgba(108,69,255,0.18)] px-3.5 py-2.5 text-[0.84rem] leading-6 text-ink-muted">
-                <div className="mb-1 flex items-center gap-2 text-ink">
-                  <Radio size={14} strokeWidth={1.8} />
-                  <span className="text-[0.82rem] font-medium">2.4 GHz</span>
-                </div>
-                Best for range and walls when devices sit farther away.
-              </div>
-              <div className="theme-inline-surface rounded-[1rem] border border-[rgba(52,196,59,0.18)] px-3.5 py-2.5 text-[0.84rem] leading-6 text-ink-muted">
-                <div className="mb-1 flex items-center gap-2 text-ink">
-                  <Radio size={14} strokeWidth={1.8} />
-                  <span className="text-[0.82rem] font-medium">5 GHz</span>
-                </div>
-                Best for faster speed when devices stay closer to the gateway.
+              <div className="mt-3 text-[0.82rem] leading-6 text-ink-muted">
+                Use the 2.4 GHz band for longer range and the 5 GHz band for nearby devices that need more speed.
               </div>
             </div>
           </div>
@@ -305,7 +262,7 @@ export default async function GatewayPage({
           <div className="relative">
             <div className="text-title-md text-ink">Control panel</div>
             <div className="mt-1 text-body-sm text-ink-muted">
-              Keep the core service details visible without stretching the panel.
+              Keep the gateway status, diagnostics and primary actions close together.
             </div>
 
             <div className="mt-4 grid gap-2.5 sm:grid-cols-2">

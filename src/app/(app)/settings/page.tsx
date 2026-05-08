@@ -1,3 +1,4 @@
+import { getPortalNotifications } from "@/src/server/notifications/api";
 import { getAuthenticatedPortalContext } from "@/src/server/auth/session";
 import { getSettingsProfile } from "@/src/server/settings/api";
 
@@ -18,10 +19,13 @@ export default async function SettingsPage({
     return null;
   }
 
-  const [query, profile] = await Promise.all([
+  const [query, profileResult, notificationsResult] = await Promise.all([
     searchParams,
     getSettingsProfile(context.user.customerId, context.accessToken),
+    getPortalNotifications(context.user.customerId, context.accessToken).catch(() => []),
   ]);
+
+  const profile = profileResult;
 
   return (
     <SettingsShell
@@ -29,6 +33,7 @@ export default async function SettingsPage({
       initialProfile={profile}
       initialSection={getSettingsSection(query.section)}
       flash={getSettingsFlashMessage(query)}
+      initialNotifications={notificationsResult}
     />
   );
 }

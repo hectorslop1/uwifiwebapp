@@ -23,7 +23,7 @@ function SubmitTicketButton() {
     <button
       type="submit"
       disabled={pending}
-      className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-5 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)] disabled:cursor-not-allowed disabled:opacity-70"
+      className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] px-5 text-body-sm text-white disabled:cursor-not-allowed disabled:opacity-70"
     >
       <Send size={16} strokeWidth={1.8} />
       {pending ? "Submitting..." : "Submit ticket"}

@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { CreditCard, Plus, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { BadgeCheck, CreditCard, Plus, ShieldCheck, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -15,6 +15,24 @@ const fieldClassName =
 function formatCardNumber(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 16);
   const groups = digits.match(/.{1,4}/g);
+  return groups?.join(" ") ?? "";
+}
+
+function formatMaskedCardNumber(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 16);
+
+  if (!digits) {
+    return "";
+  }
+
+  if (digits.length <= 4) {
+    return formatCardNumber(digits);
+  }
+
+  const visibleDigits = digits.slice(-4);
+  const maskedDigits = `${"*".repeat(digits.length - 4)}${visibleDigits}`;
+  const groups = maskedDigits.match(/.{1,4}/g);
+
   return groups?.join(" ") ?? "";
 }
 
@@ -36,7 +54,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="theme-primary-action mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full border px-4 py-3 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70"
+      className="theme-cta inline-flex w-full items-center justify-center gap-2 rounded-full border px-4 py-3 text-body-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
     >
       {pending ? "Saving payment method..." : "Save payment method"}
     </button>
@@ -53,7 +71,7 @@ export function PaymentMethodAddCardPanel() {
   const [isBackVisible, setIsBackVisible] = useState(false);
 
   const previewCardNumber = useMemo(() => {
-    const formatted = formatCardNumber(cardNumber);
+    const formatted = formatMaskedCardNumber(cardNumber);
     return formatted || "0000 0000 0000 0000";
   }, [cardNumber]);
   const previewHolder = cardHolder.trim() || "CARD HOLDER";
@@ -80,7 +98,7 @@ export function PaymentMethodAddCardPanel() {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="theme-control-button inline-flex items-center rounded-full border px-3.5 py-2 text-[0.78rem] font-medium text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
+                className="theme-secondary-action inline-flex items-center rounded-full border px-3.5 py-2 text-[0.78rem] font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
               >
                 <span className="inline-flex items-center gap-2">
                   <X size={14} strokeWidth={1.8} />
@@ -90,16 +108,16 @@ export function PaymentMethodAddCardPanel() {
             </div>
 
             <p className="mt-3 max-w-[34rem] text-body-sm text-ink-muted">
-              Add a new card with a live preview before saving it to your account.
+              Add a new card with masked entry, instant preview, and a cleaner billing setup.
             </p>
 
-            <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1.12fr)_minmax(21rem,25rem)] lg:items-start">
-              <div className="space-y-4">
+            <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(17rem,20.5rem)_minmax(0,1fr)] xl:items-start">
+              <div className="space-y-4 xl:sticky xl:top-4">
                 <motion.div
                   animate={{ rotateY: isBackVisible ? 180 : 0 }}
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   style={{ transformStyle: "preserve-3d" }}
-                  className="relative mx-auto aspect-[1.6/1] w-full max-w-[32rem]"
+                  className="relative mx-auto aspect-[1.6/1] w-full max-w-[22rem]"
                 >
                   <CardFace
                     front
@@ -111,65 +129,102 @@ export function PaymentMethodAddCardPanel() {
                   <CardFaceBack cvv={cvv || "•••"} />
                 </motion.div>
 
-                <div className="theme-inline-surface rounded-[1.2rem] border border-white/80 bg-white/55 px-4 py-4 text-body-sm text-ink-muted">
-                  The preview updates as you type and flips automatically when you enter the security code.
+                <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-1">
+                  <div className="theme-inline-surface rounded-[1.15rem] border border-white/80 bg-white/60 px-4 py-3.5">
+                    <div className="flex items-center gap-2 text-body-md font-medium text-ink">
+                      <ShieldCheck size={16} strokeWidth={1.8} className="text-success" />
+                      Protected entry
+                    </div>
+                    <div className="mt-1.5 text-body-sm text-ink-muted">
+                      Card data stays masked while you type and the preview flips only for CVV.
+                    </div>
+                  </div>
+                  <div className="theme-inline-surface rounded-[1.15rem] border border-white/80 bg-white/60 px-4 py-3.5">
+                    <div className="flex items-center gap-2 text-body-md font-medium text-ink">
+                      <BadgeCheck size={16} strokeWidth={1.8} className="text-brand" />
+                      Quick review
+                    </div>
+                    <div className="mt-1.5 text-body-sm text-ink-muted">
+                      Confirm brand, holder name, and expiry at a glance before saving.
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <form
                 action={addPaymentMethodAction}
-                className="theme-inline-surface space-y-4 rounded-[1.45rem] border border-white/85 bg-white/62 p-4 shadow-[0_20px_42px_rgba(202,206,217,0.12),inset_0_1px_0_rgba(255,255,255,0.92)]"
+                className="theme-inline-surface rounded-[1.4rem] border border-white/85 bg-white/68 p-4 shadow-[0_18px_38px_rgba(202,206,217,0.1),inset_0_1px_0_rgba(255,255,255,0.92)] sm:p-5"
               >
-                <div>
-                  <div className="text-body-md font-medium text-ink">Card details</div>
-                  <div className="mt-1 text-body-sm text-ink-muted">
-                    Enter the information exactly as it appears on the card.
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="text-body-md font-medium text-ink">Card details</div>
+                    <div className="mt-1 text-body-sm text-ink-muted">
+                      Enter the information exactly as it appears on the card.
+                    </div>
                   </div>
+                  <span className="rounded-full border border-white/85 bg-white/72 px-3 py-1.5 text-[0.76rem] font-semibold tracking-[0.14em] text-ink-soft shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+                    {previewBrand}
+                  </span>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label htmlFor="cardHolder" className="text-[0.78rem] font-medium text-ink-soft">
-                    Cardholder
-                  </label>
-                  <input
-                    id="cardHolder"
-                    name="cardHolder"
-                    type="text"
-                    placeholder="Name on card"
-                    className={fieldClassName}
-                    value={cardHolder}
-                    onChange={(event) => {
-                      setCardHolder(event.target.value);
-                      setIsBackVisible(false);
-                    }}
-                    onFocus={() => setIsBackVisible(false)}
-                  />
-                </div>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label htmlFor="cardHolder" className="text-[0.78rem] font-medium text-ink-soft">
+                      Cardholder
+                    </label>
+                    <input
+                      id="cardHolder"
+                      name="cardHolder"
+                      type="text"
+                      placeholder="Name on card"
+                      className={fieldClassName}
+                      value={cardHolder}
+                      onChange={(event) => {
+                        setCardHolder(event.target.value);
+                        setIsBackVisible(false);
+                      }}
+                      onFocus={() => setIsBackVisible(false)}
+                    />
+                  </div>
 
-                <div className="space-y-1.5">
-                  <label htmlFor="cardNumber" className="text-[0.78rem] font-medium text-ink-soft">
-                    Card number
-                  </label>
-                  <input
-                    id="cardNumber"
-                    name="cardNumber"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="4111 1111 1111 1111"
-                    className={fieldClassName}
-                    value={formatCardNumber(cardNumber)}
-                    onChange={(event) => {
-                      setCardNumber(event.target.value.replace(/\D/g, "").slice(0, 16));
-                      setIsBackVisible(false);
-                    }}
-                    onFocus={() => setIsBackVisible(false)}
-                  />
-                </div>
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label htmlFor="cardNumber" className="text-[0.78rem] font-medium text-ink-soft">
+                      Card number
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="cardNumber"
+                        name="cardNumber"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="cc-number"
+                        className={`${fieldClassName} text-transparent caret-ink placeholder:text-transparent`}
+                        value={formatCardNumber(cardNumber)}
+                        onChange={(event) => {
+                          setCardNumber(event.target.value.replace(/\D/g, "").slice(0, 16));
+                          setIsBackVisible(false);
+                        }}
+                        onFocus={() => setIsBackVisible(false)}
+                      />
+                      <div
+                        aria-hidden="true"
+                        className={`pointer-events-none absolute inset-0 flex items-center px-4 text-[0.92rem] ${
+                          cardNumber ? "text-ink" : "text-ink-faint"
+                        }`}
+                      >
+                        {cardNumber
+                          ? formatMaskedCardNumber(cardNumber)
+                          : "4111 1111 1111 1111"}
+                      </div>
+                    </div>
+                    <div className="text-[0.76rem] text-ink-faint">
+                      Only the last 4 digits stay visible while you type.
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-1.5">
                     <label htmlFor="expMonth" className="text-[0.78rem] font-medium text-ink-soft">
-                      MM
+                      Month
                     </label>
                     <input
                       id="expMonth"
@@ -189,7 +244,7 @@ export function PaymentMethodAddCardPanel() {
 
                   <div className="space-y-1.5">
                     <label htmlFor="expYear" className="text-[0.78rem] font-medium text-ink-soft">
-                      YY
+                      Year
                     </label>
                     <input
                       id="expYear"
@@ -207,9 +262,9 @@ export function PaymentMethodAddCardPanel() {
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 md:col-span-2">
                     <label htmlFor="cvv" className="text-[0.78rem] font-medium text-ink-soft">
-                      CVV
+                      Security code
                     </label>
                     <input
                       id="cvv"
@@ -228,10 +283,38 @@ export function PaymentMethodAddCardPanel() {
                   </div>
                 </div>
 
-                <SubmitButton />
+                <div className="theme-soft-well mt-4 grid gap-2.5 rounded-[1.15rem] border px-4 py-3 sm:grid-cols-3">
+                  <div>
+                    <div className="text-[0.74rem] uppercase tracking-[0.14em] text-ink-faint">
+                      Holder
+                    </div>
+                    <div className="mt-1 text-body-sm font-medium text-ink-soft">
+                      {previewHolder}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[0.74rem] uppercase tracking-[0.14em] text-ink-faint">
+                      Expires
+                    </div>
+                    <div className="mt-1 text-body-sm font-medium text-ink-soft">
+                      {previewExpiry}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[0.74rem] uppercase tracking-[0.14em] text-ink-faint">
+                      Brand
+                    </div>
+                    <div className="mt-1 text-body-sm font-medium text-ink-soft">
+                      {previewBrand}
+                    </div>
+                  </div>
+                </div>
 
-                <div className="rounded-[1.1rem] border border-dashed border-[#d6dfd8] bg-[#f8fbf8] px-4 py-3 text-body-sm text-ink-muted">
-                  Your card is saved for future billing and checkout payments.
+                <div className="mt-4 flex flex-col-reverse gap-3 border-t border-line/25 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="max-w-[22rem] text-[0.8rem] leading-5 text-ink-muted">
+                    Your card stays available for future billing cycles and faster checkout.
+                  </div>
+                  <SubmitButton />
                 </div>
               </form>
             </div>
@@ -249,20 +332,40 @@ export function PaymentMethodAddCardPanel() {
               Add payment method
             </div>
             <p className="mt-3 max-w-[36rem] text-body-sm text-ink-muted">
-              Save another card for billing and future purchases whenever you need one.
+              Save another card for billing and future purchases with a cleaner entry flow.
             </p>
-            <div className="theme-inline-surface mt-5 rounded-[1.25rem] border border-white/80 bg-white/55 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
-              <div className="text-body-md font-medium text-ink">Card preview</div>
-              <div className="mt-2 text-body-sm text-ink-muted">
-                Open the form to preview the card details while you type before saving them.
+
+            <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start">
+              <div className="theme-inline-surface rounded-[1.35rem] border border-white/82 bg-white/58 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+                <div className="text-body-md font-medium text-ink">Live card preview</div>
+                <div className="mt-2 text-body-sm text-ink-muted">
+                  Open the form to preview masked details while you type before saving them.
+                </div>
+
+                <div className="mt-4 relative mx-auto aspect-[1.6/1] w-full max-w-[21rem]">
+                  <CardFace
+                    front
+                    brand="UWiFi Pay"
+                    cardHolder="CARD HOLDER"
+                    cardNumber="0000 0000 0000 0000"
+                    expiry="MM/YY"
+                  />
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsOpen(true)}
-                className="theme-control-button mt-4 inline-flex rounded-full border px-4 py-2.5 text-body-sm font-medium text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
-              >
-                Add payment method
-              </button>
+
+              <div className="theme-soft-well rounded-[1.35rem] border px-4 py-4">
+                <div className="text-body-md font-medium text-ink">Ready in a minute</div>
+                <div className="mt-2 text-body-sm text-ink-muted">
+                  Add the card, review the preview, and save it for upcoming billing.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(true)}
+                  className="theme-cta mt-4 inline-flex w-full items-center justify-center rounded-full border px-4 py-3 text-body-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
+                >
+                  Add payment method
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -273,7 +376,7 @@ export function PaymentMethodAddCardPanel() {
 
 function SurfaceWrapper({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <div className="theme-panel-subtle w-full rounded-[1.6rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,248,250,0.82))] p-4 shadow-[0_22px_48px_rgba(203,207,216,0.12),inset_0_1px_0_rgba(255,255,255,0.94)] sm:p-5">
+    <div className="theme-panel-subtle w-full rounded-[1.5rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,250,0.84))] p-4 shadow-[0_20px_42px_rgba(203,207,216,0.1),inset_0_1px_0_rgba(255,255,255,0.94)] sm:p-5">
       {children}
     </div>
   );

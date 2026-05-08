@@ -3,53 +3,48 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import { Bell, LockKeyhole, Save, ShieldCheck, SlidersHorizontal, UserRound } from "lucide-react";
+import {
+  Bell,
+  CheckCheck,
+  Languages,
+  Save,
+  ShieldCheck,
+  Trash2,
+  UserRound,
+} from "lucide-react";
 
 import { PageIntro } from "@/src/components/ui/page-intro";
 import { SegmentedControl } from "@/src/components/ui/segmented-control";
+import { StatusPill } from "@/src/components/ui/status-pill";
 import { SurfacePanel } from "@/src/components/ui/surface-panel";
+import type { PortalNotification } from "@/src/server/notifications/types";
 import type { SettingsProfile } from "@/src/server/settings/types";
 
 import {
   changePasswordSettingsAction,
-  saveProfileSettingsAction,
+  deleteNotificationSettingsAction,
+  markAllNotificationsAsReadSettingsAction,
+  markNotificationAsReadSettingsAction,
 } from "./actions";
 import type { SettingsFlashMessage, SettingsSection } from "./settings-ui";
 
 const fieldClassName =
   "theme-input w-full rounded-[1rem] border px-4 py-3 text-body-sm text-ink outline-none placeholder:text-ink-faint";
 
-const settingsKey = "uwifi-settings-v1";
+const settingsKey = "uwifi-settings-v2";
 
 type ThemePreference = "light" | "dark" | "system";
-type DensityPreference = "comfortable" | "compact";
 type LocalePreference = "en" | "es";
-type TimezonePreference = "america-tijuana" | "america-los-angeles";
+type NotificationFilter = "all" | "unread" | "read";
 
 type PortalPreferences = {
   theme: ThemePreference;
   language: LocalePreference;
-  timezone: TimezonePreference;
-  density: DensityPreference;
-};
-
-type PortalNotifications = {
-  billing: boolean;
-  outages: boolean;
-  promotions: boolean;
 };
 
 const defaultPreferences: PortalPreferences = {
   theme: "system",
   language: "en",
-  timezone: "america-tijuana",
-  density: "comfortable",
-};
-
-const defaultNotifications: PortalNotifications = {
-  billing: true,
-  outages: true,
-  promotions: false,
 };
 
 function SectionHeader({
@@ -125,37 +120,19 @@ function FormSubmitButton({
   );
 }
 
-function ToggleRow({
-  title,
-  description,
-  checked,
-  onToggle,
+function ReadOnlyField({
+  label,
+  value,
 }: Readonly<{
-  title: string;
-  description: string;
-  checked: boolean;
-  onToggle: () => void;
+  label: string;
+  value: string;
 }>) {
   return (
-    <div className="theme-inline-surface flex items-center justify-between gap-4 rounded-[1.15rem] border border-line/35 px-4 py-3.5">
-      <div>
-        <div className="text-body-md font-medium text-ink">{title}</div>
-        <div className="text-body-sm text-ink-muted">{description}</div>
+    <div className="theme-inline-surface rounded-[1rem] border border-line/35 px-4 py-3">
+      <div className="text-[0.74rem] uppercase tracking-[0.14em] text-ink-faint">{label}</div>
+      <div className="mt-1.5 break-words text-body-md font-medium text-ink-soft">
+        {value || "Not available"}
       </div>
-
-      <button
-        type="button"
-        onClick={onToggle}
-        className={`relative h-7 w-12 rounded-full transition-colors duration-200 ${
-          checked ? "bg-success/85" : "bg-line-strong/70"
-        }`}
-      >
-        <span
-          className={`theme-toggle-knob absolute top-1 h-5 w-5 rounded-full bg-white transition-all duration-200 ${
-            checked ? "left-6" : "left-1"
-          }`}
-        />
-      </button>
     </div>
   );
 }
@@ -188,7 +165,6 @@ function getStoredSettings() {
 
     return JSON.parse(raw) as {
       preferences?: Partial<PortalPreferences>;
-      notifications?: Partial<PortalNotifications>;
     };
   } catch {
     return null;
@@ -216,33 +192,54 @@ function applyPreferences(preferences: PortalPreferences) {
 
   const resolvedTheme = resolveTheme(preferences.theme);
   document.documentElement.dataset.theme = resolvedTheme;
-  document.documentElement.dataset.density = preferences.density;
   document.documentElement.lang = preferences.language;
   window.localStorage.setItem("uwifi-theme", preferences.theme);
 }
 
-function saveStoredSettings(
-  preferences: PortalPreferences,
-  notifications: PortalNotifications,
-) {
+function saveStoredSettings(preferences: PortalPreferences) {
   if (typeof window === "undefined") {
     return;
   }
 
-  window.localStorage.setItem(
-    settingsKey,
-    JSON.stringify({ preferences, notifications }),
-  );
+  window.localStorage.setItem(settingsKey, JSON.stringify({ preferences }));
+}
+
+function formatNotificationDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Recently";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function getNotificationTone(priority: string) {
+  const normalized = priority.trim().toLowerCase();
+
+  if (normalized === "high" || normalized === "urgent") {
+    return "warning" as const;
+  }
+
+  return "brand" as const;
 }
 
 export function SettingsShell({
   initialProfile,
   initialSection,
   flash,
+  initialNotifications,
 }: Readonly<{
   initialProfile: SettingsProfile;
   initialSection: SettingsSection;
   flash: SettingsFlashMessage | null;
+  initialNotifications: PortalNotification[];
 }>) {
   const [section, setSection] = useState<SettingsSection>(initialSection);
   const [preferences, setPreferences] = useState<PortalPreferences>(() => {
@@ -254,16 +251,9 @@ export function SettingsShell({
       ...stored?.preferences,
     };
   });
-  const [notifications, setNotifications] = useState<PortalNotifications>(() => {
-    const stored = getStoredSettings();
-
-    return {
-      ...defaultNotifications,
-      ...stored?.notifications,
-    };
-  });
   const [preferencesSaved, setPreferencesSaved] = useState(false);
-  const [notificationsSaved, setNotificationsSaved] = useState(false);
+  const [notificationFilter, setNotificationFilter] =
+    useState<NotificationFilter>("all");
 
   useEffect(() => {
     applyPreferences(preferences);
@@ -281,36 +271,27 @@ export function SettingsShell({
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [preferences]);
 
-  const notificationsList = useMemo(
-    () => [
-      {
-        key: "billing" as const,
-        title: "Billing updates",
-        description: "Invoices, failed charges, due reminders and payment confirmations.",
-      },
-      {
-        key: "outages" as const,
-        title: "Gateway and outage alerts",
-        description: "Connection issues, gateway restarts and important service events.",
-      },
-      {
-        key: "promotions" as const,
-        title: "Offers and product news",
-        description: "Optional updates about plans, hardware and bundles.",
-      },
-    ],
-    [],
+  const unreadCount = useMemo(
+    () => initialNotifications.filter((entry) => !entry.isRead).length,
+    [initialNotifications],
   );
+
+  const filteredNotifications = useMemo(() => {
+    if (notificationFilter === "unread") {
+      return initialNotifications.filter((entry) => !entry.isRead);
+    }
+
+    if (notificationFilter === "read") {
+      return initialNotifications.filter((entry) => entry.isRead);
+    }
+
+    return initialNotifications;
+  }, [initialNotifications, notificationFilter]);
 
   const persistPreferences = () => {
     applyPreferences(preferences);
-    saveStoredSettings(preferences, notifications);
+    saveStoredSettings(preferences);
     setPreferencesSaved(true);
-  };
-
-  const persistNotifications = () => {
-    saveStoredSettings(preferences, notifications);
-    setNotificationsSaved(true);
   };
 
   return (
@@ -318,7 +299,7 @@ export function SettingsShell({
       <PageIntro
         eyebrow="Settings"
         title="Account settings"
-        description="Manage your profile, security, preferences, and notification settings in one place."
+        description="Manage your account details, security, preferences, and notifications in one place."
         actions={
           <SegmentedControl
             value={section}
@@ -337,55 +318,23 @@ export function SettingsShell({
 
       {section === "account" ? (
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_18rem]">
-          <form action={saveProfileSettingsAction}>
-            <SurfacePanel className="p-4 sm:p-5">
-              <SectionHeader
-                title="Profile information"
-                description="Keep your contact details current so account and support updates reach the right person."
-              />
+          <SurfacePanel className="p-4 sm:p-5">
+            <SectionHeader
+              title="Account overview"
+              description="Review the key contact details connected to your account."
+            />
 
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <input
-                  name="firstName"
-                  defaultValue={initialProfile.firstName}
-                  className={fieldClassName}
-                  aria-label="First name"
-                />
-                <input
-                  name="lastName"
-                  defaultValue={initialProfile.lastName}
-                  className={fieldClassName}
-                  aria-label="Last name"
-                />
-                <input
-                  defaultValue={initialProfile.email}
-                  className={`${fieldClassName} cursor-not-allowed text-ink-muted`}
-                  aria-label="Email"
-                  disabled
-                />
-                <input
-                  name="phone"
-                  defaultValue={initialProfile.phone}
-                  className={fieldClassName}
-                  aria-label="Phone"
-                  placeholder="+1 (555) 123-4567"
-                />
-              </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <ReadOnlyField label="First name" value={initialProfile.firstName} />
+              <ReadOnlyField label="Last name" value={initialProfile.lastName} />
+              <ReadOnlyField label="Email" value={initialProfile.email} />
+              <ReadOnlyField label="Phone" value={initialProfile.phone} />
+            </div>
 
-              <div className="mt-5 flex flex-wrap gap-3">
-                <button
-                  type="reset"
-                  className="theme-ghost-action rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
-                >
-                  Reset
-                </button>
-                <FormSubmitButton
-                  idleLabel="Save profile"
-                  pendingLabel="Saving profile..."
-                />
-              </div>
-            </SurfacePanel>
-          </form>
+            <div className="mt-4 text-body-sm text-ink-muted">
+              Keep these details current so billing notices, service updates, and account recovery reach the right place.
+            </div>
+          </SurfacePanel>
 
           <SurfacePanel subtle className="p-4">
             <div className="flex items-center gap-3">
@@ -395,9 +344,9 @@ export function SettingsShell({
               <div className="text-title-md text-ink">Account details</div>
             </div>
             <div className="mt-4 space-y-3 text-body-sm text-ink-muted">
-              <div>Your account email stays tied to your sign-in credentials.</div>
-              <div>Use the phone field for billing and support follow-up.</div>
-              <div>Profile updates apply to the portal right away.</div>
+              <div>Your sign-in email is used for authentication and recovery.</div>
+              <div>Your phone number can help with service alerts and support follow-up.</div>
+              <div>Need a change? Open a support request and the team will help update it.</div>
             </div>
           </SurfacePanel>
         </div>
@@ -408,9 +357,10 @@ export function SettingsShell({
           <form action={changePasswordSettingsAction}>
             <SurfacePanel className="p-4 sm:p-5">
               <SectionHeader
-                title="Password update"
-                description="Update your password here to keep access to the portal secure."
+                title="Update password"
+                description="Update your password here to keep account access secure."
               />
+
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <input
                   name="currentPassword"
@@ -428,7 +378,7 @@ export function SettingsShell({
                   name="confirmPassword"
                   type="password"
                   placeholder="Confirm new password"
-                  className={fieldClassName}
+                  className={`${fieldClassName} md:col-span-2`}
                 />
               </div>
 
@@ -455,9 +405,9 @@ export function SettingsShell({
               <div className="text-title-md text-ink">Security notes</div>
             </div>
             <div className="mt-4 space-y-3 text-body-sm text-ink-muted">
-              <div>Use at least 8 characters with a strong combination of letters and numbers.</div>
+              <div>Use at least 8 characters with a stronger mix of upper-case letters, numbers and symbols.</div>
               <div>Choose a password you are not using anywhere else.</div>
-              <div>If you ever lose access, you can still recover it from the sign-in screen.</div>
+              <div>If you lose access later, recovery still starts from the sign-in screen.</div>
             </div>
           </SurfacePanel>
         </div>
@@ -468,7 +418,7 @@ export function SettingsShell({
           <SurfacePanel className="p-4 sm:p-5">
             <SectionHeader
               title="Preferences"
-              description="Choose how the portal should look and behave on this device."
+              description="Set your preferred appearance and language for this portal experience."
             />
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -501,34 +451,6 @@ export function SettingsShell({
                 <option value="en">English</option>
                 <option value="es">Spanish</option>
               </select>
-              <select
-                className={fieldClassName}
-                value={preferences.timezone}
-                onChange={(event) => {
-                  setPreferencesSaved(false);
-                  setPreferences((current) => ({
-                    ...current,
-                    timezone: event.target.value as TimezonePreference,
-                  }));
-                }}
-              >
-                <option value="america-tijuana">America/Tijuana</option>
-                <option value="america-los-angeles">America/Los_Angeles</option>
-              </select>
-              <select
-                className={fieldClassName}
-                value={preferences.density}
-                onChange={(event) => {
-                  setPreferencesSaved(false);
-                  setPreferences((current) => ({
-                    ...current,
-                    density: event.target.value as DensityPreference,
-                  }));
-                }}
-              >
-                <option value="comfortable">Comfortable density</option>
-                <option value="compact">Compact density</option>
-              </select>
             </div>
 
             <div className="mt-5 flex flex-wrap gap-3">
@@ -554,7 +476,7 @@ export function SettingsShell({
 
             {preferencesSaved ? (
               <div className="mt-4 text-body-sm text-success">
-                Preferences saved for this device.
+                Preferences saved for this browser.
               </div>
             ) : null}
           </SurfacePanel>
@@ -562,14 +484,14 @@ export function SettingsShell({
           <SurfacePanel subtle className="p-4">
             <div className="flex items-center gap-3">
               <SectionIcon tone="soft">
-                <SlidersHorizontal size={18} strokeWidth={1.8} />
+                <Languages size={18} strokeWidth={1.8} />
               </SectionIcon>
-              <div className="text-title-md text-ink">On this device</div>
+              <div className="text-title-md text-ink">On this browser</div>
             </div>
             <div className="mt-4 space-y-3 text-body-sm text-ink-muted">
               <div>Theme changes apply as soon as you save them.</div>
-              <div>Language, timezone and density are stored for this browser.</div>
-              <div>You can always switch the look again from the theme button in the header.</div>
+              <div>Language preference stays stored locally for this portal session.</div>
+              <div>Your saved choices help keep this experience consistent each time you return.</div>
             </div>
           </SurfacePanel>
         </div>
@@ -578,68 +500,131 @@ export function SettingsShell({
       {section === "notifications" ? (
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_18rem]">
           <SurfacePanel className="p-4 sm:p-5">
-            <SectionHeader
-              title="Notification preferences"
-              description="Choose which updates the portal should keep front and center for you."
-            />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <SectionHeader
+                title="Notifications"
+                description="Review recent alerts, filter what matters, and clear items as needed."
+              />
 
-            <div className="mt-4 space-y-3">
-              {notificationsList.map((item) => (
-                <ToggleRow
-                  key={item.key}
-                  title={item.title}
-                  description={item.description}
-                  checked={notifications[item.key]}
-                  onToggle={() => {
-                    setNotificationsSaved(false);
-                    setNotifications((current) => ({
-                      ...current,
-                      [item.key]: !current[item.key],
-                    }));
-                  }}
-                />
+              {unreadCount > 0 ? (
+                <form action={markAllNotificationsAsReadSettingsAction}>
+                  <button
+                    type="submit"
+                    className="theme-control-button inline-flex min-h-[2.8rem] items-center gap-2 rounded-full border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
+                  >
+                    <CheckCheck size={16} strokeWidth={1.8} />
+                    Mark all read
+                  </button>
+                </form>
+              ) : null}
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              {([
+                { value: "all", label: "All" },
+                { value: "unread", label: "Unread" },
+                { value: "read", label: "Read" },
+              ] as const).map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setNotificationFilter(option.value)}
+                  className={`rounded-full border px-3.5 py-2 text-[0.82rem] font-medium transition-all duration-200 ${
+                    notificationFilter === option.value
+                      ? "border-[rgba(52,196,59,0.22)] bg-[rgba(52,196,59,0.12)] text-success"
+                      : "theme-control-button"
+                  }`}
+                >
+                  {option.label}
+                </button>
               ))}
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setNotifications(defaultNotifications);
-                  setNotificationsSaved(false);
-                }}
-                className="theme-ghost-action rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5"
-              >
-                Reset
-              </button>
-              <button
-                type="button"
-                onClick={persistNotifications}
-                className="theme-cta inline-flex min-h-[2.85rem] items-center justify-center gap-2 rounded-[1rem] px-5 text-body-sm font-medium text-white"
-              >
-                <Bell size={16} strokeWidth={1.8} />
-                Save notifications
-              </button>
-            </div>
+            <div className="mt-4 space-y-3">
+              {filteredNotifications.length ? (
+                filteredNotifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`theme-inline-surface rounded-[1.15rem] border px-4 py-3.5 ${
+                      notification.isRead
+                        ? "border-line/35"
+                        : "border-[rgba(52,196,59,0.2)] bg-[rgba(248,255,249,0.88)]"
+                    }`}
+                  >
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="text-body-md font-medium text-ink">
+                            {notification.categoryName}
+                          </div>
+                          <StatusPill
+                            label={notification.isRead ? "Read" : "Unread"}
+                            tone={notification.isRead ? "muted" : "success"}
+                          />
+                          <StatusPill
+                            label={notification.priority}
+                            tone={getNotificationTone(notification.priority)}
+                          />
+                        </div>
+                        <div className="mt-2 text-body-sm text-ink-soft">
+                          {notification.message}
+                        </div>
+                        <div className="mt-2 text-[0.8rem] text-ink-faint">
+                          {formatNotificationDate(notification.createdAt)}
+                        </div>
+                      </div>
 
-            {notificationsSaved ? (
-              <div className="mt-4 text-body-sm text-success">
-                Notification preferences saved for this device.
-              </div>
-            ) : null}
+                      <div className="flex flex-wrap items-center gap-2">
+                        {!notification.isRead ? (
+                          <form action={markNotificationAsReadSettingsAction}>
+                            <input type="hidden" name="notificationId" value={notification.id} />
+                            <button
+                              type="submit"
+                              className="theme-control-button inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-[0.8rem] font-medium transition-all duration-200 hover:-translate-y-0.5"
+                            >
+                              <CheckCheck size={14} strokeWidth={1.8} />
+                              Mark read
+                            </button>
+                          </form>
+                        ) : null}
+
+                        <form action={deleteNotificationSettingsAction}>
+                          <input type="hidden" name="notificationId" value={notification.id} />
+                          <button
+                            type="submit"
+                            className="theme-control-button inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-[0.8rem] font-medium transition-all duration-200 hover:-translate-y-0.5"
+                          >
+                            <Trash2 size={14} strokeWidth={1.8} />
+                            Delete
+                          </button>
+                        </form>
+
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="theme-inline-surface rounded-[1.15rem] border border-line/35 px-4 py-4 text-body-sm text-ink-muted">
+                  No notifications match this filter yet.
+                </div>
+              )}
+            </div>
           </SurfacePanel>
 
           <SurfacePanel subtle className="p-4">
             <div className="flex items-center gap-3">
               <SectionIcon tone="soft">
-                <LockKeyhole size={18} strokeWidth={1.8} />
+                <Bell size={18} strokeWidth={1.8} />
               </SectionIcon>
-              <div className="text-title-md text-ink">What you will see</div>
+              <div className="text-title-md text-ink">Notification summary</div>
+            </div>
+            <div className="mt-4 grid gap-2.5">
+              <ReadOnlyField label="Total" value={String(initialNotifications.length)} />
+              <ReadOnlyField label="Unread" value={String(unreadCount)} />
             </div>
             <div className="mt-4 space-y-3 text-body-sm text-ink-muted">
-              <div>Billing reminders help you stay ahead of invoices and charges.</div>
-              <div>Outage alerts keep gateway events visible when they matter most.</div>
-              <div>Promotional updates are optional and can stay off if you prefer less noise.</div>
+              <div>Unread items can be marked individually or all at once.</div>
+              <div>Clear older items anytime to keep this feed focused on current updates.</div>
             </div>
           </SurfacePanel>
         </div>

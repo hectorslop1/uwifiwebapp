@@ -1,0 +1,26 @@
+export type PortalNotification = {
+  id: number;
+  createdAt: string;
+  customerId: number;
+  message: string;
+  organizationId: number;
+  notificationTypeId: number;
+  templateId: number | null;
+  viewedBy: string | null;
+  viewedAt: string | null;
+  isRead: boolean;
+  priority: string;
+  actionTaken: boolean;
+  actionTakenAt: string | null;
+  variables: Record<string, unknown> | null;
+  categoryType: string;
+  categoryName: string;
+  categoryColor: string;
+  categoryIcon: string;
+  categoryPriority: string;
+  templateKey: string | null;
+  templateIcon: string | null;
+  requiresAction: boolean | null;
+  actionLabel: string | null;
+  actionRoute: string | null;
+};

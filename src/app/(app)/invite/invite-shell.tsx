@@ -110,7 +110,7 @@ export function InviteShell({
                 <button
                   type="button"
                   onClick={shareLink}
-                  className="theme-cta inline-flex items-center gap-2 rounded-pill bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] px-4 py-2.5 text-body-sm text-ink shadow-[0_14px_30px_rgba(201,204,214,0.14)]"
+                  className="theme-cta inline-flex items-center gap-2 rounded-pill border px-4 py-2.5 text-body-sm font-medium text-white"
                 >
                   <Share2 size={15} strokeWidth={1.8} />
                   Share

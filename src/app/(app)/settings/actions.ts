@@ -9,6 +9,11 @@ import {
 } from "@/src/server/auth/api";
 import { getAuthenticatedPortalContext } from "@/src/server/auth/session";
 import {
+  deletePortalNotification,
+  markAllPortalNotificationsAsRead,
+  markPortalNotificationAsRead,
+} from "@/src/server/notifications/api";
+import {
   updatePortalPassword,
   updateSettingsProfile,
 } from "@/src/server/settings/api";
@@ -203,6 +208,143 @@ export async function changePasswordSettingsAction(formData: FormData) {
         error instanceof Error
           ? error.message
           : "Unable to update your password right now.",
+      ),
+    );
+  }
+}
+
+export async function markNotificationAsReadSettingsAction(formData: FormData) {
+  const context = await getAuthenticatedPortalContext();
+
+  if (!context) {
+    redirect("/login");
+  }
+
+  const notificationId = Number(formData.get("notificationId") ?? 0);
+
+  if (!notificationId) {
+    redirect(
+      buildSettingsRedirectPath(
+        "notifications",
+        "error",
+        "Select a valid notification first.",
+      ),
+    );
+  }
+
+  try {
+    await markPortalNotificationAsRead(
+      notificationId,
+      context.user.authId,
+      context.accessToken,
+    );
+
+    revalidatePath("/settings");
+    redirect(
+      buildSettingsRedirectPath(
+        "notifications",
+        "success",
+        "Notification marked as read.",
+      ),
+    );
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+
+    redirect(
+      buildSettingsRedirectPath(
+        "notifications",
+        "error",
+        error instanceof Error
+          ? error.message
+          : "Unable to update the notification right now.",
+      ),
+    );
+  }
+}
+
+export async function markAllNotificationsAsReadSettingsAction() {
+  const context = await getAuthenticatedPortalContext();
+
+  if (!context) {
+    redirect("/login");
+  }
+
+  try {
+    await markAllPortalNotificationsAsRead(
+      context.user.customerId,
+      context.user.authId,
+      context.accessToken,
+    );
+
+    revalidatePath("/settings");
+    redirect(
+      buildSettingsRedirectPath(
+        "notifications",
+        "success",
+        "All notifications were marked as read.",
+      ),
+    );
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+
+    redirect(
+      buildSettingsRedirectPath(
+        "notifications",
+        "error",
+        error instanceof Error
+          ? error.message
+          : "Unable to update notifications right now.",
+      ),
+    );
+  }
+}
+
+export async function deleteNotificationSettingsAction(formData: FormData) {
+  const context = await getAuthenticatedPortalContext();
+
+  if (!context) {
+    redirect("/login");
+  }
+
+  const notificationId = Number(formData.get("notificationId") ?? 0);
+
+  if (!notificationId) {
+    redirect(
+      buildSettingsRedirectPath(
+        "notifications",
+        "error",
+        "Select a valid notification first.",
+      ),
+    );
+  }
+
+  try {
+    await deletePortalNotification(notificationId, context.accessToken);
+
+    revalidatePath("/settings");
+    redirect(
+      buildSettingsRedirectPath(
+        "notifications",
+        "success",
+        "Notification deleted.",
+      ),
+    );
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+
+    redirect(
+      buildSettingsRedirectPath(
+        "notifications",
+        "error",
+        error instanceof Error
+          ? error.message
+          : "Unable to delete this notification right now.",
       ),
     );
   }

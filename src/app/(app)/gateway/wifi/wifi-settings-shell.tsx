@@ -1,7 +1,15 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { Eye, EyeOff, RefreshCw, WifiHigh } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  House,
+  RefreshCw,
+  Router,
+  WalletCards,
+  WifiHigh,
+} from "lucide-react";
 
 import {
   ActionCapsule,
@@ -61,7 +69,7 @@ function NetworkSettingsCard({
   passwordName: string;
 }) {
   return (
-    <SurfacePanel subtle className="overflow-hidden p-4">
+    <SurfacePanel subtle className="self-start overflow-hidden p-4">
       <div className="pointer-events-none absolute inset-x-6 top-0 h-20 rounded-b-[2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.14),transparent_74%)]" />
 
       <div className="relative flex items-center gap-3">
@@ -177,10 +185,10 @@ export function WifiSettingsShell({
 
       <form
         action={formAction}
-        className="grid gap-3 lg:min-h-0 lg:flex-1 xl:grid-cols-[minmax(0,1.15fr)_16.5rem]"
+        className="grid items-start gap-3 lg:min-h-0 lg:flex-1 xl:grid-cols-[minmax(0,1fr)_15.5rem]"
       >
         <input type="hidden" name="redirectTo" value="/gateway/wifi" />
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="grid content-start items-start gap-3 lg:grid-cols-2">
           <NetworkSettingsCard
             title={gateway.wifi5GName || "5 GHz network"}
             subtitle={`${gateway.devices5G.length} devices currently connected`}
@@ -212,9 +220,44 @@ export function WifiSettingsShell({
             ssidName="ssidTwoFour"
             passwordName="passwordTwoFour"
           />
+
+          <SurfacePanel subtle className="lg:col-span-2 p-4">
+            <div className="flex items-center gap-2 text-title-md text-ink">
+              <RefreshCw size={16} strokeWidth={1.8} />
+              Quick links
+            </div>
+            <ActionCapsules className="mt-3 grid gap-2.5 lg:grid-cols-3">
+              <ActionCapsule
+                href="/gateway/devices"
+                label="Review connected devices"
+                icon={<Router size={16} strokeWidth={1.8} />}
+                className="min-h-[3.15rem] rounded-[1.15rem] px-3.5 py-2.5"
+              />
+              <ActionCapsule
+                href="/billing/payment-methods"
+                label="Open payment methods"
+                icon={<WalletCards size={16} strokeWidth={1.8} />}
+                className="min-h-[3.15rem] rounded-[1.15rem] px-3.5 py-2.5"
+              />
+              <ActionCapsule
+                href="/overview"
+                label="Back to account overview"
+                icon={<House size={16} strokeWidth={1.8} />}
+                className="min-h-[3.15rem] rounded-[1.15rem] px-3.5 py-2.5"
+              />
+            </ActionCapsules>
+            <div className="mt-3 grid gap-2.5 text-body-sm text-ink-muted sm:grid-cols-2">
+              <div className="theme-inline-surface rounded-[1rem] border border-line/35 px-4 py-3">
+                Keep both network names easy to recognize for the devices in your home.
+              </div>
+              <div className="theme-inline-surface rounded-[1rem] border border-line/35 px-4 py-3">
+                Choose passwords with at least 8 characters so both networks stay secure.
+              </div>
+            </div>
+          </SurfacePanel>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <SurfacePanel subtle className="overflow-hidden p-4">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.12),transparent_74%)]" />
             <div className="relative">
@@ -261,25 +304,6 @@ export function WifiSettingsShell({
             </div>
           </SurfacePanel>
 
-          <SurfacePanel subtle className="p-4">
-            <div className="text-title-md text-ink">Related actions</div>
-            <ActionCapsules className="mt-4">
-              <ActionCapsule href="/gateway/devices" label="Review connected devices" className="min-h-[3.1rem] rounded-[1.1rem] px-3.5 py-2.5" />
-              <ActionCapsule href="/billing/payment-methods" label="Open payment methods" className="min-h-[3.1rem] rounded-[1.1rem] px-3.5 py-2.5" />
-              <ActionCapsule href="/overview" label="Back to account overview" className="min-h-[3.1rem] rounded-[1.1rem] px-3.5 py-2.5" />
-            </ActionCapsules>
-          </SurfacePanel>
-
-          <SurfacePanel subtle className="p-4">
-            <div className="flex items-center gap-2 text-title-md text-ink">
-              <RefreshCw size={16} strokeWidth={1.8} />
-              Update guidance
-            </div>
-            <div className="mt-3 space-y-2 text-body-sm text-ink-muted">
-              <p>Keep both network names easy to recognize for the devices in your home.</p>
-              <p>Choose passwords with at least 8 characters so both networks stay secure.</p>
-            </div>
-          </SurfacePanel>
         </div>
       </form>
     </div>
