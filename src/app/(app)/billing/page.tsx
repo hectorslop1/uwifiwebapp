@@ -76,7 +76,7 @@ export default async function BillingPage({
             <form action={payBalanceNowAction}>
               <button
                 type="submit"
-                className="theme-cta inline-flex items-center gap-2 rounded-pill border px-4 py-2.5 text-body-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02]"
+                className="shadow-[0_18px_32px_rgba(95,185,89,0.22)] hover:shadow-[0_22px_40px_rgba(95,185,89,0.28)] theme-cta inline-flex items-center gap-2 rounded-pill border px-4 py-2.5 text-body-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02]"
               >
                 <DollarSign size={16} strokeWidth={1.8} />
                 Pay current balance
@@ -84,7 +84,7 @@ export default async function BillingPage({
             </form>
             <Link
               href="/billing/payment-methods"
-              className="theme-secondary-action inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
+              className="hover:shadow-[0_18px_32px_rgba(0,0,0,0.1)] theme-secondary-action inline-flex items-center gap-2 rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
             >
               <WalletCards size={16} strokeWidth={1.8} />
               Manage payment methods
@@ -97,7 +97,7 @@ export default async function BillingPage({
 
       <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.35fr)_minmax(18.75rem,0.82fr)]">
         <div className="grid items-start gap-3 xl:grid-cols-2">
-          <SurfacePanel className="p-4 sm:p-5">
+          <SurfacePanel className="h-full p-4 sm:p-5">
             <div className="flex items-center gap-2 text-label-md uppercase tracking-[0.14em] text-ink-faint">
               <span className="theme-icon-surface flex h-8 w-8 items-center justify-center rounded-full text-success">
                 <DollarSign size={14} strokeWidth={1.9} />
@@ -118,7 +118,7 @@ export default async function BillingPage({
             </div>
           </SurfacePanel>
 
-          <SurfacePanel className="p-4 sm:p-5">
+          <SurfacePanel className="h-full p-4 sm:p-5">
             <div className="text-label-md uppercase tracking-[0.14em] text-ink-faint">
               Default method
             </div>
@@ -228,9 +228,7 @@ export default async function BillingPage({
               </span>
               Billing tools
             </div>
-            <div className="mt-1 text-body-sm text-ink-muted">
-              Keep billing status and the next action within reach.
-            </div>
+       
 
             <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
               <div className="theme-inline-surface rounded-[1rem] border border-line/35 px-3.5 py-3">
