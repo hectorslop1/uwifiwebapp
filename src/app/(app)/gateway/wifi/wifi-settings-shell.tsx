@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useMemo, useState } from "react";
 import {
   Eye,
   EyeOff,
+  Gauge,
   House,
   RefreshCw,
   Router,
@@ -34,7 +36,35 @@ type NetworkConfig = {
 };
 
 const inputClassName =
-  "theme-input w-full rounded-[1.05rem] border px-4 py-2.5 text-[0.9rem] text-ink outline-none transition-all duration-200 placeholder:text-ink-faint focus:border-[rgba(52,196,59,0.42)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]";
+  "theme-input w-full rounded-[1.05rem] border px-4 py-2.5 text-[0.9rem] text-ink outline-none transition-all duration-200 placeholder:text-ink-faint";
+
+function getBandAccent(band: "2.4 GHz" | "5 GHz") {
+  if (band === "2.4 GHz") {
+    return {
+      stripe:
+        "bg-[radial-gradient(circle_at_top,rgba(108,69,255,0.14),transparent_74%)]",
+      icon:
+        "border border-white/80 bg-[linear-gradient(180deg,rgba(247,244,255,0.96),rgba(239,235,252,0.92))] text-brand",
+      focus:
+        "focus:border-[rgba(108,69,255,0.42)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(108,69,255,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
+      focusWithin:
+        "focus-within:border-[rgba(108,69,255,0.42)] focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(108,69,255,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
+      actionHover: "hover:text-brand",
+    } as const;
+  }
+
+  return {
+    stripe:
+      "bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.14),transparent_74%)]",
+    icon:
+      "border border-white/80 bg-[linear-gradient(180deg,rgba(241,251,243,0.96),rgba(232,248,235,0.92))] text-success",
+    focus:
+      "focus:border-[rgba(52,196,59,0.42)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
+    focusWithin:
+      "focus-within:border-[rgba(52,196,59,0.42)] focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
+    actionHover: "hover:text-success",
+  } as const;
+}
 
 function buildNetworks(gateway: GatewayOverviewData): Record<NetworkKey, NetworkConfig> {
   return {
@@ -52,6 +82,7 @@ function buildNetworks(gateway: GatewayOverviewData): Record<NetworkKey, Network
 function NetworkSettingsCard({
   title,
   subtitle,
+  band,
   value,
   showPassword,
   onTogglePassword,
@@ -61,6 +92,7 @@ function NetworkSettingsCard({
 }: {
   title: string;
   subtitle: string;
+  band: "2.4 GHz" | "5 GHz";
   value: NetworkConfig;
   showPassword: boolean;
   onTogglePassword: () => void;
@@ -68,12 +100,16 @@ function NetworkSettingsCard({
   ssidName: string;
   passwordName: string;
 }) {
+  const accent = getBandAccent(band);
+
   return (
     <SurfacePanel subtle className="self-start overflow-hidden p-4">
-      <div className="pointer-events-none absolute inset-x-6 top-0 h-20 rounded-b-[2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.14),transparent_74%)]" />
+      <div
+        className={`pointer-events-none absolute inset-x-6 top-0 h-20 rounded-b-[2rem] ${accent.stripe}`}
+      />
 
       <div className="relative flex items-center gap-3">
-        <span className="theme-icon-surface flex h-10 w-10 items-center justify-center rounded-[1rem] border border-white/80 bg-[linear-gradient(180deg,rgba(241,251,243,0.96),rgba(232,248,235,0.92))] text-success">
+        <span className={`theme-icon-surface flex h-10 w-10 items-center justify-center rounded-[1rem] ${accent.icon}`}>
           <WifiHigh size={18} strokeWidth={1.8} />
         </span>
         <div>
@@ -89,13 +125,13 @@ function NetworkSettingsCard({
             name={ssidName}
             value={value.ssid}
             onChange={(event) => onChange("ssid", event.target.value)}
-            className={inputClassName}
+            className={`${inputClassName} ${accent.focus}`}
           />
         </label>
 
         <label className="space-y-1.5">
           <span className="text-label-md text-ink-muted">Password</span>
-          <div className="theme-input flex items-center rounded-[1.05rem] border px-4 py-2.5 transition-all duration-200 focus-within:border-[rgba(52,196,59,0.42)] focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]">
+          <div className={`theme-input flex items-center rounded-[1.05rem] border px-4 py-2.5 transition-all duration-200 ${accent.focusWithin}`}>
             <input
               name={passwordName}
               type={showPassword ? "text" : "password"}
@@ -106,7 +142,7 @@ function NetworkSettingsCard({
             <button
               type="button"
               onClick={onTogglePassword}
-              className="theme-control-button ml-3 flex h-8 w-8 items-center justify-center rounded-full border border-transparent text-ink-muted transition-all duration-200 hover:text-success"
+              className={`theme-control-button ml-3 flex h-8 w-8 items-center justify-center rounded-full border border-transparent text-ink-muted transition-all duration-200 ${accent.actionHover}`}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
@@ -140,12 +176,6 @@ export function WifiSettingsShell({
   );
 
   const gateway = state.gateway ?? initialGateway;
-  const savedAt =
-    state.status === "success"
-      ? "Saved just now"
-      : state.status === "error" && state.message
-        ? "Review the message and try again."
-        : "Saved settings appear here after each update.";
 
   const baselineNetworks = useMemo(() => buildNetworks(gateway), [gateway]);
 
@@ -192,6 +222,7 @@ export function WifiSettingsShell({
           <NetworkSettingsCard
             title={gateway.wifi5GName || "5 GHz network"}
             subtitle={`${gateway.devices5G.length} devices currently connected`}
+            band="5 GHz"
             value={networks.fiveG}
             showPassword={showPassword.fiveG}
             onTogglePassword={() =>
@@ -208,6 +239,7 @@ export function WifiSettingsShell({
           <NetworkSettingsCard
             title={gateway.wifi24GName || "2.4 GHz network"}
             subtitle={`${gateway.devices24G.length} devices currently connected`}
+            band="2.4 GHz"
             value={networks.twoFour}
             showPassword={showPassword.twoFour}
             onTogglePassword={() =>
@@ -261,34 +293,11 @@ export function WifiSettingsShell({
           <SurfacePanel subtle className="overflow-hidden p-4">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.12),transparent_74%)]" />
             <div className="relative">
-              <div className="text-title-md text-ink">Apply changes</div>
-              <div className="mt-2 text-body-sm text-ink-muted">
-                Review both networks before saving the updated names and passwords.
-              </div>
-
-              <div className="theme-soft-well mt-3 rounded-[1.05rem] border px-4 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-label-md uppercase tracking-[0.14em] text-ink-faint">
-                    Status
-                  </span>
-                  <span
-                    className={`rounded-pill px-2.5 py-1 text-[0.76rem] font-medium ${
-                      isDirty
-                        ? "bg-[rgba(255,243,220,0.98)] text-[#b67a17]"
-                        : "bg-success-soft text-success"
-                    }`}
-                  >
-                    {isDirty ? "Unsaved changes" : "All synced"}
-                  </span>
-                </div>
-
-                <div className="mt-3 text-body-sm text-ink-muted">{savedAt}</div>
-              </div>
-
+              <div className="text-title-md text-ink">Quick Menu</div>
               <div className="mt-3 flex flex-col gap-2.5">
                 <button
                   type="submit"
-                  disabled={isPending}
+                  disabled={isPending || !isDirty}
                   className="theme-cta rounded-[1.1rem] px-4 py-3 text-body-sm font-medium text-white transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01] hover:shadow-[0_24px_42px_rgba(111,191,118,0.34),inset_0_1px_0_rgba(255,255,255,0.22)] disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isPending ? "Saving network updates..." : "Save network updates"}
@@ -300,6 +309,17 @@ export function WifiSettingsShell({
                 >
                   Restart gateway
                 </button>
+                <Link
+                  href="/gateway/speed-test"
+                  className="theme-control-button group inline-flex min-h-[3.15rem] items-center gap-3 rounded-[1.1rem] border px-4 py-3 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
+                >
+                  <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-[0.95rem] bg-[linear-gradient(180deg,rgba(247,244,255,0.98),rgba(239,235,252,0.94))] text-brand transition-colors duration-200">
+                    <Gauge size={16} strokeWidth={1.8} />
+                  </span>
+                  <span className="min-w-0 flex-1 text-[0.92rem] font-medium text-ink-soft transition-colors duration-200 group-hover:text-ink">
+                    Speed Test
+                  </span>
+                </Link>
               </div>
             </div>
           </SurfacePanel>

@@ -10,7 +10,6 @@ import {
   Save,
   ShieldCheck,
   Trash2,
-  UserRound,
 } from "lucide-react";
 
 import { PageIntro } from "@/src/components/ui/page-intro";
@@ -317,39 +316,23 @@ export function SettingsShell({
       {flash ? <SettingsFlash tone={flash.status}>{flash.message}</SettingsFlash> : null}
 
       {section === "account" ? (
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_18rem]">
-          <SurfacePanel className="p-4 sm:p-5">
-            <SectionHeader
-              title="Account overview"
-              description="Review the key contact details connected to your account."
-            />
+        <SurfacePanel className="p-4 sm:p-5">
+          <SectionHeader
+            title="Account overview"
+            description="Review the key contact details connected to your account."
+          />
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <ReadOnlyField label="First name" value={initialProfile.firstName} />
-              <ReadOnlyField label="Last name" value={initialProfile.lastName} />
-              <ReadOnlyField label="Email" value={initialProfile.email} />
-              <ReadOnlyField label="Phone" value={initialProfile.phone} />
-            </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <ReadOnlyField label="First name" value={initialProfile.firstName} />
+            <ReadOnlyField label="Last name" value={initialProfile.lastName} />
+            <ReadOnlyField label="Email" value={initialProfile.email} />
+            <ReadOnlyField label="Phone" value={initialProfile.phone} />
+          </div>
 
-            <div className="mt-4 text-body-sm text-ink-muted">
-              Keep these details current so billing notices, service updates, and account recovery reach the right place.
-            </div>
-          </SurfacePanel>
-
-          <SurfacePanel subtle className="p-4">
-            <div className="flex items-center gap-3">
-              <SectionIcon>
-                <UserRound size={18} strokeWidth={1.8} />
-              </SectionIcon>
-              <div className="text-title-md text-ink">Account details</div>
-            </div>
-            <div className="mt-4 space-y-3 text-body-sm text-ink-muted">
-              <div>Your sign-in email is used for authentication and recovery.</div>
-              <div>Your phone number can help with service alerts and support follow-up.</div>
-              <div>Need a change? Open a support request and the team will help update it.</div>
-            </div>
-          </SurfacePanel>
-        </div>
+          <div className="mt-4 text-body-sm text-ink-muted">
+            Keep these details current so billing notices, service updates, and account recovery reach the right place.
+          </div>
+        </SurfacePanel>
       ) : null}
 
       {section === "security" ? (

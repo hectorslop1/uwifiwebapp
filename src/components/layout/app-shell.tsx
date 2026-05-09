@@ -1,6 +1,7 @@
 import type { PortalUser } from "@/src/server/auth/types";
 
 import { ContentCanvas } from "./content-canvas";
+import { AppShellRowMotion } from "./app-shell-row-motion";
 import { SidebarRail } from "./sidebar-rail";
 import { TopUtilityBar } from "./top-utility-bar";
 
@@ -22,13 +23,10 @@ export function AppShell({
       <div className="relative">
         <TopUtilityBar user={user} />
 
-        <div className="mx-auto max-w-[1560px] lg:flex lg:min-h-[calc(100dvh-5.4rem)] lg:items-stretch">
-          <SidebarRail />
-
-          <main className="min-w-0 flex-1 lg:min-h-0">
-            <ContentCanvas>{children}</ContentCanvas>
-          </main>
-        </div>
+        <AppShellRowMotion
+          sidebar={<SidebarRail />}
+          content={<ContentCanvas>{children}</ContentCanvas>}
+        />
       </div>
     </div>
   );

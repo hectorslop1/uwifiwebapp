@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { BadgeCheck, CreditCard, Plus, ShieldCheck, X } from "lucide-react";
+import { CreditCard, Plus, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
@@ -111,13 +111,13 @@ export function PaymentMethodAddCardPanel() {
               Add a new card with masked entry, instant preview, and a cleaner billing setup.
             </p>
 
-            <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(17rem,20.5rem)_minmax(0,1fr)] xl:items-start">
+            <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(17rem,23rem)_minmax(0,1fr)] xl:items-start">
               <div className="space-y-4 xl:sticky xl:top-4">
                 <motion.div
                   animate={{ rotateY: isBackVisible ? 180 : 0 }}
                   transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   style={{ transformStyle: "preserve-3d" }}
-                  className="relative mx-auto aspect-[1.6/1] w-full max-w-[22rem]"
+                  className="relative mx-auto aspect-[1.6/1] w-full max-w-[24rem]"
                 >
                   <CardFace
                     front
@@ -128,27 +128,6 @@ export function PaymentMethodAddCardPanel() {
                   />
                   <CardFaceBack cvv={cvv || "•••"} />
                 </motion.div>
-
-                <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-1">
-                  <div className="theme-inline-surface rounded-[1.15rem] border border-white/80 bg-white/60 px-4 py-3.5">
-                    <div className="flex items-center gap-2 text-body-md font-medium text-ink">
-                      <ShieldCheck size={16} strokeWidth={1.8} className="text-success" />
-                      Protected entry
-                    </div>
-                    <div className="mt-1.5 text-body-sm text-ink-muted">
-                      Card data stays masked while you type and the preview flips only for CVV.
-                    </div>
-                  </div>
-                  <div className="theme-inline-surface rounded-[1.15rem] border border-white/80 bg-white/60 px-4 py-3.5">
-                    <div className="flex items-center gap-2 text-body-md font-medium text-ink">
-                      <BadgeCheck size={16} strokeWidth={1.8} className="text-brand" />
-                      Quick review
-                    </div>
-                    <div className="mt-1.5 text-body-sm text-ink-muted">
-                      Confirm brand, holder name, and expiry at a glance before saving.
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <form
@@ -335,28 +314,11 @@ export function PaymentMethodAddCardPanel() {
               Save another card for billing and future purchases with a cleaner entry flow.
             </p>
 
-            <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start">
-              <div className="theme-inline-surface rounded-[1.35rem] border border-white/82 bg-white/58 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
-                <div className="text-body-md font-medium text-ink">Live card preview</div>
-                <div className="mt-2 text-body-sm text-ink-muted">
-                  Open the form to preview masked details while you type before saving them.
-                </div>
-
-                <div className="mt-4 relative mx-auto aspect-[1.6/1] w-full max-w-[21rem]">
-                  <CardFace
-                    front
-                    brand="UWiFi Pay"
-                    cardHolder="CARD HOLDER"
-                    cardNumber="0000 0000 0000 0000"
-                    expiry="MM/YY"
-                  />
-                </div>
-              </div>
-
+            <div className="mt-5">
               <div className="theme-soft-well rounded-[1.35rem] border px-4 py-4">
-                <div className="text-body-md font-medium text-ink">Ready in a minute</div>
+                <div className="text-body-md font-medium text-ink">Add a new card</div>
                 <div className="mt-2 text-body-sm text-ink-muted">
-                  Add the card, review the preview, and save it for upcoming billing.
+                  Add a payment method you can use for upcoming billing.
                 </div>
                 <button
                   type="button"

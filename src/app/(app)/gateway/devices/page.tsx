@@ -119,131 +119,135 @@ export default async function GatewayDevicesPage({
 
       <SurfacePanel className="overflow-visible p-4">
         <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-b-[2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.12),transparent_74%)]" />
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="theme-tab-shell inline-flex flex-wrap gap-2 rounded-pill border p-1.5">
-            <Link
-              href={buildBandFilterHref("all")}
-              className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
-                activeBand === "all"
-                  ? "theme-tab-item theme-tab-item-active border"
-                  : "theme-tab-item border border-transparent"
-              }`}
-            >
-              All devices
-            </Link>
-            <Link
-              href={buildBandFilterHref("5g")}
-              className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
-                activeBand === "5g"
-                  ? "theme-tab-item theme-tab-item-active border"
-                  : "theme-tab-item border border-transparent"
-              }`}
-            >
-              5 GHz: {gateway.devices5G.length}
-            </Link>
-            <Link
-              href={buildBandFilterHref("24g")}
-              className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
-                activeBand === "24g"
-                  ? "theme-tab-item theme-tab-item-active border"
-                  : "theme-tab-item border border-transparent"
-              }`}
-            >
-              2.4 GHz: {gateway.devices24G.length}
-            </Link>
+        <div className="relative">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="theme-tab-shell inline-flex flex-wrap gap-2 rounded-pill border p-1.5">
+              <Link
+                href={buildBandFilterHref("all")}
+                className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
+                  activeBand === "all"
+                    ? "theme-tab-item theme-tab-item-active border"
+                    : "theme-tab-item border border-transparent"
+                }`}
+              >
+                All devices
+              </Link>
+              <Link
+                href={buildBandFilterHref("5g")}
+                className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
+                  activeBand === "5g"
+                    ? "theme-tab-item theme-tab-item-active border"
+                    : "theme-tab-item border border-transparent"
+                }`}
+              >
+                5 GHz: {gateway.devices5G.length}
+              </Link>
+              <Link
+                href={buildBandFilterHref("24g")}
+                className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
+                  activeBand === "24g"
+                    ? "theme-tab-item theme-tab-item-active border"
+                    : "theme-tab-item border border-transparent"
+                }`}
+              >
+                2.4 GHz: {gateway.devices24G.length}
+              </Link>
+            </div>
+
+            <div className="theme-inline-surface rounded-pill border border-white/82 bg-white/60 px-4 py-2 text-body-sm text-ink-muted shadow-[0_12px_22px_rgba(208,212,219,0.08)]">
+              Showing {rows.length} connected {activeBand === "all" ? "devices" : activeBand === "5g" ? "5 GHz devices" : "2.4 GHz devices"}
+            </div>
           </div>
 
-          <div className="theme-inline-surface rounded-pill border border-white/82 bg-white/60 px-4 py-2 text-body-sm text-ink-muted shadow-[0_12px_22px_rgba(208,212,219,0.08)]">
-            Showing {rows.length} connected {activeBand === "all" ? "devices" : activeBand === "5g" ? "5 GHz devices" : "2.4 GHz devices"}
-          </div>
-        </div>
-
-        {rows.length ? (
-          <div className="relative mt-4">
-            <div className="max-h-[24rem] overflow-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <div className="overflow-x-auto pb-8">
-                <div className="min-w-[52rem]">
-                  <PremiumTable
-                    columns={[
-                      { key: "device", label: "Device" },
-                      { key: "band", label: "Band" },
-                      { key: "ip", label: "IP address" },
-                      { key: "mac", label: "MAC address" },
-                      { key: "status", label: "Connection", align: "right" },
-                    ]}
-                    rows={rows.map((row) => ({
-                      id: row.id,
-                      cells: [
-                        <div
-                          key={`${row.id}-device`}
-                          className="flex min-w-[12rem] items-center gap-3"
-                        >
-                          <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-[0.95rem] text-ink-soft">
-                            {getDeviceIcon(row.name)}
-                          </span>
-                          <div>
-                            <div className="text-[0.92rem] font-medium text-ink">{row.name}</div>
-                            <div className="text-label-md text-ink-muted">
-                              {row.connectionType || "Wi‑Fi device"}
+          {rows.length ? (
+            <div className="relative mt-4">
+              <div className="max-h-[24rem] overflow-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="overflow-x-auto pb-8">
+                  <div className="min-w-[52rem]">
+                    <PremiumTable
+                      columns={[
+                        { key: "device", label: "Device" },
+                        { key: "band", label: "Band" },
+                        { key: "ip", label: "IP address" },
+                        { key: "mac", label: "MAC address" },
+                        { key: "status", label: "Connection", align: "right" },
+                      ]}
+                      rows={rows.map((row) => ({
+                        id: row.id,
+                        cells: [
+                          <div
+                            key={`${row.id}-device`}
+                            className="flex min-w-[12rem] items-center gap-3"
+                          >
+                            <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-[0.95rem] text-ink-soft">
+                              {getDeviceIcon(row.name)}
+                            </span>
+                            <div>
+                              <div className="text-[0.92rem] font-medium text-ink">{row.name}</div>
+                              <div className="text-label-md text-ink-muted">
+                                {row.connectionType || "Wi‑Fi device"}
+                              </div>
                             </div>
-                          </div>
-                        </div>,
-                        <span key={`${row.id}-radio`} className="whitespace-nowrap">
-                          {row.band}
-                        </span>,
-                        <span key={`${row.id}-ip`} className="whitespace-nowrap">
-                          {row.ipAddress || "Unavailable"}
-                        </span>,
-                        <span key={`${row.id}-mac`} className="whitespace-nowrap">
-                          {row.macAddress || "Unavailable"}
-                        </span>,
-                        <div key={`${row.id}-band`} className="flex justify-end">
-                          <StatusPill
-                            label={row.band}
-                            tone={row.band === "5 GHz" ? "success" : "brand"}
-                          />
-                        </div>,
-                      ],
-                    }))}
-                  />
+                          </div>,
+                          <span key={`${row.id}-radio`} className="whitespace-nowrap">
+                            {row.band}
+                          </span>,
+                          <span key={`${row.id}-ip`} className="whitespace-nowrap">
+                            {row.ipAddress || "Unavailable"}
+                          </span>,
+                          <span key={`${row.id}-mac`} className="whitespace-nowrap">
+                            {row.macAddress || "Unavailable"}
+                          </span>,
+                          <div key={`${row.id}-band`} className="flex justify-end">
+                            <StatusPill
+                              label={row.band}
+                              tone={row.band === "5 GHz" ? "success" : "brand"}
+                            />
+                          </div>,
+                        ],
+                      }))}
+                    />
+                  </div>
                 </div>
               </div>
+              <ProgressiveBlur position="bottom" height="24%" />
             </div>
-            <ProgressiveBlur position="bottom" height="24%" />
-          </div>
-        ) : (
-          <FeedbackState
-            className="mt-4 min-h-[12rem]"
-            title="No connected devices"
-            description="No devices are currently reporting as connected to this gateway."
-          />
-        )}
+          ) : (
+            <FeedbackState
+              className="mt-4 min-h-[12rem]"
+              title="No connected devices"
+              description="No devices are currently reporting as connected to this gateway."
+            />
+          )}
+        </div>
       </SurfacePanel>
 
       <SurfacePanel subtle className="overflow-hidden p-4">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.14),transparent_74%)]" />
-        <div className="flex items-center gap-2 text-title-md text-ink">
-          <Radio size={17} strokeWidth={1.8} />
-          2.4 GHz vs 5 GHz
-        </div>
-        <div className="mt-3 grid gap-2.5 md:grid-cols-3">
-          <div className="theme-inline-surface rounded-[1.1rem] border border-white/80 px-4 py-3">
-            <div className="text-[0.95rem] font-medium text-ink">2.4 GHz</div>
-            <p className="mt-1.5 text-[0.84rem] leading-5 text-ink-muted">
-              Best for devices that are farther away or need more range through walls.
-            </p>
+        <div className="relative">
+          <div className="flex items-center gap-2 text-title-md text-ink">
+            <Radio size={17} strokeWidth={1.8} />
+            2.4 GHz vs 5 GHz
           </div>
-          <div className="theme-inline-surface rounded-[1.1rem] border border-white/80 px-4 py-3">
-            <div className="text-[0.95rem] font-medium text-ink">5 GHz</div>
-            <p className="mt-1.5 text-[0.84rem] leading-5 text-ink-muted">
-              Best for faster speeds when devices stay closer to the gateway.
-            </p>
-          </div>
-          <div className="theme-inline-surface rounded-[1.1rem] border border-white/80 px-4 py-3">
-            <div className="text-[0.95rem] font-medium text-ink">Quick tip</div>
-            <p className="mt-1.5 text-[0.84rem] leading-5 text-ink-muted">
-              If a device needs more stability at a distance, try keeping it on the 2.4 GHz network.
-            </p>
+          <div className="mt-3 grid gap-2.5 md:grid-cols-3">
+            <div className="theme-inline-surface rounded-[1.1rem] border border-white/80 px-4 py-3">
+              <div className="text-[0.95rem] font-medium text-ink">2.4 GHz</div>
+              <p className="mt-1.5 text-[0.84rem] leading-5 text-ink-muted">
+                Best for devices that are farther away or need more range through walls.
+              </p>
+            </div>
+            <div className="theme-inline-surface rounded-[1.1rem] border border-white/80 px-4 py-3">
+              <div className="text-[0.95rem] font-medium text-ink">5 GHz</div>
+              <p className="mt-1.5 text-[0.84rem] leading-5 text-ink-muted">
+                Best for faster speeds when devices stay closer to the gateway.
+              </p>
+            </div>
+            <div className="theme-inline-surface rounded-[1.1rem] border border-white/80 px-4 py-3">
+              <div className="text-[0.95rem] font-medium text-ink">Quick tip</div>
+              <p className="mt-1.5 text-[0.84rem] leading-5 text-ink-muted">
+                If a device needs more stability at a distance, try keeping it on the 2.4 GHz network.
+              </p>
+            </div>
           </div>
         </div>
       </SurfacePanel>

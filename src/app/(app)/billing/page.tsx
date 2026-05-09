@@ -76,17 +76,21 @@ export default async function BillingPage({
             <form action={payBalanceNowAction}>
               <button
                 type="submit"
-                className="shadow-[0_18px_32px_rgba(95,185,89,0.22)] hover:shadow-[0_22px_40px_rgba(95,185,89,0.28)] theme-cta inline-flex items-center gap-2 rounded-pill border px-4 py-2.5 text-body-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02]"
+                className="theme-cta group inline-flex items-center gap-3 rounded-[1.2rem] border px-4 py-3 text-body-sm font-semibold text-white shadow-[0_18px_32px_rgba(95,185,89,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-[0_22px_40px_rgba(95,185,89,0.28)]"
               >
-                <DollarSign size={16} strokeWidth={1.8} />
+                <span className="flex h-9 w-9 items-center justify-center rounded-[0.95rem] bg-white/14 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] transition-transform duration-200 group-hover:scale-[1.04]">
+                  <DollarSign size={16} strokeWidth={1.8} />
+                </span>
                 Pay current balance
               </button>
             </form>
             <Link
               href="/billing/payment-methods"
-              className="hover:shadow-[0_18px_32px_rgba(0,0,0,0.1)] theme-secondary-action inline-flex items-center gap-2 rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
+              className="theme-control-button group inline-flex items-center gap-3 rounded-[1.2rem] border px-4 py-3 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
             >
-              <WalletCards size={16} strokeWidth={1.8} />
+              <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-[0.95rem] bg-white/60 text-ink-muted shadow-[inset_0_1px_0_rgba(255,255,255,0.86)] transition-all duration-200 group-hover:bg-[linear-gradient(180deg,rgba(245,252,246,0.98),rgba(235,247,237,0.94))] group-hover:text-success group-hover:shadow-[0_10px_18px_rgba(168,201,171,0.14)]">
+                <WalletCards size={16} strokeWidth={1.8} />
+              </span>
               Manage payment methods
             </Link>
           </>

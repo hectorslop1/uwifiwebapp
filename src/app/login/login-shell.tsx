@@ -7,7 +7,6 @@ import { Eye, EyeOff, Radio, Receipt, Router, ShieldCheck } from "lucide-react";
 import DotGrid from "@/src/components/login/dot-grid";
 import Grainient from "@/src/components/login/grainient";
 import { UwifiBrandTile } from "@/src/components/layout/uwifi-brand";
-import { AnimatedThemeToggler } from "@/src/components/magic/animated-theme-toggler";
 import { AuroraText } from "@/src/components/ui/aurora-text";
 import { InteractiveHoverButton } from "@/src/components/ui/interactive-hover-button";
 import { ShineBorder } from "@/src/components/ui/shine-border";
@@ -152,10 +151,6 @@ export function LoginShell() {
         <div className="absolute bottom-[-12rem] left-[10%] h-[26rem] w-[30rem] rounded-full bg-[#ede8ff] blur-3xl" />
       </div>
 
-      <div className="absolute right-6 top-5 z-40 sm:right-8 lg:right-10">
-        <AnimatedThemeToggler className="theme-control-button shadow-[0_16px_32px_rgba(193,196,206,0.14)]" />
-      </div>
-
       <div className="grid min-h-[100dvh] w-full lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]">
         <section className="relative flex min-h-0 items-stretch bg-[linear-gradient(180deg,rgba(255,255,255,0.48),rgba(249,248,245,0.78))]">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -165,7 +160,7 @@ export function LoginShell() {
           </div>
 
           <div className="absolute left-6 top-5 z-30 inline-flex items-center gap-3 sm:left-8 lg:left-10 xl:left-14">
-            <UwifiBrandTile className="h-[3.3rem] w-[3.3rem] rounded-[1.2rem]" imageClassName="w-[2.35rem]" />
+            <UwifiBrandTile className="h-[3.3rem] w-[3.3rem] rounded-[1.2rem]" imageClassName="h-[2.35rem] w-auto" />
             <div className="hidden sm:block">
               <div className="text-[0.78rem] uppercase tracking-[0.18em] text-ink-faint">
                 Connected service

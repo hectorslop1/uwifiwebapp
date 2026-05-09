@@ -227,7 +227,7 @@ export default async function OverviewPage() {
               {recentPayments.length ? (
                 <div className="relative">
                   <div className="max-h-[16.75rem] overflow-auto pr-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <div className="space-y-2.5 pb-6">
+                    <div className="space-y-2.5 pb-16">
                       {recentPayments.map((payment) => (
                         <Link
                           key={payment.id}

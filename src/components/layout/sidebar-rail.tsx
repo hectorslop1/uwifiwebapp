@@ -177,6 +177,14 @@ export function SidebarRail() {
   const [desktopOpen, setDesktopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggingOut, startLogoutTransition] = useTransition();
+  const [isDesktopAnimating, setIsDesktopAnimating] = useState(false);
+
+  const layoutSpring = {
+    type: "spring",
+    stiffness: 460,
+    damping: 50,
+    mass: 1.05,
+  } as const;
 
   const performLogout = async () => {
     setMobileOpen(false);
@@ -204,9 +212,14 @@ export function SidebarRail() {
         </button>
       </div>
 
-      <div
+      <motion.div
+        layout
+        transition={{ layout: layoutSpring }}
+        onLayoutAnimationStart={() => setIsDesktopAnimating(true)}
+        onLayoutAnimationComplete={() => setIsDesktopAnimating(false)}
+        style={{ willChange: "transform" }}
         className={cx(
-          "relative hidden shrink-0 transition-[width] duration-200 ease-out lg:block",
+          "relative hidden shrink-0 lg:block transform-gpu",
           desktopOpen ? "w-[232px]" : "w-[92px]",
         )}
       >
@@ -219,8 +232,10 @@ export function SidebarRail() {
               setDesktopOpen(false);
             }
           }}
-          style={{ willChange: "width, transform" }}
-          className="theme-sidebar-rail z-20 flex h-full min-h-[calc(100dvh-5.4rem)] flex-col border-r border-line/25 bg-white/12 px-3 py-4 backdrop-blur-xl"
+          className={cx(
+            "theme-sidebar-rail z-20 flex h-full min-h-[calc(100dvh-5.4rem)] flex-col border-r border-line/25 bg-white/12 px-3 py-4 transform-gpu",
+            isDesktopAnimating ? "backdrop-blur-none" : "backdrop-blur-xl",
+          )}
         >
           <SidebarContent
             expanded={desktopOpen}
@@ -229,7 +244,7 @@ export function SidebarRail() {
             isLoggingOut={isLoggingOut}
           />
         </aside>
-      </div>
+      </motion.div>
 
       <AnimatePresence>
         {mobileOpen ? (
@@ -240,7 +255,7 @@ export function SidebarRail() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.16, ease: "easeOut" }}
               onClick={() => setMobileOpen(false)}
               className="theme-overlay fixed inset-0 z-40 bg-[rgba(11,14,18,0.18)] backdrop-blur-sm lg:hidden"
             />
@@ -249,7 +264,7 @@ export function SidebarRail() {
               initial={{ x: -280, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -280, opacity: 0 }}
-              transition={{ duration: 0.28, ease: "easeOut" }}
+              transition={{ type: "spring", stiffness: 480, damping: 42, mass: 0.85 }}
               className="theme-panel fixed inset-y-0 left-0 z-50 flex w-[18rem] flex-col border-r border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,247,250,0.9))] px-4 py-5 shadow-[0_28px_72px_rgba(169,173,185,0.22)] backdrop-blur-2xl lg:hidden"
             >
               <div className="mb-4 flex items-center justify-between">

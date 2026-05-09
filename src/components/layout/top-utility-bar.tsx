@@ -58,14 +58,14 @@ export function TopUtilityBar({ user }: Readonly<{ user: PortalUser }>) {
         <div className="hidden lg:flex lg:w-[14rem] lg:shrink-0 lg:items-center">
           <UwifiBrandTile
             className="h-[3.35rem] w-[3.35rem]"
-            imageClassName="w-[2.4rem]"
+            imageClassName="h-[2.4rem] w-auto"
           />
         </div>
 
         <div className="flex lg:hidden">
           <UwifiBrandTile
             className="h-[3.15rem] w-[3.15rem]"
-            imageClassName="w-[2.15rem]"
+            imageClassName="h-[2.15rem] w-auto"
           />
         </div>
 

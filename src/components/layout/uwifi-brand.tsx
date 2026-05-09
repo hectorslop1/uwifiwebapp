@@ -24,13 +24,13 @@ export function UwifiBrandTile({
       )}
     >
       <Image
-        src="/images/uwifi.png"
+        src="/images/Uwifimainlogo.png"
         alt="U-Wifi logo"
-        width={184}
-        height={140}
+        width={609}
+        height={947}
         priority
         className={cx(
-          "h-auto w-[5.4rem] object-contain sm:w-[6rem]",
+          "max-h-full max-w-full h-auto w-[5.4rem] object-contain sm:w-[6rem]",
           imageClassName
         )}
       />
