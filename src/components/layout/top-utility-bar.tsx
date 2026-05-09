@@ -78,13 +78,13 @@ export function TopUtilityBar({ user }: Readonly<{ user: PortalUser }>) {
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((current) => !current)}
-              className="theme-control-button theme-topbar-chip group flex min-w-0 items-center gap-3 rounded-full border px-3 py-1.5 text-left shadow-[0_14px_34px_rgba(193,196,205,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl transition-transform duration-200 hover:-translate-y-0.5"
+              className="theme-control-button theme-topbar-chip group flex min-w-0 items-center gap-2.5 rounded-full border px-2.5 py-1.5 text-left shadow-[0_14px_34px_rgba(193,196,205,0.1),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl transition-transform duration-200 hover:-translate-y-0.5 sm:gap-3 sm:px-3"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7eea2f_0%,#07cf47_42%,#7b3cff_100%)] text-[1.3rem] font-medium tracking-[-0.05em] text-white shadow-[0_10px_24px_rgba(108,87,192,0.24)]">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7eea2f_0%,#07cf47_42%,#7b3cff_100%)] text-[1.25rem] font-medium tracking-[-0.05em] text-white shadow-[0_10px_24px_rgba(108,87,192,0.24)] sm:h-10 sm:w-10 sm:text-[1.3rem]">
                 {getInitials(user.fullName)}
               </div>
 
-              <div className="min-w-0 leading-tight">
+              <div className="sr-only min-w-0 leading-tight sm:not-sr-only">
                 <div className="truncate text-[0.95rem] font-medium tracking-[-0.035em] text-ink">
                   {user.fullName}
                 </div>

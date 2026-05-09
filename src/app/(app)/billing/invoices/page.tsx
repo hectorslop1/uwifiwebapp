@@ -120,72 +120,74 @@ export default async function BillingInvoicesPage({
 
         <div className="relative mt-4">
           <div className="max-h-[24rem] overflow-auto pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="pb-14">
-              <PremiumTable
-                columns={[
-                  { key: "invoice", label: "Invoice" },
-                  { key: "date", label: "Date" },
-                  { key: "amount", label: "Amount", align: "right" },
-                  { key: "status", label: "Status", align: "center" },
-                  { key: "actions", label: "Actions", align: "right" },
-                ]}
-                rows={filteredInvoices.map((invoice) => ({
-                  id: invoice.invoiceNumber,
-                  cells: [
-                    <div key={`${invoice.invoiceNumber}-number`}>
-                      <Link
-                        href={`/billing/invoices/${encodeURIComponent(invoice.invoiceNumber)}`}
-                        className="font-medium text-ink transition-colors duration-200 hover:text-success"
-                      >
-                        {invoice.invoiceNumber}
-                      </Link>
-                      <div className="text-label-md text-ink-muted">
-                        Monthly service invoice
-                      </div>
-                    </div>,
-                    formatDate(invoice.createdAt),
-                    <span
-                      key={`${invoice.invoiceNumber}-amount`}
-                      className="font-medium text-ink"
-                    >
-                      {formatCurrency(invoice.totalAmount)}
-                    </span>,
-                    <div
-                      key={`${invoice.invoiceNumber}-status`}
-                      className="flex justify-center"
-                    >
-                      <StatusPill
-                        label={invoice.status}
-                        tone={invoice.status === "Pending" ? "warning" : "success"}
-                      />
-                    </div>,
-                    <div
-                      key={`${invoice.invoiceNumber}-actions`}
-                      className="flex justify-end gap-3"
-                    >
-                      <Link
-                        href={`/billing/invoices/${encodeURIComponent(invoice.invoiceNumber)}`}
-                        className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-ink"
-                      >
-                        <Eye size={15} strokeWidth={1.8} />
-                        Details
-                      </Link>
-                      {invoice.fileUrl ? (
+            <div className="overflow-x-auto pb-14">
+              <div className="min-w-[52rem]">
+                <PremiumTable
+                  columns={[
+                    { key: "invoice", label: "Invoice" },
+                    { key: "date", label: "Date" },
+                    { key: "amount", label: "Amount", align: "right" },
+                    { key: "status", label: "Status", align: "center" },
+                    { key: "actions", label: "Actions", align: "right" },
+                  ]}
+                  rows={filteredInvoices.map((invoice) => ({
+                    id: invoice.invoiceNumber,
+                    cells: [
+                      <div key={`${invoice.invoiceNumber}-number`}>
                         <Link
-                          href={invoice.fileUrl}
-                          target="_blank"
+                          href={`/billing/invoices/${encodeURIComponent(invoice.invoiceNumber)}`}
+                          className="font-medium text-ink transition-colors duration-200 hover:text-success"
+                        >
+                          {invoice.invoiceNumber}
+                        </Link>
+                        <div className="text-label-md text-ink-muted">
+                          Monthly service invoice
+                        </div>
+                      </div>,
+                      formatDate(invoice.createdAt),
+                      <span
+                        key={`${invoice.invoiceNumber}-amount`}
+                        className="font-medium text-ink"
+                      >
+                        {formatCurrency(invoice.totalAmount)}
+                      </span>,
+                      <div
+                        key={`${invoice.invoiceNumber}-status`}
+                        className="flex justify-center"
+                      >
+                        <StatusPill
+                          label={invoice.status}
+                          tone={invoice.status === "Pending" ? "warning" : "success"}
+                        />
+                      </div>,
+                      <div
+                        key={`${invoice.invoiceNumber}-actions`}
+                        className="flex justify-end gap-3"
+                      >
+                        <Link
+                          href={`/billing/invoices/${encodeURIComponent(invoice.invoiceNumber)}`}
                           className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-ink"
                         >
-                          <Download size={15} strokeWidth={1.8} />
-                          PDF
+                          <Eye size={15} strokeWidth={1.8} />
+                          Details
                         </Link>
-                      ) : (
-                        <span className="text-body-sm text-ink-faint">No file</span>
-                      )}
-                    </div>,
-                  ],
-                }))}
-              />
+                        {invoice.fileUrl ? (
+                          <Link
+                            href={invoice.fileUrl}
+                            target="_blank"
+                            className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-ink"
+                          >
+                            <Download size={15} strokeWidth={1.8} />
+                            PDF
+                          </Link>
+                        ) : (
+                          <span className="text-body-sm text-ink-faint">No file</span>
+                        )}
+                      </div>,
+                    ],
+                  }))}
+                />
+              </div>
             </div>
           </div>
           <ProgressiveBlur position="bottom" height="38%" />

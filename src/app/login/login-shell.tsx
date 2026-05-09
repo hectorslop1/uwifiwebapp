@@ -144,7 +144,7 @@ export function LoginShell() {
     "theme-input w-full rounded-[1.15rem] border border-white/80 bg-white/78 px-4 py-3.5 text-[0.95rem] text-ink outline-none shadow-[0_12px_28px_rgba(198,201,211,0.08),inset_0_1px_0_rgba(255,255,255,0.92)] transition-colors duration-200 placeholder:text-ink-faint";
 
   return (
-    <div className="theme-shell relative min-h-[100dvh] w-screen overflow-x-hidden bg-[linear-gradient(180deg,#fbfaf7_0%,#f3f3ee_100%)]">
+    <div className="theme-shell relative min-h-[100dvh] w-full overflow-x-hidden bg-[linear-gradient(180deg,#fbfaf7_0%,#f3f3ee_100%)]">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-[-10rem] top-[-8rem] h-[26rem] w-[26rem] rounded-full bg-white/92 blur-3xl" />
         <div className="absolute left-[36%] top-[18%] h-[22rem] w-[22rem] rounded-full bg-[#edf7ef] blur-3xl" />

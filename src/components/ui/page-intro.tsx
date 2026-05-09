@@ -31,7 +31,7 @@ export function PageIntro({
           </div>
         ) : null}
 
-        <h1 className="text-[1.72rem] font-medium tracking-[-0.06em] text-ink sm:text-[2rem]">
+        <h1 className="wrap-anywhere text-[1.72rem] font-medium tracking-[-0.06em] text-ink sm:text-[2rem]">
           {title}
         </h1>
 
