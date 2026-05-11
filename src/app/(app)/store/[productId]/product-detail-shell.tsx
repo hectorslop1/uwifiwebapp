@@ -27,10 +27,12 @@ import {
   getStoreProductVariant,
   type StoreProduct,
 } from "@/src/lib/store-catalog";
+import type { StoreCartSnapshot } from "@/src/lib/store-types";
 import { cn } from "@/src/lib/cn";
 
 import { addStoreCartItemAction } from "../actions";
 import { formatStoreCurrency, StoreFlash } from "../store-ui";
+import { StoreCartDrawer } from "../store-cart-drawer";
 
 function AddDetailToCartButton({
   quantity,
@@ -67,16 +69,17 @@ function getStoreCategoryIcon(product: StoreProduct) {
 
 export function ProductDetailShell({
   product,
-  cartItemCount,
   cartQuantity,
+  cart,
   flash,
 }: Readonly<{
   product: StoreProduct;
-  cartItemCount: number;
   cartQuantity: number;
+  cart: StoreCartSnapshot;
   flash: { status: "success" | "error"; message: string } | null;
 }>) {
   const [quantity, setQuantity] = useState(1);
+  const [cartOpen, setCartOpen] = useState(false);
   const initialVariant = getStoreProductVariant(
     product,
     product.selectedVariant || product.variants?.[0]?.id || "",
@@ -135,13 +138,19 @@ export function ProductDetailShell({
             actions={
               <>
                 <StatusPill label={product.priceLabel} tone="success" />
-                <Link
-                  href="/store/checkout"
-                  className="theme-control inline-flex items-center gap-2 rounded-pill border border-[#dfe9de] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(245,251,244,0.9))] px-4 py-2.5 text-body-sm font-medium text-ink shadow-[0_14px_30px_rgba(196,199,208,0.12)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(246,255,245,0.98),rgba(237,250,236,0.94))]"
+                <button
+                  type="button"
+                  onClick={() => setCartOpen(true)}
+                  className="theme-primary-action inline-flex items-center gap-2 rounded-pill border px-4 py-2.5 text-body-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.01]"
                 >
                   <ShoppingCart size={15} strokeWidth={1.8} />
-                  Cart {cartItemCount ? `(${cartItemCount})` : ""}
-                </Link>
+                  Cart
+                  {cart.itemCount ? (
+                    <span className="rounded-full bg-white/80 px-2 py-0.5 text-[0.76rem] text-success shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
+                      {cart.itemCount}
+                    </span>
+                  ) : null}
+                </button>
               </>
             }
           />
@@ -330,8 +339,15 @@ export function ProductDetailShell({
             </div>
           </SurfacePanel>
 
-                  </div>
+        </div>
       </div>
+
+      <StoreCartDrawer
+        cart={cart}
+        open={cartOpen}
+        redirectTo={`/store/${product.id}`}
+        onClose={() => setCartOpen(false)}
+      />
     </div>
   );
 }

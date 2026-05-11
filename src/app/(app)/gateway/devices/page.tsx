@@ -14,6 +14,7 @@ import { RefreshRouteButton } from "@/src/components/ui/refresh-route-button";
 import { StatTile } from "@/src/components/ui/stat-tile";
 import { StatusPill } from "@/src/components/ui/status-pill";
 import { SurfacePanel } from "@/src/components/ui/surface-panel";
+import { cn } from "@/src/lib/cn";
 import { getAuthenticatedPortalContext } from "@/src/server/auth/session";
 import { getGatewayOverviewData } from "@/src/server/gateway/api";
 
@@ -31,6 +32,26 @@ function getDeviceIcon(name: string) {
 
 function buildBandFilterHref(filter: "all" | "5g" | "24g") {
   return filter === "all" ? "/gateway/devices" : `/gateway/devices?band=${filter}`;
+}
+
+function getBandToneClass(band: string) {
+  return band === "5 GHz" ? "text-success" : "text-brand";
+}
+
+function BandPulse({
+  className,
+}: Readonly<{
+  className?: string;
+}>) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn("relative inline-flex h-3 w-3 items-center justify-center", className)}
+    >
+      <span className="absolute inset-0 rounded-full bg-current opacity-25 animate-ping [animation-duration:1.6s]" />
+      <span className="relative h-2 w-2 rounded-full bg-current" />
+    </span>
+  );
 }
 
 export default async function GatewayDevicesPage({
@@ -136,8 +157,8 @@ export default async function GatewayDevicesPage({
                 href={buildBandFilterHref("5g")}
                 className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
                   activeBand === "5g"
-                    ? "theme-tab-item theme-tab-item-active border"
-                    : "theme-tab-item border border-transparent"
+                    ? "theme-tab-item theme-tab-item-active tab-band-success border"
+                    : "theme-tab-item tab-band-success border border-transparent"
                 }`}
               >
                 5 GHz: {gateway.devices5G.length}
@@ -146,8 +167,8 @@ export default async function GatewayDevicesPage({
                 href={buildBandFilterHref("24g")}
                 className={`rounded-pill px-4 py-2 text-body-sm transition-colors duration-200 ${
                   activeBand === "24g"
-                    ? "theme-tab-item theme-tab-item-active border"
-                    : "theme-tab-item border border-transparent"
+                    ? "theme-tab-item theme-tab-item-active tab-band-brand border"
+                    : "theme-tab-item tab-band-brand border border-transparent"
                 }`}
               >
                 2.4 GHz: {gateway.devices24G.length}
@@ -189,7 +210,13 @@ export default async function GatewayDevicesPage({
                               </div>
                             </div>
                           </div>,
-                          <span key={`${row.id}-radio`} className="whitespace-nowrap">
+                          <span
+                            key={`${row.id}-radio`}
+                            className={cn(
+                              "whitespace-nowrap font-medium",
+                              getBandToneClass(row.band),
+                            )}
+                          >
                             {row.band}
                           </span>,
                           <span key={`${row.id}-ip`} className="whitespace-nowrap">
@@ -199,10 +226,15 @@ export default async function GatewayDevicesPage({
                             {row.macAddress || "Unavailable"}
                           </span>,
                           <div key={`${row.id}-band`} className="flex justify-end">
-                            <StatusPill
-                              label={row.band}
-                              tone={row.band === "5 GHz" ? "success" : "brand"}
-                            />
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-2 whitespace-nowrap text-label-md font-medium",
+                                getBandToneClass(row.band),
+                              )}
+                            >
+                              <BandPulse />
+                              {row.band}
+                            </span>
                           </div>,
                         ],
                       }))}

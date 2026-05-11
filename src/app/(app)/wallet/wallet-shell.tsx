@@ -25,6 +25,7 @@ import { PageIntro } from "@/src/components/ui/page-intro";
 import { SegmentedControl } from "@/src/components/ui/segmented-control";
 import type { WalletDashboardData } from "@/src/server/wallet/types";
 import { cn } from "@/src/lib/cn";
+import { UWALLET_MILESTONES } from "@/src/lib/wallet-milestones";
 
 import { sendAffiliateInvitationAction } from "./actions";
 import { initialAffiliateInviteActionState } from "./wallet-action-state";
@@ -89,11 +90,11 @@ function formatUserInitials(fullName: string) {
   return "UW";
 }
 
-const walletMilestones = [10, 20, 30, 40, 55] as const;
+const walletMilestones = UWALLET_MILESTONES;
 
 function getMilestoneProgress(currentValue: number) {
   const clampedValue = Math.max(0, currentValue);
-  const maxValue = walletMilestones[walletMilestones.length - 1] ?? 55;
+  const maxValue = walletMilestones[walletMilestones.length - 1] ?? 49.95;
   const achievedCount = walletMilestones.filter(
     (milestone) => clampedValue >= milestone,
   ).length;
@@ -293,7 +294,7 @@ export function WalletShell({
                 transition={{ duration: 0.7, ease: PREMIUM_EASE }}
               />
 
-              <div className="relative grid grid-cols-5 gap-2 sm:gap-3">
+              <div className="relative grid grid-cols-6 gap-2 sm:gap-3">
                 {walletMilestones.map((milestone, index) => {
                   const achieved = totalDollarValue >= milestone;
                   const active = index === milestoneProgress.activeIndex;

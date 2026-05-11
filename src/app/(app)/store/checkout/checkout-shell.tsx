@@ -21,6 +21,7 @@ import { SegmentedControl } from "@/src/components/ui/segmented-control";
 import { StatusPill } from "@/src/components/ui/status-pill";
 import { SurfacePanel } from "@/src/components/ui/surface-panel";
 import type { StoreCartSnapshot } from "@/src/lib/store-types";
+import { getHighestUnlockedMilestone, getNextMilestone } from "@/src/lib/wallet-milestones";
 import type { PaymentMethod } from "@/src/server/billing/types";
 import type { WalletPointsSummary } from "@/src/server/wallet/types";
 
@@ -115,16 +116,17 @@ export function CheckoutShell({
   const [selectedCardId, setSelectedCardId] = useState(
     paymentMethods.find((card) => card.isDefault)?.id ?? paymentMethods[0]?.id ?? 0,
   );
-  const [usePoints, setUsePoints] = useState(
-    (walletPoints?.totalPoints ?? 0) > 0,
-  );
+  const [usePoints, setUsePoints] = useState(false);
 
   const subtotal = cart.subtotal;
   const availablePointsValue = walletPoints?.totalDollars ?? 0;
   const availablePointsCount = walletPoints?.totalPoints ?? 0;
-  const pointsDiscount = usePoints
-    ? Math.min(availablePointsValue, subtotal)
-    : 0;
+  const unlockedMilestone = getHighestUnlockedMilestone(availablePointsValue);
+  const nextMilestone = getNextMilestone(availablePointsValue);
+  const remainingToNext = nextMilestone ? Math.max(0, nextMilestone - availablePointsValue) : 0;
+  const canRedeemPoints = unlockedMilestone >= 10;
+  const applicablePointsValue = canRedeemPoints ? Math.min(unlockedMilestone, subtotal) : 0;
+  const pointsDiscount = usePoints ? applicablePointsValue : 0;
   const total = Math.max(0, subtotal - pointsDiscount);
   const canComplete = cart.itemCount > 0 && (total === 0 || selectedCardId > 0);
 
@@ -303,27 +305,59 @@ export function CheckoutShell({
                 U-Wallet redemption
               </div>
               <div className="mt-3 text-body-sm text-ink-muted">
-                Available value:{" "}
-                <NumberTicker
-                  value={availablePointsValue}
-                  prefix="$"
-                  decimals={2}
-                />{" "}
+                Balance:{" "}
+                <NumberTicker value={availablePointsValue} prefix="$" decimals={2} />{" "}
                 from <NumberTicker value={availablePointsCount} /> points.
               </div>
-              <div className="theme-inline-surface mt-4 flex items-center justify-between rounded-[1.2rem] border border-white/75 bg-white/55 px-4 py-4">
+
+              <div className="theme-inline-surface mt-4 space-y-2 rounded-[1.2rem] border border-white/75 bg-white/55 px-4 py-4 text-body-sm text-ink-muted">
+                <div className="flex items-center justify-between gap-4">
+                  <span>Unlocked milestone</span>
+                  <span className={canRedeemPoints ? "font-medium text-ink" : "text-ink-faint"}>
+                    {canRedeemPoints ? formatStoreCurrency(unlockedMilestone) : "Not yet"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span>Max redeemable today</span>
+                  <span className="font-medium text-ink">
+                    {formatStoreCurrency(applicablePointsValue)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span>Next milestone</span>
+                  <span className="font-medium text-ink">
+                    {nextMilestone ? formatStoreCurrency(nextMilestone) : "Maxed out"}
+                  </span>
+                </div>
+                {nextMilestone ? (
+                  <div className="flex items-center justify-between gap-4">
+                    <span>Remaining to unlock</span>
+                    <span className="font-medium text-ink">
+                      {formatStoreCurrency(remainingToNext)}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="theme-inline-surface mt-3 flex items-center justify-between gap-4 rounded-[1.2rem] border border-white/75 bg-white/55 px-4 py-4">
                 <div>
                   <div className="text-body-md font-medium text-ink">
-                    Apply available points
+                    Use U-Points
                   </div>
                   <div className="text-body-sm text-ink-muted">
-                    Use wallet value before charging the card.
+                    {canRedeemPoints
+                      ? `Applies your ${formatStoreCurrency(unlockedMilestone)} milestone to this order.`
+                      : "Reach $10 in points to start redeeming."}
                   </div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setUsePoints((current) => !current)}
-                  className={`relative h-7 w-12 rounded-full transition-colors duration-200 ${
+                  disabled={!canRedeemPoints}
+                  onClick={() => {
+                    if (!canRedeemPoints) return;
+                    setUsePoints((current) => !current);
+                  }}
+                  className={`relative h-7 w-12 rounded-full transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 ${
                     usePoints ? "bg-success/85" : "bg-line-strong/70"
                   }`}
                 >

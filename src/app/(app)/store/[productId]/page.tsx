@@ -27,8 +27,8 @@ export default async function StoreProductDetailPage({
   return (
     <ProductDetailShell
       product={product}
-      cartItemCount={cart.itemCount}
       cartQuantity={cart.quantitiesByProductId[product.id] ?? 0}
+      cart={cart}
       flash={getStoreFlashMessage(query)}
     />
   );

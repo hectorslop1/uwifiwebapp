@@ -11,6 +11,7 @@ import {
   buildStoreCartLineId,
   parseStoreCartLineId,
 } from "@/src/lib/store-types";
+import { getHighestUnlockedMilestone } from "@/src/lib/wallet-milestones";
 import { getAuthenticatedPortalContext } from "@/src/server/auth/session";
 import { getPaymentMethods } from "@/src/server/billing/api";
 import { getWalletPointsSummary } from "@/src/server/wallet/api";
@@ -241,9 +242,8 @@ export async function completeStoreCheckoutAction(formData: FormData) {
     ).catch(() => null),
   ]);
 
-  const pointsDiscount = usePoints
-    ? Math.min(walletPoints?.totalDollars ?? 0, snapshot.subtotal)
-    : 0;
+  const unlockedMilestone = getHighestUnlockedMilestone(walletPoints?.totalDollars ?? 0);
+  const pointsDiscount = usePoints ? Math.min(unlockedMilestone, snapshot.subtotal) : 0;
   const total = Math.max(0, snapshot.subtotal - pointsDiscount);
 
   if (total > 0) {
