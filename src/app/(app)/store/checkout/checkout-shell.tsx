@@ -310,7 +310,7 @@ export function CheckoutShell({
                 from <NumberTicker value={availablePointsCount} /> points.
               </div>
 
-              <div className="theme-inline-surface mt-4 space-y-2 rounded-[1.2rem] border border-white/75 bg-white/55 px-4 py-4 text-body-sm text-ink-muted">
+              <div className="theme-inline-surface mt-4 space-y-2 rounded-[1.2rem] border border-[#c4d8cc] bg-[linear-gradient(180deg,rgba(246,255,245,0.98),rgba(237,250,236,0.94))] px-4 py-4 text-body-sm text-ink">
                 <div className="flex items-center justify-between gap-4">
                   <span>Unlocked milestone</span>
                   <span className={canRedeemPoints ? "font-medium text-ink" : "text-ink-faint"}>
@@ -339,7 +339,7 @@ export function CheckoutShell({
                 ) : null}
               </div>
 
-              <div className="theme-inline-surface mt-3 flex items-center justify-between gap-4 rounded-[1.2rem] border border-white/75 bg-white/55 px-4 py-4">
+              <div className="theme-inline-surface mt-3 flex items-center justify-between gap-4 rounded-[1.2rem] border border-[#c4d8cc] bg-[linear-gradient(180deg,rgba(246,255,245,0.98),rgba(237,250,236,0.94))] px-4 py-4">
                 <div>
                   <div className="text-body-md font-medium text-ink">
                     Use U-Points
@@ -358,7 +358,7 @@ export function CheckoutShell({
                     setUsePoints((current) => !current);
                   }}
                   className={`relative h-7 w-12 rounded-full transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 ${
-                    usePoints ? "bg-success/85" : "bg-line-strong/70"
+                    usePoints ? "bg-gradient-to-r from-emerald-500 to-green-600 shadow-[0_4px_12px_rgba(16,185,129,0.4)]" : "bg-gray-300"
                   }`}
                 >
                   <span

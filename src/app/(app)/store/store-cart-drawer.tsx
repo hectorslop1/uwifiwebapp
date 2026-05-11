@@ -130,8 +130,8 @@ export function StoreCartDrawer({
 
       <aside
         className={cn(
-          "theme-panel fixed right-0 top-0 z-50 flex h-dvh w-full max-w-[27rem] flex-col border-l border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,248,246,0.94))] px-4 py-4 shadow-[0_28px_72px_rgba(166,173,184,0.22)] transition-transform duration-300 ease-out sm:px-5",
-          open ? "translate-x-0" : "translate-x-[110%]",
+          "theme-panel fixed right-0 top-0 z-50 flex h-dvh w-full sm:max-w-[32rem] flex-col border-l border-white/85 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,248,246,0.94))] px-4 py-4 shadow-[0_28px_72px_rgba(166,173,184,0.22)] transition-transform duration-300 ease-out sm:px-5",
+          open ? "translate-x-0" : "translate-x-[120%]",
         )}
       >
         <div className="flex items-center justify-between gap-3 border-b border-line/20 pb-3">
