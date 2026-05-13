@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useDeferredValue, useMemo, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
+  Antenna,
   ArrowRight,
   BadgePlus,
+  BatteryCharging,
   ExternalLink,
-  Headset,
   Phone,
   Plus,
   Search,
@@ -17,7 +18,6 @@ import {
   Sparkles,
   Tv,
   UsersRound,
-  Zap,
 } from "lucide-react";
 
 import { PageIntro } from "@/src/components/ui/page-intro";
@@ -106,7 +106,7 @@ function getStoreCategoryIcon(category: StoreCategory) {
       return <Tv size={18} strokeWidth={1.8} />;
     case "Phone":
       return <Phone size={18} strokeWidth={1.8} />;
-    case "Add-ons":
+    case "Add Ons":
       return <BadgePlus size={18} strokeWidth={1.8} />;
     default:
       return <Sparkles size={18} strokeWidth={1.8} />;
@@ -114,15 +114,14 @@ function getStoreCategoryIcon(category: StoreCategory) {
 }
 
 function getAddOnIcon(productId: string) {
-  if (productId === "premium-support") {
-    return <Headset size={22} strokeWidth={1.8} />;
+  switch (productId) {
+    case "external-attena":
+      return <Antenna size={22} strokeWidth={1.8} />;
+    case "battery-backup":
+      return <BatteryCharging size={22} strokeWidth={1.8} />;
+    default:
+      return <UsersRound size={22} strokeWidth={1.8} />;
   }
-
-  if (productId === "data-boost") {
-    return <Zap size={22} strokeWidth={1.8} />;
-  }
-
-  return <UsersRound size={22} strokeWidth={1.8} />;
 }
 
 function StoreProductCard({
@@ -311,6 +310,8 @@ function ExternalServiceRow({
         return "https://www.hulu.com";
       case "t-mobile":
         return "https://www.t-mobile.com";
+      case "ooma":
+        return "https://www.ooma.com";
       default:
         return "#";
     }
@@ -473,7 +474,7 @@ export function StoreShell({
       const matchesQuery =
         normalized.length === 0
           ? true
-          : `${product.name} ${product.description} ${product.category} ${variantSearch}`
+          : `${product.name} ${product.description} ${product.category} ${product.subCategory ?? ""} ${variantSearch}`
               .toLowerCase()
               .includes(normalized);
 
@@ -591,27 +592,52 @@ export function StoreShell({
                 <div>
                   <div className="text-title-md text-ink">Phone services</div>
                   <div className="mt-1 text-body-sm text-ink-muted">
-                    Mobile partners and plans with a tighter, more polished browsing flow.
+                    Home and mobile phone partners with a tighter, more polished browsing flow.
                   </div>
                 </div>
                 <StatusPill label={`${products.length} services`} tone="brand" />
               </div>
 
-              <div className="mt-4 space-y-3">
-                {products.map((product) => (
-                  <ExternalServiceRow key={product.id} product={product} />
-                ))}
+              <div className="mt-4 space-y-5">
+                {(["Home Phone", "Mobile phone"] as const).map((segment) => {
+                  const segmentProducts = products.filter(
+                    (product) => product.subCategory === segment,
+                  );
+
+                  return (
+                    <div key={segment} className="space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-[0.92rem] font-medium tracking-[-0.03em] text-ink">
+                          {segment}
+                        </div>
+                        <div className="text-[0.82rem] text-ink-muted">
+                          {segmentProducts.length ? `${segmentProducts.length} option(s)` : "No options"}
+                        </div>
+                      </div>
+
+                      {segmentProducts.length ? (
+                        segmentProducts.map((product) => (
+                          <ExternalServiceRow key={product.id} product={product} />
+                        ))
+                      ) : (
+                        <div className="rounded-[1rem] border border-white/60 bg-white/60 px-4 py-3 text-[0.86rem] text-ink-muted shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+                          No services available right now.
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </SurfacePanel>
           ) : null}
 
-          {category === "Add-ons" ? (
+          {category === "Add Ons" ? (
             <SurfacePanel className="p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="text-title-md text-ink">Account add-ons</div>
+                  <div className="text-title-md text-ink">Gateway add-ons</div>
                   <div className="mt-1 text-body-sm text-ink-muted">
-                    Extras that fit the same purchase flow without feeling bolted on.
+                    Hardware options and upgrades designed for your gateway setup.
                   </div>
                 </div>
                 <StatusPill label={`${products.length} add-ons`} tone="brand" />

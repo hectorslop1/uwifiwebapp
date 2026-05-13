@@ -1,4 +1,4 @@
-export type StoreCategory = "Merchandise" | "IPTV" | "Phone" | "Add-ons";
+export type StoreCategory = "Merchandise" | "IPTV" | "Phone" | "Add Ons";
 
 export type ProductVariant = {
   id: string;
@@ -14,6 +14,7 @@ export type StoreProduct = {
   id: string;
   name: string;
   category: StoreCategory;
+  subCategory?: string;
   price: number;
   priceLabel: string;
   description: string;
@@ -254,6 +255,7 @@ export const storeCatalog: StoreProduct[] = [
     id: "t-mobile",
     name: "T-Mobile",
     category: "Phone",
+    subCategory: "Mobile phone",
     price: 0,
     priceLabel: "External",
     description: "Get the latest smartphones and plans",
@@ -263,52 +265,53 @@ export const storeCatalog: StoreProduct[] = [
     accent: "brand",
     featured: true,
   },
-
-
-  // Add-ons
   {
-    id: "premium-support",
-    name: "Premium Support",
-    category: "Add-ons",
-    price: 5,
-    priceLabel: "$5 / month",
-    description: "24/7 priority technical support.",
-    highlights: ["Priority help", "24/7 access", "Faster response"],
-    model: "Support add-on",
-    period: "monthly",
-    accent: "muted",
+    id: "ooma",
+    name: "Ooma",
+    category: "Phone",
+    subCategory: "Home Phone",
+    price: 0,
+    priceLabel: "External",
+    description: "Easy home phone service with flexible calling features",
+    imageSrc: "/images/ooma.png",
+    highlights: ["Home phone service", "Flexible calling", "Easy setup"],
+    model: "External service",
+    accent: "success",
   },
+
+
+  // Add Ons
   {
-    id: "data-boost",
-    name: "Data Boost",
-    category: "Add-ons",
-    price: 10,
-    priceLabel: "$10 one-time",
-    description: "Extra 5GB of high-speed data.",
-    highlights: ["5GB extra", "Instant top-up", "One-time"],
-    model: "Usage add-on",
+    id: "external-attena",
+    name: "External Attena",
+    category: "Add Ons",
+    price: 0,
+    priceLabel: "Call for pricing",
+    description: "External add-on for improved gateway signal performance.",
+    highlights: ["Gateway add-on", "Improves signal", "Professional install"],
+    model: "Gateway add-on",
     period: "one-time",
     accent: "brand",
   },
   {
-    id: "family-plan",
-    name: "Family Plan",
-    category: "Add-ons",
-    price: 15,
-    priceLabel: "$15 / month",
-    description: "Add up to 4 family members.",
-    highlights: ["Up to 4 members", "Shared account", "Monthly add-on"],
-    model: "Plan add-on",
-    period: "monthly",
-    accent: "success",
+    id: "battery-backup",
+    name: "Battery Backup",
+    category: "Add Ons",
+    price: 0,
+    priceLabel: "Call for pricing",
+    description: "Backup power option to keep your gateway online during outages.",
+    highlights: ["Gateway add-on", "Helps during outages", "Peace of mind"],
+    model: "Gateway add-on",
+    period: "one-time",
+    accent: "muted",
   },
 ];
 
 export const storeCategories: StoreCategory[] = [
-  "Merchandise",
   "IPTV",
   "Phone",
-  "Add-ons",
+  "Add Ons",
+  "Merchandise",
 ];
 
 export function getStoreProductById(productId: string) {

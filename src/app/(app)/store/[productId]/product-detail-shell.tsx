@@ -60,7 +60,7 @@ function getStoreCategoryIcon(product: StoreProduct) {
       return <Tv size={28} strokeWidth={1.7} />;
     case "Phone":
       return <Phone size={28} strokeWidth={1.7} />;
-    case "Add-ons":
+    case "Add Ons":
       return <Sparkles size={28} strokeWidth={1.7} />;
     default:
       return <Sparkles size={28} strokeWidth={1.7} />;
