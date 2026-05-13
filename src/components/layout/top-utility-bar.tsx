@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, LogOut } from "lucide-react";
+import { ChevronDown, LogOut, Menu } from "lucide-react";
 
 import type { PortalUser } from "@/src/server/auth/types";
 
 import { AnimatedThemeToggler } from "@/src/components/magic/animated-theme-toggler";
 
+import { useMobileNav } from "./mobile-nav-context";
 import { UwifiBrandTile } from "./uwifi-brand";
 
 function getInitials(fullName: string) {
@@ -24,6 +25,7 @@ function getInitials(fullName: string) {
 
 export function TopUtilityBar({ user }: Readonly<{ user: PortalUser }>) {
   const router = useRouter();
+  const { openMobileNav } = useMobileNav();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggingOut, startLogoutTransition] = useTransition();
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -53,19 +55,21 @@ export function TopUtilityBar({ user }: Readonly<{ user: PortalUser }>) {
   };
 
   return (
-    <header className="theme-topbar relative z-40 border-b border-white/80 bg-white/55 backdrop-blur-[22px]">
+    <header className="theme-topbar sticky top-0 z-40 border-b border-white/80 bg-white/55 backdrop-blur-[22px]">
       <div className="mx-auto flex max-w-[1560px] items-center justify-between gap-4 px-4 py-3 sm:px-5 lg:px-8">
-        <div className="hidden lg:flex lg:w-[14rem] lg:shrink-0 lg:items-center">
-          <UwifiBrandTile
-            className="h-[3.35rem] w-[3.35rem]"
-            imageClassName="h-[2.4rem] w-auto"
-          />
-        </div>
+        <div className="flex min-w-0 items-center gap-3 lg:w-[14rem] lg:shrink-0">
+          <button
+            type="button"
+            aria-label="Open navigation"
+            onClick={openMobileNav}
+            className="theme-control-button flex h-11 w-11 items-center justify-center rounded-full border text-ink shadow-[0_12px_26px_rgba(201,203,212,0.1),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl transition-transform duration-200 hover:-translate-y-0.5 lg:hidden"
+          >
+            <Menu size={20} strokeWidth={1.8} />
+          </button>
 
-        <div className="flex lg:hidden">
           <UwifiBrandTile
-            className="h-[3.15rem] w-[3.15rem]"
-            imageClassName="h-[2.15rem] w-auto"
+            className="h-[3.15rem] w-[3.15rem] lg:h-[3.35rem] lg:w-[3.35rem]"
+            imageClassName="h-[2.15rem] w-auto lg:h-[2.4rem]"
           />
         </div>
 

@@ -144,14 +144,14 @@ export function LoginShell() {
     "theme-input w-full rounded-[1.15rem] border border-white/80 bg-white/78 px-4 py-3.5 text-[0.95rem] text-ink outline-none shadow-[0_12px_28px_rgba(198,201,211,0.08),inset_0_1px_0_rgba(255,255,255,0.92)] transition-colors duration-200 placeholder:text-ink-faint";
 
   return (
-    <div className="theme-shell relative min-h-[100dvh] w-full overflow-x-hidden bg-[linear-gradient(180deg,#fbfaf7_0%,#f3f3ee_100%)]">
+    <div className="theme-shell relative min-h-dvh w-full overflow-x-hidden overflow-y-auto bg-[linear-gradient(180deg,#fbfaf7_0%,#f3f3ee_100%)]">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-[-10rem] top-[-8rem] h-[26rem] w-[26rem] rounded-full bg-white/92 blur-3xl" />
         <div className="absolute left-[36%] top-[18%] h-[22rem] w-[22rem] rounded-full bg-[#edf7ef] blur-3xl" />
         <div className="absolute bottom-[-12rem] left-[10%] h-[26rem] w-[30rem] rounded-full bg-[#ede8ff] blur-3xl" />
       </div>
 
-      <div className="grid min-h-[100dvh] w-full lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]">
+      <div className="grid min-h-dvh w-full lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)]">
         <section className="relative flex min-h-0 items-stretch bg-[linear-gradient(180deg,rgba(255,255,255,0.48),rgba(249,248,245,0.78))]">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute left-[10%] top-[8%] h-32 w-32 rounded-full bg-white/90 blur-3xl" />
@@ -171,11 +171,11 @@ export function LoginShell() {
             </div>
           </div>
 
-          <div className="relative flex w-full items-center px-6 pt-24 pb-[clamp(32px,6vh,72px)] sm:px-8 sm:pt-28 lg:px-10 lg:pt-32 xl:px-14">
+          <div className="relative flex w-full items-start px-6 pt-20 pb-[clamp(28px,6vh,72px)] sm:px-8 sm:pt-24 lg:items-center lg:px-10 lg:pt-28 xl:px-14 xl:pt-32">
             <div className="grid w-full gap-8 lg:gap-10">
               <div className="grid gap-4">
                 
-                <h1 className="text-[2.8rem] font-medium leading-[1.08] tracking-[-0.075em] text-ink sm:text-[3.4rem] lg:text-[4.05rem] xl:text-[4.4rem]">
+                <h1 className="text-[2.6rem] font-medium leading-[1.08] tracking-[-0.075em] text-ink sm:text-[3.15rem] lg:text-[3.85rem] xl:text-[4.1rem]">
                   Manage your <AuroraText>U-wifi service</AuroraText> with clarity.
                 </h1>
                 <p className="w-full text-[1rem] leading-7 text-ink-muted sm:text-[1.02rem] lg:w-[88%] xl:w-[76%]">
@@ -358,13 +358,13 @@ export function LoginShell() {
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,13,0.06)_0%,rgba(20,15,37,0.22)_40%,rgba(11,10,24,0.72)_100%)]" />
           <div className="absolute inset-y-0 left-0 w-24 bg-[linear-gradient(90deg,rgba(11,10,24,0.26),transparent)] lg:w-32" />
 
-          <div className="relative z-10 flex h-full flex-col justify-end px-6 pt-24 pb-[clamp(32px,6vh,80px)] sm:px-8 sm:pt-28 lg:px-10 lg:pt-32 xl:px-14">
+          <div className="relative z-10 flex h-full flex-col justify-end px-6 pt-20 pb-[clamp(28px,6vh,80px)] [@media(max-height:760px)]:justify-start sm:px-8 sm:pt-24 lg:px-10 lg:pt-28 xl:px-14 xl:pt-32">
             
 
             <div className="mt-auto grid gap-6">
               <div className="grid gap-4">
                 
-                <h2 className="text-[2.6rem] font-medium leading-[0.98] tracking-[-0.08em] text-white sm:text-[3rem] lg:text-[3.6rem]">
+                <h2 className="text-[2.4rem] font-medium leading-[0.98] tracking-[-0.08em] text-white sm:text-[2.8rem] lg:text-[3.3rem]">
                   Operate smarter. Stay connected.
                 </h2>
               

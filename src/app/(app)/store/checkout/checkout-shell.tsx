@@ -131,7 +131,7 @@ export function CheckoutShell({
   const canComplete = cart.itemCount > 0 && (total === 0 || selectedCardId > 0);
 
   return (
-    <div className="space-y-3 pb-2 xl:[zoom:0.92] 2xl:[zoom:1]">
+    <div className="space-y-3 pb-2">
       <PageIntro
         eyebrow="Store"
         title="Checkout"

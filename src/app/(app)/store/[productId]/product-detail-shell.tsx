@@ -118,7 +118,7 @@ export function ProductDetailShell({
   };
 
   return (
-    <div className="space-y-3 pb-2 xl:[zoom:0.92] 2xl:[zoom:1]">
+    <div className="space-y-3 pb-2">
       <Link
         href="/store"
         className="inline-flex items-center gap-2 text-body-sm font-medium text-ink-soft transition-colors duration-200 hover:text-ink"

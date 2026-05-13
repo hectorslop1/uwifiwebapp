@@ -3,19 +3,21 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import {
-  FileText, 
+  FileText,
   House,
   LifeBuoy,
   LogOut,
-  Menu,
   Router,
   Settings,
   ShoppingBag,
   Wallet,
   X,
 } from "lucide-react";
+
+import { useMobileNav } from "./mobile-nav-context";
 
 const navigation = [
   { label: "Dashboard", href: "/overview", icon: House },
@@ -174,10 +176,11 @@ function SidebarContent({
 export function SidebarRail() {
   const pathname = usePathname();
   const router = useRouter();
+  const { mobileNavOpen, setMobileNavOpen, closeMobileNav } = useMobileNav();
   const [desktopOpen, setDesktopOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoggingOut, startLogoutTransition] = useTransition();
   const [isDesktopAnimating, setIsDesktopAnimating] = useState(false);
+  const portalTarget = typeof document === "undefined" ? null : document.body;
 
   const layoutSpring = {
     type: "spring",
@@ -187,7 +190,7 @@ export function SidebarRail() {
   } as const;
 
   const performLogout = async () => {
-    setMobileOpen(false);
+    setMobileNavOpen(false);
     await fetch("/api/auth/logout", { method: "POST" });
     router.replace("/login");
     router.refresh();
@@ -199,19 +202,40 @@ export function SidebarRail() {
     });
   };
 
+  useEffect(() => {
+    if (!mobileNavOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileNavOpen]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeMobileNav();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [closeMobileNav, mobileNavOpen]);
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname, setMobileNavOpen]);
+
   return (
     <>
-      <div className="flex items-center justify-end border-b border-line/20 px-4 py-3 lg:hidden">
-        <button
-          type="button"
-          aria-label="Open navigation"
-          onClick={() => setMobileOpen(true)}
-          className="theme-control-button flex h-11 w-11 items-center justify-center rounded-full border text-ink shadow-[0_12px_26px_rgba(201,203,212,0.1),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl transition-transform duration-200 hover:-translate-y-0.5"
-        >
-          <Menu size={20} strokeWidth={1.8} />
-        </button>
-      </div>
-
       <motion.div
         layout
         transition={{ layout: layoutSpring }}
@@ -246,53 +270,66 @@ export function SidebarRail() {
         </aside>
       </motion.div>
 
-      <AnimatePresence>
-        {mobileOpen ? (
-          <>
-            <motion.button
-              type="button"
-              aria-label="Close navigation overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.16, ease: "easeOut" }}
-              onClick={() => setMobileOpen(false)}
-              className="theme-overlay fixed inset-0 z-40 bg-[rgba(11,14,18,0.18)] backdrop-blur-sm lg:hidden"
-            />
+      {portalTarget
+        ? createPortal(
+            <AnimatePresence>
+              {mobileNavOpen ? (
+                <>
+                  <motion.button
+                    type="button"
+                    aria-label="Close navigation overlay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.16, ease: "easeOut" }}
+                    onClick={() => setMobileNavOpen(false)}
+                    className="theme-overlay fixed inset-0 z-40 bg-[rgba(11,14,18,0.18)] backdrop-blur-sm lg:hidden"
+                  />
 
-            <motion.aside
-              initial={{ x: -280, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -280, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 480, damping: 42, mass: 0.85 }}
-              className="theme-panel fixed inset-y-0 left-0 z-50 flex w-[18rem] flex-col border-r border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,247,250,0.9))] px-4 py-5 shadow-[0_28px_72px_rgba(169,173,185,0.22)] backdrop-blur-2xl lg:hidden"
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <div className="text-[1rem] font-medium tracking-[-0.04em] text-ink">
-                  Menu
-                </div>
+                  <motion.aside
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Navigation menu"
+                    initial={{ x: -280, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -280, opacity: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 480,
+                      damping: 42,
+                      mass: 0.85,
+                    }}
+                    className="theme-panel fixed inset-y-0 left-0 z-50 flex w-[18rem] flex-col border-r border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,247,250,0.9))] px-4 py-5 shadow-[0_28px_72px_rgba(169,173,185,0.22)] backdrop-blur-2xl lg:hidden"
+                  >
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="text-[1rem] font-medium tracking-[-0.04em] text-ink">
+                        Menu
+                      </div>
 
-                <button
-                  type="button"
-                  aria-label="Close navigation"
-                  onClick={() => setMobileOpen(false)}
-                  className="theme-control-button flex h-10 w-10 items-center justify-center rounded-full border text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
-                >
-                  <X size={18} strokeWidth={1.8} />
-                </button>
-              </div>
+                      <button
+                        type="button"
+                        aria-label="Close navigation"
+                        onClick={() => setMobileNavOpen(false)}
+                        className="theme-control-button flex h-10 w-10 items-center justify-center rounded-full border text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]"
+                      >
+                        <X size={18} strokeWidth={1.8} />
+                      </button>
+                    </div>
 
-              <SidebarContent
-                expanded
-                pathname={pathname}
-                onNavigate={() => setMobileOpen(false)}
-                onLogout={handleLogout}
-                isLoggingOut={isLoggingOut}
-              />
-            </motion.aside>
-          </>
-        ) : null}
-      </AnimatePresence>
+                    <SidebarContent
+                      expanded
+                      pathname={pathname}
+                      onNavigate={() => setMobileNavOpen(false)}
+                      onLogout={handleLogout}
+                      isLoggingOut={isLoggingOut}
+                    />
+                  </motion.aside>
+                </>
+              ) : null}
+            </AnimatePresence>,
+            portalTarget,
+          )
+        : null}
     </>
   );
 }

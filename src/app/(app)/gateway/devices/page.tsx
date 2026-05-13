@@ -100,7 +100,7 @@ export default async function GatewayDevicesPage({
         : [...gateway.devices5G, ...gateway.devices24G];
 
   return (
-    <div className="space-y-4 pb-3 xl:[zoom:0.88] 2xl:[zoom:0.94] 3xl:[zoom:1]">
+    <div className="space-y-4 pb-3">
       <PageIntro
         eyebrow="Gateway"
         title="Connected devices"

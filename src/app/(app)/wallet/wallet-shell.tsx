@@ -251,7 +251,7 @@ export function WalletShell({
     totalPoints > 0 ? Math.round((affiliatePoints / totalPoints) * 100) : 0;
 
   return (
-    <div className="wallet-dashboard space-y-3 pb-2 xl:[zoom:0.9] 2xl:[zoom:1]">
+    <div className="wallet-dashboard space-y-3 pb-2">
       <PageIntro
         title="U-Wallet"
         description="Manage your points, payment methods, and affiliated users."

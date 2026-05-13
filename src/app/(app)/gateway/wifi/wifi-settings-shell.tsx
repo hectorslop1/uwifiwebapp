@@ -199,10 +199,10 @@ export function WifiSettingsShell({
   };
 
   return (
-    <div className="space-y-4 pb-2 xl:[zoom:0.88] 2xl:[zoom:0.94] 3xl:[zoom:1] lg:flex lg:min-h-0 lg:flex-col lg:pb-4">
+    <div className="space-y-4 pb-2 lg:flex lg:min-h-0 lg:flex-col lg:pb-4">
       <PageIntro
         eyebrow="Gateway"
-        title="Wi‑Fi settings"
+        title="Wi-Fi settings"
         description="Update the names and passwords for both Wi‑Fi bands in one place."
       />
 

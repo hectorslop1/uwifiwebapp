@@ -54,7 +54,7 @@ export default async function BillingPage({
         : "No payment method";
 
   return (
-    <div className="space-y-4 pb-4 xl:[zoom:0.98] 2xl:[zoom:1]">
+    <div className="space-y-4 pb-4">
       <PageIntro
         eyebrow="Billing"
         title="Billing overview"

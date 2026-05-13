@@ -142,7 +142,7 @@ export default async function GatewayPage({
   ];
 
   return (
-    <div className="space-y-4 pb-2 xl:[zoom:0.93] 2xl:[zoom:1]">
+    <div className="space-y-4 pb-2">
       <PageIntro
         eyebrow="Gateway"
         title="Gateway control center"

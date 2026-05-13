@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, ShoppingCart, X } from "lucide-react";
-import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import type { StoreCartLineItem, StoreCartSnapshot } from "@/src/lib/store-types";
@@ -117,11 +116,7 @@ export function StoreCartDrawer({
   onClose: () => void;
 }>) {
   const hasItems = cart.items.length > 0;
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    setPortalTarget(document.body);
-  }, []);
+  const portalTarget = typeof document === "undefined" ? null : document.body;
 
   if (!portalTarget) {
     return null;
