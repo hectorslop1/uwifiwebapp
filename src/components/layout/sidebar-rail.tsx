@@ -243,7 +243,7 @@ export function SidebarRail() {
         onLayoutAnimationComplete={() => setIsDesktopAnimating(false)}
         style={{ willChange: "transform" }}
         className={cx(
-          "relative hidden shrink-0 lg:sticky lg:top-[5.4rem] lg:block lg:h-[calc(100dvh-5.4rem)] transform-gpu",
+          "relative hidden shrink-0 lg:sticky lg:top-[5rem] lg:block lg:h-[calc(100dvh-5rem)] transform-gpu",
           desktopOpen ? "w-[232px]" : "w-[92px]",
         )}
       >

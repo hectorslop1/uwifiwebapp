@@ -171,11 +171,11 @@ export function LoginShell() {
             </div>
           </div>
 
-          <div className="relative flex w-full items-start px-6 pt-20 pb-[clamp(28px,6vh,72px)] sm:px-8 sm:pt-24 lg:px-10 lg:pt-24 xl:items-center xl:px-14 xl:pt-32">
-            <div className="grid w-full gap-8 lg:gap-10">
+          <div className="relative flex w-full items-start px-6 pt-[clamp(4.5rem,7.5vh,8rem)] pb-[clamp(24px,5vh,64px)] sm:px-8 lg:px-10 xl:px-14 xl:items-center [@media(max-height:920px)]:items-start">
+            <div className="grid w-full gap-6 lg:gap-8">
               <div className="grid gap-4">
                 
-                <h1 className="text-[clamp(2.35rem,5.2vw,3.85rem)] font-medium leading-[1.08] tracking-[-0.075em] text-ink xl:text-[4.1rem]">
+                <h1 className="text-[clamp(2.1rem,4.6vw,3.35rem)] font-medium leading-[1.08] tracking-[-0.075em] text-ink xl:text-[3.6rem]">
                   Manage your <AuroraText>U-wifi service</AuroraText> with clarity.
                 </h1>
                 <p className="w-full text-[1rem] leading-7 text-ink-muted sm:text-[1.02rem] lg:w-[88%] xl:w-[76%]">
@@ -358,13 +358,13 @@ export function LoginShell() {
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,13,0.06)_0%,rgba(20,15,37,0.22)_40%,rgba(11,10,24,0.72)_100%)]" />
           <div className="absolute inset-y-0 left-0 w-24 bg-[linear-gradient(90deg,rgba(11,10,24,0.26),transparent)] lg:w-32" />
 
-          <div className="relative z-10 flex flex-col justify-end px-6 pt-20 pb-[clamp(28px,6vh,80px)] [@media(max-height:760px)]:justify-start sm:px-8 sm:pt-24 lg:px-10 lg:pt-28 xl:px-14 xl:pt-32">
+          <div className="relative z-10 flex flex-col justify-end px-6 pt-[clamp(4.5rem,7.5vh,8rem)] pb-[clamp(24px,5vh,72px)] [@media(max-height:920px)]:justify-start sm:px-8 lg:px-10 xl:px-14">
             
 
             <div className="mt-auto grid gap-6">
               <div className="grid gap-4">
                 
-                <h2 className="text-[clamp(2.15rem,4.8vw,3.3rem)] font-medium leading-[0.98] tracking-[-0.08em] text-white">
+                <h2 className="text-[clamp(1.95rem,4.2vw,3.05rem)] font-medium leading-[0.98] tracking-[-0.08em] text-white">
                   Operate smarter. Stay connected.
                 </h2>
               
