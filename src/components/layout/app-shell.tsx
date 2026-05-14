@@ -27,7 +27,7 @@ export function AppShell({
         <div className="relative flex min-h-dvh flex-col">
           <TopUtilityBar user={user} />
 
-          <div className="flex flex-1">
+          <div className="flex flex-1 min-h-0">
             <AppShellRowMotion
               sidebar={<SidebarRail />}
               content={<ContentCanvas>{children}</ContentCanvas>}

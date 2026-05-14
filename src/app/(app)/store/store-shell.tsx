@@ -483,7 +483,7 @@ export function StoreShell({
   }, [allProducts, category, deferredQuery]);
 
   return (
-    <div className="space-y-4 pb-4">
+    <div className="space-y-4 pb-3">
       <PageIntro
         eyebrow="Store"
         title="U-Store"

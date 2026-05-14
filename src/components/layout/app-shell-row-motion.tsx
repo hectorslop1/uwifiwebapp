@@ -25,7 +25,7 @@ export function AppShellRowMotion({
         layout
         transition={{ layout: layoutSpring }}
         style={{ willChange: "transform" }}
-        className="mx-auto max-w-[1560px] lg:flex lg:items-stretch"
+        className="mx-auto max-w-[1560px] min-h-0 lg:flex lg:flex-1 lg:min-h-0 lg:items-stretch"
       >
         <motion.div
           layout="position"
@@ -40,7 +40,7 @@ export function AppShellRowMotion({
           layout
           transition={{ layout: layoutSpring }}
           style={{ willChange: "transform" }}
-          className="min-w-0 flex flex-1 flex-col"
+          className="min-w-0 flex flex-1 flex-col lg:min-h-0"
         >
           {content}
         </motion.main>
