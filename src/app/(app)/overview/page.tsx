@@ -198,12 +198,12 @@ export default async function OverviewPage() {
         </div>
       </section>
 
-      <section className="theme-panel-subtle relative overflow-hidden rounded-[1.8rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.88),rgba(248,248,250,0.72))] px-4 py-4 shadow-[0_20px_44px_rgba(205,207,214,0.1),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-5 sm:py-5 lg:flex-1 lg:px-6 lg:py-5">
+      <section className="theme-panel-subtle relative overflow-hidden rounded-[1.8rem] border border-white/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.88),rgba(248,248,250,0.72))] px-4 py-4 shadow-[0_20px_44px_rgba(205,207,214,0.1),inset_0_1px_0_rgba(255,255,255,0.92)] backdrop-blur-xl sm:px-5 sm:py-5 lg:px-6 lg:py-5">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="theme-shell-orb-tertiary absolute right-0 top-0 h-28 w-28 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative grid gap-4 xl:h-full xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.82fr)_16rem] xl:gap-6">
+        <div className="relative grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(0,0.82fr)_16rem] xl:gap-6">
           <div className="space-y-4 xl:pr-1">
             <h2 className="text-[1.55rem] font-medium tracking-[-0.055em] text-ink">
               Gateway
