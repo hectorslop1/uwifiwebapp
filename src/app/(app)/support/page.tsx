@@ -57,7 +57,7 @@ export default async function SupportPage() {
   const recentTickets = tickets.slice(0, 3);
 
   return (
-    <div className="space-y-4 lg:flex lg:min-h-0 lg:flex-col">
+    <div className="space-y-4 pb-4 lg:flex lg:flex-col">
       <PageIntro
         eyebrow="Support"
         title="Help Center"
