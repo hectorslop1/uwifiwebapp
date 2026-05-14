@@ -171,7 +171,7 @@ export function LoginShell() {
             </div>
           </div>
 
-          <div className="relative flex w-full items-start px-6 pt-20 pb-[clamp(28px,6vh,72px)] sm:px-8 sm:pt-24 lg:items-center lg:px-10 lg:pt-28 xl:px-14 xl:pt-32">
+          <div className="relative flex w-full items-start px-6 pt-20 pb-[clamp(28px,6vh,72px)] sm:px-8 sm:pt-24 lg:px-10 lg:pt-24 xl:items-center xl:px-14 xl:pt-32">
             <div className="grid w-full gap-8 lg:gap-10">
               <div className="grid gap-4">
                 
