@@ -257,7 +257,7 @@ export function SidebarRail() {
             }
           }}
           className={cx(
-            "theme-sidebar-rail z-20 flex h-full min-h-[calc(100dvh-5.4rem)] flex-col border-r border-line/25 bg-white/12 px-3 py-4 transform-gpu",
+            "theme-sidebar-rail z-20 flex h-full min-h-0 flex-col border-r border-line/25 bg-white/12 px-3 py-4 transform-gpu",
             isDesktopAnimating ? "backdrop-blur-none" : "backdrop-blur-xl",
           )}
         >

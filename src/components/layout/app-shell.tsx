@@ -24,13 +24,15 @@ export function AppShell({
           <div className="theme-shell-orb-tertiary absolute bottom-[-10rem] left-[22%] h-[24rem] w-[32rem] rounded-full bg-white/75 blur-3xl" />
         </div>
 
-        <div className="relative">
+        <div className="relative flex min-h-dvh flex-col">
           <TopUtilityBar user={user} />
 
-          <AppShellRowMotion
-            sidebar={<SidebarRail />}
-            content={<ContentCanvas>{children}</ContentCanvas>}
-          />
+          <div className="flex flex-1 min-h-0">
+            <AppShellRowMotion
+              sidebar={<SidebarRail />}
+              content={<ContentCanvas>{children}</ContentCanvas>}
+            />
+          </div>
         </div>
       </div>
     </MobileNavProvider>
