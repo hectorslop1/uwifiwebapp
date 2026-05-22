@@ -286,7 +286,7 @@ export function WalletShell({
             <div className="relative mt-4 px-2 sm:px-4">
               <div className="absolute left-[9%] right-[9%] top-[1rem] h-[3px] rounded-full bg-[#dfe9da]" />
               <motion.div
-                className="absolute left-[9%] top-[1rem] h-[3px] rounded-full bg-[linear-gradient(90deg,#56c34d_0%,#7a63ff_100%)] shadow-[0_10px_24px_rgba(95,185,89,0.22)]"
+                className="absolute left-[9%] top-[1rem] h-[3px] rounded-full bg-[linear-gradient(90deg,#56c34d_0%,#6A02C5_100%)] shadow-[0_10px_24px_rgba(95,185,89,0.22)]"
                 initial={false}
                 animate={{
                   width: `${82 * (milestoneProgress.progressPercent / 100)}%`,
@@ -305,9 +305,9 @@ export function WalletShell({
                         className={cn(
                           "flex items-center justify-center rounded-full border text-white",
                           achieved
-                            ? "border-[#4abd47] bg-[#4abd47] shadow-[0_12px_24px_rgba(91,201,82,0.24)]"
+                            ? "border-[#02BD30] bg-[#02BD30] shadow-[0_12px_24px_rgba(2,189,48,0.24)]"
                             : active
-                              ? "border-[#7a63ff] bg-white text-[#7a63ff] shadow-[0_16px_34px_rgba(122,99,255,0.18)]"
+                              ? "border-[#6A02C5] bg-white text-[#6A02C5] shadow-[0_16px_34px_rgba(106,2,197,0.18)]"
                               : "border-[#d9ded6] bg-white text-[#c2c9bf]",
                         )}
                         animate={
@@ -315,9 +315,9 @@ export function WalletShell({
                             ? {
                                 scale: [1, 1.06, 1],
                                 boxShadow: [
-                                  "0 12px 28px rgba(122,99,255,0.14)",
-                                  "0 18px 38px rgba(122,99,255,0.22)",
-                                  "0 12px 28px rgba(122,99,255,0.14)",
+                                  "0 12px 28px rgba(106,2,197,0.14)",
+                                  "0 18px 38px rgba(106,2,197,0.22)",
+                                  "0 12px 28px rgba(106,2,197,0.14)",
                                 ],
                               }
                             : { scale: 1 }
@@ -554,7 +554,7 @@ export function WalletShell({
                 >
                   <div className="wallet-chart-track flex h-28 items-end rounded-[1rem] bg-[#f7f7f3] px-2 py-2">
                     <motion.div
-                      className="w-full rounded-[0.75rem] bg-[linear-gradient(180deg,rgba(108,69,255,0.82),rgba(52,196,59,0.82))] shadow-[0_12px_26px_rgba(103,101,193,0.16)] transition-transform duration-300 hover:scale-[1.02]"
+                      className="w-full rounded-[0.75rem] bg-[linear-gradient(180deg,rgba(106,2,197,0.82),rgba(2,189,48,0.82))] shadow-[0_12px_26px_rgba(103,101,193,0.16)] transition-transform duration-300 hover:scale-[1.02]"
                       initial={{ height: 0, opacity: 0.6 }}
                       animate={{
                         height: Math.max(
@@ -665,7 +665,7 @@ export function WalletShell({
                 className="wallet-affiliate-card rounded-[1.2rem] border border-[#efebe2] bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,248,245,0.9))] px-4 py-3 shadow-[0_12px_28px_rgba(222,215,205,0.16)]"
               >
                 <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#4abd47] text-[0.96rem] font-semibold text-white">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#02BD30] text-[0.96rem] font-semibold text-white">
                     {user.initials}
                   </span>
 

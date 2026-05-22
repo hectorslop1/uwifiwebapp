@@ -69,7 +69,7 @@ function SettingsFlash({
     <div
       className={`rounded-[1.25rem] border px-4 py-3 text-body-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] ${
         tone === "success"
-          ? "border-[rgba(52,196,59,0.22)] bg-[rgba(52,196,59,0.12)] text-success"
+          ? "border-[rgba(2,189,48,0.22)] bg-[rgba(2,189,48,0.12)] text-success"
           : "border-[rgba(230,91,74,0.24)] bg-[rgba(230,91,74,0.12)] text-[#d95b49]"
       }`}
     >
@@ -514,7 +514,7 @@ export function SettingsShell({
                   onClick={() => setNotificationFilter(option.value)}
                   className={`rounded-full border px-3.5 py-2 text-[0.82rem] font-medium transition-all duration-200 ${
                     notificationFilter === option.value
-                      ? "border-[rgba(52,196,59,0.22)] bg-[rgba(52,196,59,0.12)] text-success"
+                      ? "border-[rgba(2,189,48,0.22)] bg-[rgba(2,189,48,0.12)] text-success"
                       : "theme-control-button"
                   }`}
                 >
@@ -531,7 +531,7 @@ export function SettingsShell({
                     className={`theme-inline-surface rounded-[1.15rem] border px-4 py-3.5 ${
                       notification.isRead
                         ? "border-line/35"
-                        : "border-[rgba(52,196,59,0.2)] bg-[rgba(248,255,249,0.88)]"
+                        : "border-[rgba(2,189,48,0.2)] bg-[rgba(248,255,249,0.88)]"
                     }`}
                   >
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

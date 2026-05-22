@@ -39,5 +39,5 @@ export default async function GatewaySpeedTestPage() {
     );
   }
 
-  return <SpeedTestShell />;
+  return <SpeedTestShell gatewayIp={gateway.ipAddress} />;
 }

@@ -46,15 +46,15 @@ function getBandStyles(band: string) {
   if (band.startsWith("2.4")) {
     return {
       icon: "bg-[linear-gradient(180deg,rgba(247,243,255,0.98),rgba(236,231,252,0.94))] text-brand",
-      chip: "bg-[rgba(108,69,255,0.12)] text-brand",
-      line: "from-[rgba(108,69,255,0.18)] to-[rgba(108,69,255,0)]",
+      chip: "bg-[rgba(106,2,197,0.12)] text-brand",
+      line: "from-[rgba(106,2,197,0.18)] to-[rgba(106,2,197,0)]",
     };
   }
 
   return {
     icon: "bg-[linear-gradient(180deg,rgba(241,252,243,0.98),rgba(232,247,236,0.94))] text-success",
-    chip: "bg-[rgba(52,196,59,0.12)] text-success",
-    line: "from-[rgba(52,196,59,0.18)] to-[rgba(52,196,59,0)]",
+    chip: "bg-[rgba(2,189,48,0.12)] text-success",
+    line: "from-[rgba(2,189,48,0.18)] to-[rgba(2,189,48,0)]",
   };
 }
 
@@ -232,7 +232,7 @@ export default async function OverviewPage() {
                         <Link
                           key={payment.id}
                           href={payment.href}
-                          className="theme-inline-surface group flex items-center justify-between gap-4 rounded-[1rem] border border-line/35 px-3.5 py-3 text-[0.9rem] tracking-[-0.03em] transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(52,196,59,0.22)] hover:shadow-[0_16px_30px_rgba(193,196,206,0.1),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                          className="theme-inline-surface group flex items-center justify-between gap-4 rounded-[1rem] border border-line/35 px-3.5 py-3 text-[0.9rem] tracking-[-0.03em] transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(2,189,48,0.22)] hover:shadow-[0_16px_30px_rgba(193,196,206,0.1),inset_0_1px_0_rgba(255,255,255,0.08)]"
                         >
                           <div>
                             <div className="text-[0.88rem] font-medium text-ink-soft">

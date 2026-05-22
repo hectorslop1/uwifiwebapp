@@ -26,19 +26,19 @@ import {
 function getBandPalette(band: "2.4 GHz" | "5 GHz") {
   if (band === "2.4 GHz") {
     return {
-      icon: "bg-[rgba(108,69,255,0.14)] text-brand",
+      icon: "bg-[rgba(106,2,197,0.14)] text-brand",
       panel:
-        "border-[rgba(108,69,255,0.18)] bg-[linear-gradient(180deg,rgba(var(--color-surface-raised),0.74),rgba(108,69,255,0.08))]",
-      badge: "bg-[rgba(108,69,255,0.12)] text-brand",
+        "border-[rgba(106,2,197,0.18)] bg-[linear-gradient(180deg,rgba(var(--color-surface-raised),0.74),rgba(106,2,197,0.08))]",
+      badge: "bg-[rgba(106,2,197,0.12)] text-brand",
       dot: "bg-brand",
     };
   }
 
   return {
-    icon: "bg-[rgba(52,196,59,0.14)] text-success",
+    icon: "bg-[rgba(2,189,48,0.14)] text-success",
     panel:
-      "border-[rgba(52,196,59,0.18)] bg-[linear-gradient(180deg,rgba(var(--color-surface-raised),0.74),rgba(52,196,59,0.08))]",
-    badge: "bg-[rgba(52,196,59,0.12)] text-success",
+      "border-[rgba(2,189,48,0.18)] bg-[linear-gradient(180deg,rgba(var(--color-surface-raised),0.74),rgba(2,189,48,0.08))]",
+    badge: "bg-[rgba(2,189,48,0.12)] text-success",
     dot: "bg-success",
   };
 }
@@ -170,7 +170,7 @@ export default async function GatewayPage({
 
       <div className="grid items-start gap-3 xl:grid-cols-[minmax(0,1.16fr)_minmax(18rem,0.84fr)]">
         <SurfacePanel className="overflow-hidden p-4 sm:p-5">
-          <div className="pointer-events-none absolute inset-x-8 top-0 h-28 rounded-b-[2.2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.14),transparent_74%)]" />
+          <div className="pointer-events-none absolute inset-x-8 top-0 h-28 rounded-b-[2.2rem] bg-[radial-gradient(circle_at_top,rgba(2,189,48,0.14),transparent_74%)]" />
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="relative">
               <div className="text-title-md text-ink">Network overview</div>
@@ -192,8 +192,8 @@ export default async function GatewayPage({
                   <div
                     className={`pointer-events-none absolute inset-x-4 top-0 h-20 rounded-b-[1.6rem] ${
                       network.band === "2.4 GHz"
-                        ? "bg-[radial-gradient(circle_at_top,rgba(108,69,255,0.16),transparent_72%)]"
-                        : "bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.18),transparent_72%)]"
+                        ? "bg-[radial-gradient(circle_at_top,rgba(106,2,197,0.16),transparent_72%)]"
+                        : "bg-[radial-gradient(circle_at_top,rgba(2,189,48,0.18),transparent_72%)]"
                     }`}
                   />
                   <div className="flex items-center gap-3 text-ink-soft">
@@ -258,7 +258,7 @@ export default async function GatewayPage({
         </SurfacePanel>
 
         <SurfacePanel subtle className="relative overflow-hidden p-4 sm:p-5">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(108,69,255,0.08),transparent_74%)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(106,2,197,0.08),transparent_74%)]" />
           <div className="relative">
             <div className="text-title-md text-ink">Control panel</div>
             <div className="mt-1 text-body-sm text-ink-muted">
@@ -317,7 +317,7 @@ export default async function GatewayPage({
                 <span
                   className={`rounded-full px-2.5 py-1 text-[0.74rem] font-medium ${
                     gateway.isConnected
-                      ? "bg-[rgba(52,196,59,0.12)] text-success"
+                      ? "bg-[rgba(2,189,48,0.12)] text-success"
                       : "bg-[rgba(230,91,74,0.12)] text-[#d95b49]"
                   }`}
                 >

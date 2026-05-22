@@ -171,7 +171,7 @@ export function ProductDetailShell({
                     className={cn(
                       "flex h-[10rem] w-[10rem] items-center justify-center rounded-[2rem]",
                       product.accent === "brand"
-                        ? "bg-[linear-gradient(180deg,rgba(122,99,255,0.14),rgba(122,99,255,0.08))] text-[#6c45ff]"
+                        ? "bg-[linear-gradient(180deg,rgba(106,2,197,0.14),rgba(106,2,197,0.08))] text-[#6A02C5]"
                         : product.accent === "success"
                           ? "bg-[linear-gradient(180deg,rgba(89,195,79,0.16),rgba(89,195,79,0.08))] text-[#3ba745]"
                           : "bg-[linear-gradient(180deg,rgba(57,64,78,0.08),rgba(57,64,78,0.04))] text-ink-soft",

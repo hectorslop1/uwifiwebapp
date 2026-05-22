@@ -19,7 +19,7 @@ export const RippleSignal = React.memo(function RippleSignal({
   className,
   ...props
 }: Readonly<RippleSignalProps>) {
-  const tone = connected ? "52,196,59" : "232,76,61";
+  const tone = connected ? "2,189,48" : "232,76,61";
 
   return (
     <div

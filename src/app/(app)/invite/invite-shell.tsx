@@ -66,7 +66,7 @@ export function InviteShell({
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.08fr)_18rem]">
         <SurfacePanel className="overflow-hidden p-5">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(108,69,255,0.12),transparent_74%)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(106,2,197,0.12),transparent_74%)]" />
           <div className="relative">
             <div className="inline-flex items-center gap-3 rounded-full border border-white/80 bg-white/60 px-3.5 py-2 text-body-sm text-ink-soft shadow-[0_12px_26px_rgba(200,203,213,0.08)]">
               <Gift size={16} strokeWidth={1.8} />

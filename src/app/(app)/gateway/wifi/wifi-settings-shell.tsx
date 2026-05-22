@@ -42,26 +42,26 @@ function getBandAccent(band: "2.4 GHz" | "5 GHz") {
   if (band === "2.4 GHz") {
     return {
       stripe:
-        "bg-[radial-gradient(circle_at_top,rgba(108,69,255,0.14),transparent_74%)]",
+        "bg-[radial-gradient(circle_at_top,rgba(106,2,197,0.14),transparent_74%)]",
       icon:
         "border border-white/80 bg-[linear-gradient(180deg,rgba(247,244,255,0.96),rgba(239,235,252,0.92))] text-brand",
       focus:
-        "focus:border-[rgba(108,69,255,0.42)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(108,69,255,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
+        "focus:border-[rgba(106,2,197,0.42)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(106,2,197,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
       focusWithin:
-        "focus-within:border-[rgba(108,69,255,0.42)] focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(108,69,255,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
+        "focus-within:border-[rgba(106,2,197,0.42)] focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(106,2,197,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
       actionHover: "hover:text-brand",
     } as const;
   }
 
   return {
     stripe:
-      "bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.14),transparent_74%)]",
+      "bg-[radial-gradient(circle_at_top,rgba(2,189,48,0.14),transparent_74%)]",
     icon:
       "border border-white/80 bg-[linear-gradient(180deg,rgba(241,251,243,0.96),rgba(232,248,235,0.92))] text-success",
     focus:
-      "focus:border-[rgba(52,196,59,0.42)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
+      "focus:border-[rgba(2,189,48,0.42)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(2,189,48,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
     focusWithin:
-      "focus-within:border-[rgba(52,196,59,0.42)] focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(52,196,59,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
+      "focus-within:border-[rgba(2,189,48,0.42)] focus-within:bg-white focus-within:shadow-[0_0_0_4px_rgba(2,189,48,0.08),0_16px_30px_rgba(204,209,218,0.12),inset_0_1px_0_rgba(255,255,255,0.98)]",
     actionHover: "hover:text-success",
   } as const;
 }
@@ -291,7 +291,7 @@ export function WifiSettingsShell({
 
         <div className="space-y-3">
           <SurfacePanel subtle className="overflow-hidden p-4">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.12),transparent_74%)]" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(2,189,48,0.12),transparent_74%)]" />
             <div className="relative">
               <div className="text-title-md text-ink">Quick Menu</div>
               <div className="mt-3 flex flex-col gap-2.5">

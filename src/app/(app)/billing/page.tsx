@@ -116,7 +116,7 @@ export default async function BillingPage({
                 label={`Due ${dueDateLabel}`}
                 tone={overview.amountDue > 0 ? "warning" : "muted"}
               />
-              <span className="rounded-pill bg-[rgba(108,69,255,0.08)] px-3 py-1.5 text-[0.78rem] text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
+              <span className="rounded-pill bg-[rgba(106,2,197,0.08)] px-3 py-1.5 text-[0.78rem] text-brand shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]">
                 Cycle closes {cycleEndLabel}
               </span>
             </div>
@@ -178,7 +178,7 @@ export default async function BillingPage({
                         <Link
                           key={entry.id}
                           href={`/billing/invoices/${encodeURIComponent(entry.invoiceNumber)}`}
-                          className="theme-inline-surface group flex flex-col gap-3 rounded-[1.15rem] border border-line/35 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(52,196,59,0.22)] hover:shadow-[0_16px_30px_rgba(193,196,206,0.1),inset_0_1px_0_rgba(255,255,255,0.08)] sm:flex-row sm:items-center sm:justify-between"
+                          className="theme-inline-surface group flex flex-col gap-3 rounded-[1.15rem] border border-line/35 px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(2,189,48,0.22)] hover:shadow-[0_16px_30px_rgba(193,196,206,0.1),inset_0_1px_0_rgba(255,255,255,0.08)] sm:flex-row sm:items-center sm:justify-between"
                         >
                           <div className="min-w-0">
                             <div className="text-body-md font-medium text-ink">
@@ -224,7 +224,7 @@ export default async function BillingPage({
         </div>
 
         <SurfacePanel subtle className="relative overflow-hidden p-4 sm:p-5">
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(108,69,255,0.08),transparent_74%)]" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(106,2,197,0.08),transparent_74%)]" />
           <div className="relative">
             <div className="flex items-center gap-2 text-title-md text-ink">
               <span className="theme-icon-surface flex h-9 w-9 items-center justify-center rounded-full text-brand">

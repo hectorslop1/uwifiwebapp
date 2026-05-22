@@ -139,7 +139,7 @@ export default async function GatewayDevicesPage({
       </div>
 
       <SurfacePanel className="overflow-visible p-4">
-        <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-b-[2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.12),transparent_74%)]" />
+        <div className="pointer-events-none absolute inset-x-10 top-0 h-24 rounded-b-[2rem] bg-[radial-gradient(circle_at_top,rgba(2,189,48,0.12),transparent_74%)]" />
         <div className="relative">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="theme-tab-shell inline-flex flex-wrap gap-2 rounded-pill border p-1.5">
@@ -255,7 +255,7 @@ export default async function GatewayDevicesPage({
       </SurfacePanel>
 
       <SurfacePanel subtle className="overflow-hidden p-4">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.14),transparent_74%)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top,rgba(2,189,48,0.14),transparent_74%)]" />
         <div className="relative">
           <div className="flex items-center gap-2 text-title-md text-ink">
             <Radio size={17} strokeWidth={1.8} />

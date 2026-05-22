@@ -25,7 +25,7 @@ export function RouterStage({
             ease: PREMIUM_EASE,
           }}
           className={`absolute right-[18%] top-[10%] h-24 w-24 rounded-full blur-3xl sm:h-32 sm:w-32 lg:h-40 lg:w-40 ${
-            connected ? "bg-[rgba(52,196,59,0.26)]" : "bg-[rgba(232,76,61,0.26)]"
+            connected ? "bg-[rgba(2,189,48,0.26)]" : "bg-[rgba(232,76,61,0.26)]"
           }`}
         />
       </div>

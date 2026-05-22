@@ -75,7 +75,7 @@ function StoreProductImage({
 }>) {
   return (
     <div className="relative overflow-hidden rounded-[1.55rem] border border-white/70 bg-[radial-gradient(circle_at_top,rgba(124,225,128,0.18),transparent_52%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(245,247,244,0.86))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.96)]">
-      <div className="absolute inset-x-6 top-0 h-16 rounded-b-[1.4rem] bg-[radial-gradient(circle_at_top,rgba(108,69,255,0.12),transparent_72%)]" />
+      <div className="absolute inset-x-6 top-0 h-16 rounded-b-[1.4rem] bg-[radial-gradient(circle_at_top,rgba(106,2,197,0.12),transparent_72%)]" />
       <div
         ref={imageRef}
         className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[1.3rem] bg-white/92 px-4 py-5 shadow-[0_18px_36px_rgba(194,199,208,0.12)]"
@@ -512,7 +512,7 @@ export function StoreShell({
       {flash ? <StoreFlash tone={flash.status}>{flash.message}</StoreFlash> : null}
 
       <SurfacePanel className="overflow-hidden p-4 sm:p-5">
-        <div className="pointer-events-none absolute inset-x-6 top-0 h-24 rounded-b-[2rem] bg-[radial-gradient(circle_at_top,rgba(52,196,59,0.12),transparent_72%)]" />
+        <div className="pointer-events-none absolute inset-x-6 top-0 h-24 rounded-b-[2rem] bg-[radial-gradient(circle_at_top,rgba(2,189,48,0.12),transparent_72%)]" />
 
         <div className="relative grid gap-4 xl:grid-cols-[minmax(0,20rem)_minmax(0,1fr)_auto] xl:items-center">
           <div className="theme-input-shell rounded-[1.35rem] border px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
