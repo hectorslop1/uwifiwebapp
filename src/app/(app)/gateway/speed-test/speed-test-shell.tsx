@@ -44,7 +44,11 @@ import { SpeedChart, SpeedGauge } from "./speed-test-visuals";
 
 type SpeedTestMode = "simple" | "technical";
 
-type LucideIcon = ComponentType<{ size?: number; strokeWidth?: number }>;
+type LucideIcon = ComponentType<{
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}>;
 
 const MODE_STORAGE_KEY = "uwifi.speedtest.mode";
 
@@ -78,12 +82,11 @@ type SpeedTestShellProps = {
   connectionLabel?: string;
 };
 
-// --- formatting helpers ------------------------------------------------------
-
 function formatMbps(value: number | undefined) {
   if (value === undefined || value <= 0) {
     return "--";
   }
+
   return value >= 100 ? value.toFixed(0) : value.toFixed(1);
 }
 
@@ -91,6 +94,7 @@ function formatMs(value: number | undefined) {
   if (value === undefined || value <= 0) {
     return "--";
   }
+
   return value.toFixed(0);
 }
 
@@ -98,9 +102,11 @@ function formatLossPct(value: number | undefined) {
   if (value === undefined) {
     return "--";
   }
+
   if (value === 0) {
     return "0";
   }
+
   return value < 1 ? value.toFixed(1) : value.toFixed(0);
 }
 
@@ -108,6 +114,7 @@ function getInitialMode(): SpeedTestMode {
   if (typeof window === "undefined") {
     return "technical";
   }
+
   const saved = window.localStorage.getItem(MODE_STORAGE_KEY);
   return saved === "simple" || saved === "technical" ? saved : "technical";
 }
@@ -119,23 +126,22 @@ function stepStatus(
   if (stage === "done") {
     return "done";
   }
+
   const currentIndex = PHASE_ORDER.indexOf(stage as SpeedTestPhase);
+
   if (currentIndex === -1) {
     return "pending";
   }
+
   const phaseIndex = PHASE_ORDER.indexOf(phase);
+
   if (phaseIndex < currentIndex) {
     return "done";
   }
+
   return phaseIndex === currentIndex ? "active" : "pending";
 }
 
-// --- small presentational pieces --------------------------------------------
-
-/**
- * Test-lifecycle indicator. Three explicit visual states so the run feels
- * operational: pending (muted), active (brand glow + spinner), done (check).
- */
 function StepChip({
   label,
   icon: Icon,
@@ -148,25 +154,30 @@ function StepChip({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-[0.6rem] px-2.5 py-[0.4rem] transition-all duration-300",
+        "flex items-center gap-2 rounded-[0.9rem] border px-2.5 py-[0.45rem] transition-all duration-300",
         status === "active" &&
-          "bg-brand-soft/80 ring-1 ring-brand/25 shadow-[0_4px_14px_rgba(106,2,197,0.1)]",
-        status === "done" && "bg-success-soft/40",
-        status === "pending" && "bg-[rgba(15,23,42,0.025)] opacity-65",
+          "border-brand/12 bg-[linear-gradient(180deg,rgba(248,243,255,0.98),rgba(242,236,252,0.94))] shadow-[0_10px_24px_rgba(106,2,197,0.08)]",
+        status === "done" &&
+          "border-success/12 bg-[linear-gradient(180deg,rgba(247,255,248,0.98),rgba(239,251,242,0.94))] shadow-[0_10px_24px_rgba(2,189,48,0.06)]",
+        status === "pending" &&
+          "border-line/25 bg-[rgba(248,249,251,0.86)] opacity-90",
       )}
     >
       <span
         className={cn(
-          "flex h-[1.15rem] w-[1.15rem] shrink-0 items-center justify-center rounded-full transition-colors duration-300",
-          status === "active" && "bg-brand text-white",
-          status === "done" && "bg-success text-white",
-          status === "pending" && "bg-[rgba(15,23,42,0.06)] text-ink-faint",
+          "flex h-[1.2rem] w-[1.2rem] shrink-0 items-center justify-center rounded-full border transition-colors duration-300",
+          status === "active" &&
+            "border-brand/12 bg-brand-soft text-brand shadow-[0_0_0_4px_rgba(106,2,197,0.07)]",
+          status === "done" &&
+            "border-success/12 bg-success-soft text-success shadow-[0_0_0_4px_rgba(2,189,48,0.07)]",
+          status === "pending" &&
+            "border-line/40 bg-white/80 text-ink-faint",
         )}
       >
         {status === "done" ? (
-          <Check size={11} strokeWidth={2.6} />
+          <Check size={11} strokeWidth={2.5} />
         ) : status === "active" ? (
-          <Loader2 size={11} strokeWidth={2.4} className="animate-spin" />
+          <Loader2 size={11} strokeWidth={2.3} className="animate-spin" />
         ) : (
           <Icon size={10} strokeWidth={2} />
         )}
@@ -203,6 +214,7 @@ function MetricCard({
   hint,
   icon: Icon,
   accent,
+  compact = false,
 }: Readonly<{
   label: string;
   value: string;
@@ -210,40 +222,71 @@ function MetricCard({
   hint: string;
   icon: LucideIcon;
   accent: "green" | "violet" | "neutral";
+  compact?: boolean;
 }>) {
   const accentClass =
     accent === "green"
       ? "bg-success-soft text-success"
       : accent === "violet"
         ? "bg-brand-soft text-brand"
-        : "bg-[#f1f1f3] text-ink-soft";
+        : "bg-[#f3f4f6] text-ink-soft";
+
+  const glowClass =
+    accent === "green"
+      ? "bg-[radial-gradient(circle_at_top,rgba(2,189,48,0.1),transparent_70%)]"
+      : accent === "violet"
+        ? "bg-[radial-gradient(circle_at_top,rgba(106,2,197,0.1),transparent_70%)]"
+        : "bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.08),transparent_70%)]";
 
   return (
-    <SurfacePanel subtle className="p-2.5">
-      {/* Icon + label share one baseline-aligned row -- consistent across all cards. */}
-      <div className="flex items-center gap-1.5">
-        <span
+    <SurfacePanel
+      subtle
+      className={cn(
+        "relative overflow-hidden",
+        compact ? "p-2.5" : "p-2.5",
+      )}
+    >
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-x-4 top-0 h-14 rounded-b-[1.2rem]",
+          glowClass,
+        )}
+      />
+      <div className="relative">
+        <div className="flex items-center gap-1.5">
+          <span
+            className={cn(
+              "flex h-5 w-5 shrink-0 items-center justify-center rounded-[0.45rem] border border-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]",
+              accentClass,
+            )}
+          >
+            <Icon size={12} strokeWidth={2} />
+          </span>
+          <span className="min-w-0 truncate text-[0.62rem] font-semibold uppercase tracking-[0.07em] text-ink-faint">
+            {label}
+          </span>
+        </div>
+        <div className="mt-1.5 flex items-baseline gap-1">
+          <span
+            className={cn(
+              "font-semibold leading-none tracking-[-0.045em] text-ink tabular-nums",
+              compact ? "text-[1.32rem]" : "text-[1.4rem]",
+            )}
+          >
+            {value}
+          </span>
+          <span className="text-[0.64rem] font-medium text-ink-muted">
+            {unit}
+          </span>
+        </div>
+        <div
           className={cn(
-            "flex h-5 w-5 shrink-0 items-center justify-center rounded-[0.45rem]",
-            accentClass,
+            "mt-1 text-[0.64rem] leading-4 text-ink-muted",
+            compact ? "truncate" : "truncate",
           )}
         >
-          <Icon size={12} strokeWidth={2} />
-        </span>
-        <span className="min-w-0 truncate text-[0.62rem] font-semibold uppercase tracking-[0.07em] text-ink-faint">
-          {label}
-        </span>
-      </div>
-      <div className="mt-1.5 flex items-baseline gap-1">
-        <span className="text-[1.4rem] font-semibold leading-none tracking-[-0.045em] text-ink tabular-nums">
-          {value}
-        </span>
-        <span className="text-[0.64rem] font-medium text-ink-muted">
-          {unit}
-        </span>
-      </div>
-      <div className="mt-1 truncate text-[0.64rem] leading-4 text-ink-muted">
-        {hint}
+          {hint}
+        </div>
       </div>
     </SurfacePanel>
   );
@@ -258,16 +301,18 @@ function ActivityMeter({
       ? "bg-success"
       : tone === "brand"
         ? "bg-brand"
-        : "bg-[#d99a2b]";
+        : tone === "warning"
+          ? "bg-[#d99a2b]"
+          : "bg-[#df4d43]";
 
   return (
-    <div className="flex shrink-0 gap-[3px]">
+    <div className="flex shrink-0 gap-[4px]">
       {[0, 1, 2, 3].map((index) => (
         <span
           key={index}
           className={cn(
-            "h-1 w-3 rounded-full transition-colors duration-300",
-            index < score ? fillClass : "bg-[rgba(15,23,42,0.09)]",
+            "h-[5px] w-4 rounded-full transition-colors duration-300",
+            index < score ? fillClass : "bg-[rgba(15,23,42,0.08)]",
           )}
         />
       ))}
@@ -275,46 +320,42 @@ function ActivityMeter({
   );
 }
 
-/**
- * Compact telemetry row -- every activity uses the same scoring system:
- * icon, label + helper, 4-segment meter and a dot-prefixed verdict chip.
- */
 function ActivityRow({ rating }: Readonly<{ rating: ActivityRating }>) {
   const Icon = ACTIVITY_ICONS[rating.id];
-  const pillClass =
-    rating.tone === "success"
-      ? "bg-success-soft text-success"
-      : rating.tone === "brand"
-        ? "bg-brand-soft text-brand"
-        : "bg-[#f8f0df] text-[#996a16]";
-  const dotClass =
-    rating.tone === "success"
-      ? "bg-success"
-      : rating.tone === "brand"
-        ? "bg-brand"
-        : "bg-[#d99a2b]";
+  const toneClass =
+    rating.tone === "warning"
+      ? "bg-[#fdf1dc] text-[#d17b00]"
+      : rating.tone === "danger"
+        ? "bg-[#fff0ef] text-[#df4d43]"
+        : rating.id === "conferencing" || rating.id === "streaming"
+          ? "bg-brand-soft text-brand"
+          : "bg-success-soft text-success";
 
   return (
-    <div className="flex items-center gap-2.5 py-[0.45rem]">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.55rem] bg-[rgba(15,23,42,0.04)] text-ink-soft">
-        <Icon size={14} strokeWidth={1.9} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <span className="block truncate text-[0.78rem] font-medium leading-tight text-ink">
-          {rating.label}
-        </span>
-        <span className="block truncate text-[0.65rem] leading-tight text-ink-muted">
-          {rating.detail}
-        </span>
-      </div>
-      <ActivityMeter score={rating.score} tone={rating.tone} />
+    <div className="flex items-center gap-2.5 py-[0.5rem]">
       <span
         className={cn(
-          "flex shrink-0 items-center gap-1 rounded-pill px-2 py-[0.15rem] text-[0.65rem] font-medium",
-          pillClass,
+          "flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.7rem] border border-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.94)]",
+          toneClass,
         )}
       >
-        <span className={cn("h-1.5 w-1.5 rounded-full", dotClass)} />
+        <Icon size={15} strokeWidth={2} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <span className="block truncate text-[0.8rem] font-semibold leading-tight text-ink">
+          {rating.label}
+        </span>
+        <div className="mt-[0.45rem]">
+          <ActivityMeter score={rating.score} tone={rating.tone} />
+        </div>
+      </div>
+      <span
+        className={cn(
+          "flex shrink-0 items-center gap-1 rounded-pill px-2.5 py-1 text-[0.7rem] font-semibold",
+          toneClass,
+        )}
+      >
+        <Check size={11} strokeWidth={2.8} />
         {rating.verdict}
       </span>
     </div>
@@ -327,9 +368,11 @@ function DetailRow({
   icon: Icon,
 }: Readonly<{ label: string; value: string; icon: LucideIcon }>) {
   return (
-    <div className="flex items-center justify-between gap-4 py-[0.35rem]">
+    <div className="flex items-center justify-between gap-4 py-[0.45rem]">
       <span className="flex items-center gap-2 text-[0.72rem] text-ink-muted">
-        <Icon size={12} strokeWidth={1.8} />
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[0.65rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(245,247,250,0.88))] text-ink-soft shadow-[inset_0_1px_0_rgba(255,255,255,0.94)]">
+          <Icon size={12} strokeWidth={1.8} />
+        </span>
         {label}
       </span>
       <span className="truncate text-[0.78rem] font-medium text-ink">
@@ -346,8 +389,6 @@ function SectionLabel({ children }: Readonly<{ children: string }>) {
     </span>
   );
 }
-
-// --- main component ----------------------------------------------------------
 
 export function SpeedTestShell({
   gatewayIp,
@@ -374,6 +415,7 @@ export function SpeedTestShell({
     if (isRunning) {
       return;
     }
+
     setErrorMessage("");
     setResults(null);
     setProgress(null);
@@ -398,9 +440,11 @@ export function SpeedTestShell({
 
   const partial = progress?.partial;
   const activities = results ? rateActivities(results) : null;
+  const readyCount = activities
+    ? activities.filter((rating) => rating.score >= 3).length
+    : 0;
   const isTechnical = mode === "technical";
 
-  // Gauge content for the current stage.
   const gauge = (() => {
     switch (stage) {
       case "latency":
@@ -546,7 +590,6 @@ export function SpeedTestShell({
 
   return (
     <div className="flex flex-col gap-2.5 lg:h-full lg:min-h-0 lg:overflow-hidden">
-      {/* Header -- compact, fixed height */}
       <PageIntro
         className="shrink-0"
         eyebrow="Gateway"
@@ -572,14 +615,9 @@ export function SpeedTestShell({
         </div>
       ) : null}
 
-      {/* Body -- two columns that fill the remaining viewport height on desktop.
-          Left  : test hero -> KPI results -> speed chart.
-          Right : activity readiness -> network details. */}
       <div className="grid gap-2.5 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1.62fr)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)] lg:overflow-hidden">
-        {/* LEFT COLUMN */}
         <div className="flex flex-col gap-2.5 lg:min-h-0 lg:overflow-hidden">
-          {/* Test hero -- dial and Start control sit side by side */}
-          <SurfacePanel className="flex flex-col p-3.5 lg:min-h-0 lg:flex-1 lg:overflow-hidden">
+          <SurfacePanel className="flex flex-col p-3.5 lg:min-h-0 lg:overflow-hidden">
             <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
               {statusPill}
               <span className="flex items-center gap-1.5 text-[0.7rem] font-medium text-ink-muted">
@@ -588,79 +626,108 @@ export function SpeedTestShell({
               </span>
             </div>
 
-            <div className="mt-2.5 flex min-h-0 flex-1 flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-              {/* Dial -- compact, scales to the space available */}
-              <div className="flex min-h-0 flex-1 items-center justify-center">
-                <SpeedGauge
-                  value={gauge.value}
-                  unit={gauge.unit}
-                  caption={gauge.caption}
-                  subCaption={gauge.subCaption}
-                  active={isRunning}
-                  frameClassName="relative mx-auto aspect-square w-full max-w-[9.5rem] sm:max-w-[10.5rem] lg:h-full lg:max-h-[11.5rem] lg:w-auto lg:max-w-full"
-                />
-              </div>
+            {isTechnical ? (
+              <div className="mt-2.5 flex min-h-0 flex-1 flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                <div className="flex min-h-0 flex-1 items-center justify-center">
+                  <SpeedGauge
+                    value={gauge.value}
+                    unit={gauge.unit}
+                    caption={gauge.caption}
+                    subCaption={gauge.subCaption}
+                    active={isRunning}
+                    frameClassName="relative mx-auto aspect-square w-full max-w-[9.5rem] sm:max-w-[10.5rem] lg:h-full lg:max-h-[11.5rem] lg:w-auto lg:max-w-full"
+                  />
+                </div>
 
-              {/* Control column -- Start button + progress steps */}
-              <div className="flex shrink-0 flex-col justify-center gap-2 sm:w-[13.5rem]">
-                <button
-                  type="button"
-                  onClick={runTest}
-                  disabled={isRunning}
-                  className="theme-cta inline-flex w-full items-center justify-center gap-1.5 rounded-pill border px-5 py-2 text-[0.8rem] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
-                >
-                  {stage === "done" || stage === "error" ? (
-                    <RotateCcw size={14} strokeWidth={2} />
-                  ) : (
-                    <Play size={14} strokeWidth={2} />
-                  )}
-                  {startLabel}
-                </button>
-                <div className="flex flex-col gap-1">
-                  {STEPS.map((step) => (
-                    <StepChip
-                      key={step.phase}
-                      label={step.label}
-                      icon={step.icon}
-                      status={stepStatus(step.phase, stage)}
-                    />
-                  ))}
+                <div className="flex shrink-0 flex-col justify-center gap-2 sm:w-[13.5rem]">
+                  <button
+                    type="button"
+                    onClick={runTest}
+                    disabled={isRunning}
+                    className="theme-cta inline-flex w-full items-center justify-center gap-1.5 rounded-[1rem] border px-5 py-2 text-[0.8rem] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                  >
+                    {stage === "done" || stage === "error" ? (
+                      <RotateCcw size={14} strokeWidth={2} />
+                    ) : (
+                      <Play size={14} strokeWidth={2} />
+                    )}
+                    {startLabel}
+                  </button>
+                  <div className="flex flex-col gap-1">
+                    {STEPS.map((step) => (
+                      <StepChip
+                        key={step.phase}
+                        label={step.label}
+                        icon={step.icon}
+                        status={stepStatus(step.phase, stage)}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="mt-2.5 flex min-h-0 flex-1 flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                <div className="flex min-h-0 flex-1 items-center justify-center">
+                  <SpeedGauge
+                    value={gauge.value}
+                    unit={gauge.unit}
+                    caption={gauge.caption}
+                    subCaption={gauge.subCaption}
+                    active={isRunning}
+                    frameClassName="relative mx-auto aspect-square w-full max-w-[11.75rem] sm:max-w-[12.8rem] lg:h-full lg:max-h-[14.2rem] lg:w-auto lg:max-w-full"
+                  />
+                </div>
+
+                <div className="flex shrink-0 flex-col justify-center gap-2 sm:w-[14rem]">
+                  <button
+                    type="button"
+                    onClick={runTest}
+                    disabled={isRunning}
+                    className="theme-cta inline-flex w-full items-center justify-center gap-1.5 rounded-[1rem] border px-5 py-2.5 text-[0.84rem] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                  >
+                    {stage === "done" || stage === "error" ? (
+                      <RotateCcw size={14} strokeWidth={2} />
+                    ) : (
+                      <Play size={14} strokeWidth={2} />
+                    )}
+                    {startLabel}
+                  </button>
+                  <div className="flex flex-col gap-1">
+                    {STEPS.map((step) => (
+                      <StepChip
+                        key={step.phase}
+                        label={step.label}
+                        icon={step.icon}
+                        status={stepStatus(step.phase, stage)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </SurfacePanel>
 
-          {/* KPI results -- placed directly under the test area, above the chart */}
-          <div className="shrink-0">
-            <div className="mb-1.5 flex items-baseline justify-between">
-              <SectionLabel>Results</SectionLabel>
-              {results ? (
-                <span className="text-[0.7rem] text-ink-muted">
-                  Stability {results.stabilityPct}/100
-                </span>
-              ) : null}
+          {isTechnical ? (
+            <div className="shrink-0">
+              <div className="mb-1.5 flex items-baseline justify-between">
+                <SectionLabel>Results</SectionLabel>
+              </div>
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                {visibleMetrics.map((metric) => (
+                  <MetricCard
+                    key={metric.key}
+                    label={metric.label}
+                    value={metric.value}
+                    unit={metric.unit}
+                    hint={metric.hint}
+                    icon={metric.icon}
+                    accent={metric.accent}
+                  />
+                ))}
+              </div>
             </div>
-            <div
-              className={cn(
-                "grid grid-cols-3 gap-2",
-                isTechnical && "sm:grid-cols-5",
-              )}
-            >
-              {visibleMetrics.map((metric) => (
-                <MetricCard
-                  key={metric.key}
-                  label={metric.label}
-                  value={metric.value}
-                  unit={metric.unit}
-                  hint={metric.hint}
-                  icon={metric.icon}
-                  accent={metric.accent}
-                />
-              ))}
-            </div>
-          </div>
+          ) : null}
 
-          {/* Speed-over-time chart -- technical mode only */}
           {isTechnical ? (
             <SurfacePanel subtle className="shrink-0 p-3">
               <div className="mb-0.5 flex items-center justify-between">
@@ -684,22 +751,27 @@ export function SpeedTestShell({
           ) : null}
         </div>
 
-        {/* RIGHT COLUMN -- activity readiness + network details */}
         <div className="flex flex-col gap-2.5 lg:min-h-0 lg:overflow-hidden">
-          {/* Activity readiness */}
-          <SurfacePanel className="flex flex-col p-3.5 lg:min-h-0 lg:flex-1 lg:overflow-hidden">
+          <SurfacePanel className="flex flex-col p-3.5 lg:min-h-0 lg:overflow-hidden">
             <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line/12 pb-2.5">
               <div>
                 <div className="text-[0.92rem] font-semibold leading-tight text-ink">
                   Ready for
                 </div>
                 <div className="text-[0.68rem] text-ink-muted">
-                  How your line handles everyday use
+                  Everyday activities at home
                 </div>
               </div>
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.55rem] bg-[rgba(15,23,42,0.04)] text-ink-faint">
-                <Wifi size={14} strokeWidth={1.8} />
-              </span>
+              {activities ? (
+                <span className="flex shrink-0 items-center gap-1.5 rounded-pill bg-success-soft px-2.5 py-1 text-[0.72rem] font-semibold text-success">
+                  <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                  {readyCount} / {activities.length}
+                </span>
+              ) : (
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.55rem] bg-[rgba(15,23,42,0.04)] text-ink-faint">
+                  <Wifi size={14} strokeWidth={1.8} />
+                </span>
+              )}
             </div>
 
             {activities ? (
@@ -716,7 +788,6 @@ export function SpeedTestShell({
             )}
           </SurfacePanel>
 
-          {/* Network details -- technical mode only */}
           {isTechnical ? (
             <SurfacePanel subtle className="shrink-0 p-3.5">
               <div className="mb-1 text-[0.92rem] font-semibold leading-tight text-ink">
@@ -730,7 +801,7 @@ export function SpeedTestShell({
                 />
                 <DetailRow label="Provider" value="U-wifi" icon={Wifi} />
                 <DetailRow
-                  label="IP address"
+                  label="Gateway IP"
                   value={gatewayIp ? gatewayIp : "Not available"}
                   icon={MapPin}
                 />
@@ -742,7 +813,27 @@ export function SpeedTestShell({
                 <DetailRow label="Tested" value={testedAt} icon={Clock} />
               </div>
             </SurfacePanel>
-          ) : null}
+          ) : (
+            <div className="shrink-0">
+              <div className="mb-1.5 flex items-baseline justify-between">
+                <SectionLabel>Results</SectionLabel>
+              </div>
+              <div className="grid gap-2">
+                {visibleMetrics.map((metric) => (
+                  <MetricCard
+                    key={metric.key}
+                    label={metric.label}
+                    value={metric.value}
+                    unit={metric.unit}
+                    hint={metric.hint}
+                    icon={metric.icon}
+                    accent={metric.accent}
+                    compact
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

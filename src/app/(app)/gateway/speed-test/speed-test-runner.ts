@@ -330,7 +330,7 @@ export async function runSpeedTest(
 
 export type ActivityId = "browsing" | "conferencing" | "gaming" | "streaming";
 
-export type ActivityTone = "success" | "brand" | "warning";
+export type ActivityTone = "success" | "brand" | "warning" | "danger";
 
 export type ActivityRating = {
   id: ActivityId;
@@ -349,7 +349,10 @@ function toneForScore(score: 1 | 2 | 3 | 4): ActivityTone {
   if (score === 3) {
     return "brand";
   }
-  return "warning";
+  if (score === 2) {
+    return "warning";
+  }
+  return "danger";
 }
 
 /**
