@@ -36,8 +36,8 @@ type SpeedTestDialProps = {
   unit: string;
   caption: string;
   subCaption?: string;
-  active?: boolean;
-  mode: "simple" | "technical";
+  status?: "idle" | "live" | "measured";
+  mode?: "simple" | "technical";
   frameClassName?: string;
 };
 
@@ -46,11 +46,11 @@ export function SpeedTestDial({
   unit,
   caption,
   subCaption,
-  active = false,
-  mode,
+  status = "idle",
+  mode = "technical",
   frameClassName = "relative mx-auto aspect-square w-full max-w-[22rem]",
 }: Readonly<SpeedTestDialProps>) {
-  const radius = mode === "simple" ? 92 : 90;
+  const radius = mode === "simple" ? 88 : 86;
   const strokeWidth = mode === "simple" ? 16 : 14;
   const circumference = 2 * Math.PI * radius;
   const arcFraction = 0.75;
@@ -115,33 +115,38 @@ export function SpeedTestDial({
       <div
         className={cn(
           "absolute inset-0 flex flex-col items-center justify-center text-center",
-          mode === "simple" ? "px-9 sm:px-11" : "px-8 sm:px-9",
+          mode === "simple" ? "px-12 py-9 sm:px-14" : "px-9 py-6 sm:px-10",
         )}
       >
         <div
           className={cn(
-            "font-semibold uppercase tracking-[0.24em] text-ink-faint",
-            mode === "simple" ? "text-[0.68rem]" : "text-[0.63rem]",
+            "font-semibold uppercase tracking-[0.26em] text-ink-faint",
+            mode === "simple" ? "text-[0.69rem]" : "text-[0.63rem]",
           )}
         >
           {caption}
         </div>
 
-        <div className="mt-2.5 flex items-end gap-2">
+        <div
+          className={cn(
+            "flex items-end gap-2",
+            mode === "simple" ? "mt-[0.95rem]" : "mt-[0.7rem]",
+          )}
+        >
           <span
             className={cn(
-              "font-semibold leading-none tracking-[-0.07em] text-ink tabular-nums",
+              "font-semibold leading-none tracking-[-0.02em] text-ink tabular-nums",
               mode === "simple"
-                ? "text-[2.75rem] sm:text-[3.15rem]"
-                : "text-[2.32rem] sm:text-[2.6rem]",
+                ? "text-[2.5rem] sm:text-[2.85rem]"
+                : "text-[2.15rem] sm:text-[2.4rem]",
             )}
           >
             {formatDialValue(value)}
           </span>
           <span
             className={cn(
-              "pb-1 font-medium text-ink-muted",
-              mode === "simple" ? "text-[0.8rem]" : "text-[0.72rem]",
+              "font-medium text-ink-muted",
+              mode === "simple" ? "pb-1.5 text-[0.82rem]" : "pb-1 text-[0.72rem]",
             )}
           >
             {unit}
@@ -151,34 +156,43 @@ export function SpeedTestDial({
         {subCaption ? (
           <div
             className={cn(
-              "mt-3 max-w-[12rem] leading-5 text-ink-muted",
-              mode === "simple" ? "text-[0.76rem]" : "text-[0.7rem]",
+              "max-w-[11.5rem] leading-5 text-ink-muted",
+              mode === "simple"
+                ? "mt-[0.85rem] text-[0.77rem]"
+                : "mt-[0.6rem] text-[0.7rem]",
             )}
           >
             {subCaption}
           </div>
         ) : null}
 
-        <div className="mt-3.5 inline-flex items-center gap-2 rounded-pill border border-white/80 bg-white/75 px-3 py-1.5 text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-ink-soft shadow-[0_12px_26px_rgba(206,210,218,0.14)]">
-          <span
+        {status !== "idle" ? (
+          <div
             className={cn(
-              "relative inline-flex h-2.5 w-2.5 rounded-full",
-              caption === "Upload"
-                ? "bg-brand"
-                : caption === "Download"
-                  ? "bg-success"
-                  : "bg-ink-faint",
+              "inline-flex items-center gap-2 rounded-pill border border-white/80 bg-white/75 px-3 py-1.5 text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-ink-soft shadow-[0_12px_26px_rgba(206,210,218,0.14)]",
+              mode === "simple" ? "mt-4" : "mt-3",
             )}
           >
-            {active ? (
-              <span
-                className="absolute inset-0 rounded-full animate-ping opacity-45"
-                style={{ backgroundColor: palette.live }}
-              />
-            ) : null}
-          </span>
-          {active ? "Live" : "Measured"}
-        </div>
+            <span
+              className={cn(
+                "relative inline-flex h-2.5 w-2.5 rounded-full",
+                caption === "Upload"
+                  ? "bg-brand"
+                  : caption === "Download"
+                    ? "bg-success"
+                    : "bg-ink-faint",
+              )}
+            >
+              {status === "live" ? (
+                <span
+                  className="absolute inset-0 rounded-full animate-ping opacity-45"
+                  style={{ backgroundColor: palette.live }}
+                />
+              ) : null}
+            </span>
+            {status === "live" ? "Live" : "Measured"}
+          </div>
+        ) : null}
       </div>
     </div>
   );

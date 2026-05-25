@@ -34,7 +34,6 @@ import {
   runSpeedTest,
   type ActivityId,
   type ActivityRating,
-  type ActivityTone,
   type SpeedTestPhase,
   type SpeedTestProgress,
   type SpeedTestResults,
@@ -75,6 +74,14 @@ const ACTIVITY_ICONS: Record<ActivityId, LucideIcon> = {
   conferencing: Video,
   gaming: Gamepad2,
   streaming: MonitorPlay,
+};
+
+/** Fixed brand identity per activity: download-led -> verde, upload-led -> morado. */
+const ACTIVITY_THEME: Record<ActivityId, "green" | "violet"> = {
+  browsing: "green",
+  conferencing: "violet",
+  gaming: "green",
+  streaming: "violet",
 };
 
 type SpeedTestShellProps = {
@@ -294,25 +301,21 @@ function MetricCard({
 
 function ActivityMeter({
   score,
-  tone,
-}: Readonly<{ score: number; tone: ActivityTone }>) {
-  const fillClass =
-    tone === "success"
-      ? "bg-success"
-      : tone === "brand"
-        ? "bg-brand"
-        : tone === "warning"
-          ? "bg-[#d99a2b]"
-          : "bg-[#df4d43]";
+  color,
+}: Readonly<{ score: number; color: "green" | "violet" }>) {
+  const fillClass = color === "green" ? "bg-success" : "bg-brand";
+  // Runner scores activities 1-4; render as a 5-segment meter so a top
+  // result reads as a full bar (4 -> 5/5, 3 -> 4/5, …).
+  const filled = Math.min(5, Math.max(1, score + 1));
 
   return (
-    <div className="flex shrink-0 gap-[4px]">
-      {[0, 1, 2, 3].map((index) => (
+    <div className="flex items-center gap-[0.2rem]">
+      {[0, 1, 2, 3, 4].map((index) => (
         <span
           key={index}
           className={cn(
-            "h-[5px] w-4 rounded-full transition-colors duration-300",
-            index < score ? fillClass : "bg-[rgba(15,23,42,0.08)]",
+            "h-[0.42rem] flex-1 rounded-full transition-colors duration-300",
+            index < filled ? fillClass : "bg-[rgba(15,23,42,0.1)]",
           )}
         />
       ))}
@@ -322,21 +325,18 @@ function ActivityMeter({
 
 function ActivityRow({ rating }: Readonly<{ rating: ActivityRating }>) {
   const Icon = ACTIVITY_ICONS[rating.id];
-  const toneClass =
-    rating.tone === "warning"
-      ? "bg-[#fdf1dc] text-[#d17b00]"
-      : rating.tone === "danger"
-        ? "bg-[#fff0ef] text-[#df4d43]"
-        : rating.id === "conferencing" || rating.id === "streaming"
-          ? "bg-brand-soft text-brand"
-          : "bg-success-soft text-success";
+  const color = ACTIVITY_THEME[rating.id];
+  const themeClass =
+    color === "green"
+      ? "bg-success-soft text-success"
+      : "bg-brand-soft text-brand";
 
   return (
     <div className="flex items-center gap-2.5 py-[0.5rem]">
       <span
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.7rem] border border-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.94)]",
-          toneClass,
+          themeClass,
         )}
       >
         <Icon size={15} strokeWidth={2} />
@@ -345,14 +345,14 @@ function ActivityRow({ rating }: Readonly<{ rating: ActivityRating }>) {
         <span className="block truncate text-[0.8rem] font-semibold leading-tight text-ink">
           {rating.label}
         </span>
-        <div className="mt-[0.45rem]">
-          <ActivityMeter score={rating.score} tone={rating.tone} />
+        <div className="mt-[0.4rem]">
+          <ActivityMeter score={rating.score} color={color} />
         </div>
       </div>
       <span
         className={cn(
           "flex shrink-0 items-center gap-1 rounded-pill px-2.5 py-1 text-[0.7rem] font-semibold",
-          toneClass,
+          themeClass,
         )}
       >
         <Check size={11} strokeWidth={2.8} />
@@ -444,6 +444,11 @@ export function SpeedTestShell({
     ? activities.filter((rating) => rating.score >= 3).length
     : 0;
   const isTechnical = mode === "technical";
+  const dialStatus: "idle" | "live" | "measured" = isRunning
+    ? "live"
+    : stage === "done"
+      ? "measured"
+      : "idle";
 
   const gauge = (() => {
     switch (stage) {
@@ -617,7 +622,12 @@ export function SpeedTestShell({
 
       <div className="grid gap-2.5 lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(0,1.62fr)_minmax(0,1fr)] lg:grid-rows-[minmax(0,1fr)] lg:overflow-hidden">
         <div className="flex flex-col gap-2.5 lg:min-h-0 lg:overflow-hidden">
-          <SurfacePanel className="flex flex-col p-3.5 lg:min-h-0 lg:overflow-hidden">
+          <SurfacePanel
+            className={cn(
+              "flex flex-col p-3.5 lg:min-h-0 lg:overflow-hidden",
+              !isTechnical && "lg:flex-1",
+            )}
+          >
             <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
               {statusPill}
               <span className="flex items-center gap-1.5 text-[0.7rem] font-medium text-ink-muted">
@@ -634,7 +644,8 @@ export function SpeedTestShell({
                     unit={gauge.unit}
                     caption={gauge.caption}
                     subCaption={gauge.subCaption}
-                    active={isRunning}
+                    mode="technical"
+                    status={dialStatus}
                     frameClassName="relative mx-auto aspect-square w-full max-w-[9.5rem] sm:max-w-[10.5rem] lg:h-full lg:max-h-[11.5rem] lg:w-auto lg:max-w-full"
                   />
                 </div>
@@ -673,26 +684,27 @@ export function SpeedTestShell({
                     unit={gauge.unit}
                     caption={gauge.caption}
                     subCaption={gauge.subCaption}
-                    active={isRunning}
-                    frameClassName="relative mx-auto aspect-square w-full max-w-[11.75rem] sm:max-w-[12.8rem] lg:h-full lg:max-h-[14.2rem] lg:w-auto lg:max-w-full"
+                    mode="simple"
+                    status={dialStatus}
+                    frameClassName="relative mx-auto aspect-square w-full max-w-[14rem] sm:max-w-[15.5rem] lg:h-full lg:max-h-[20rem] lg:w-auto lg:max-w-full"
                   />
                 </div>
 
-                <div className="flex shrink-0 flex-col justify-center gap-2 sm:w-[14rem]">
+                <div className="flex shrink-0 flex-col justify-center gap-2.5 sm:w-[16.5rem] sm:border-l sm:border-line/10 sm:pl-4">
                   <button
                     type="button"
                     onClick={runTest}
                     disabled={isRunning}
-                    className="theme-cta inline-flex w-full items-center justify-center gap-1.5 rounded-[1rem] border px-5 py-2.5 text-[0.84rem] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                    className="theme-cta inline-flex w-full items-center justify-center gap-1.5 rounded-[1rem] border px-5 py-3 text-[0.88rem] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
                   >
                     {stage === "done" || stage === "error" ? (
-                      <RotateCcw size={14} strokeWidth={2} />
+                      <RotateCcw size={15} strokeWidth={2} />
                     ) : (
-                      <Play size={14} strokeWidth={2} />
+                      <Play size={15} strokeWidth={2} />
                     )}
                     {startLabel}
                   </button>
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1.5">
                     {STEPS.map((step) => (
                       <StepChip
                         key={step.phase}
