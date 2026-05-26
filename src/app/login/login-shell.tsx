@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useActionState, useMemo, useState } from "react";
 import { Eye, EyeOff, Radio, Receipt, Router, ShieldCheck } from "lucide-react";
@@ -325,11 +326,11 @@ export function LoginShell() {
             color1="#81c784"
             color2="#7e57c2"
             color3="#08110d"
-            timeSpeed={0.38}
+            timeSpeed={0.52}
             colorBalance={-0.12}
             warpStrength={1.14}
             warpFrequency={3.1}
-            warpSpeed={1.78}
+            warpSpeed={2.18}
             warpAmplitude={44}
             blendAngle={-18}
             blendSoftness={0.14}
@@ -345,17 +346,23 @@ export function LoginShell() {
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,13,0.06)_0%,rgba(20,15,37,0.22)_40%,rgba(11,10,24,0.72)_100%)]" />
           <div className="absolute inset-y-0 left-0 w-24 bg-[linear-gradient(90deg,rgba(11,10,24,0.26),transparent)] lg:w-32" />
+          <div className="absolute right-6 top-6 z-20 sm:right-8 sm:top-8 lg:right-10 lg:top-10 xl:right-14 xl:top-12">
+            <Image
+              src="/images/UwifiWhiteLogo.png"
+              alt="U-wifi logo"
+              width={156}
+              height={58}
+              priority
+              className="h-auto w-[7.6rem] object-contain opacity-20 sm:w-[8.4rem] lg:w-[9rem]"
+            />
+          </div>
 
-          <div className="relative z-10 flex flex-col justify-end px-6 pt-[clamp(4.5rem,7.5vh,8rem)] pb-[clamp(24px,5vh,72px)] [@media(max-height:920px)]:justify-start sm:px-8 lg:px-10 xl:px-14">
-            
-
+          <div className="relative z-10 flex h-full flex-col justify-end px-6 pt-[clamp(7rem,10vh,8.75rem)] pb-[clamp(24px,5vh,72px)] sm:px-8 lg:px-10 xl:px-14">
             <div className="mt-auto grid gap-6">
               <div className="grid gap-4">
-                
                 <h2 className="text-[clamp(1.95rem,4.2vw,3.05rem)] font-medium leading-[0.98] tracking-[-0.08em] text-white">
                   Operate smarter. Stay connected.
                 </h2>
-              
               </div>
 
               <div className="grid gap-3 lg:w-[85%]">
