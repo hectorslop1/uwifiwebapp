@@ -1,15 +1,17 @@
 "use client";
 
-import { Activity, Gauge } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Activity } from "lucide-react";
 
 import { cn } from "@/src/lib/cn";
 
 import type { SpeedSample } from "./speed-test-runner";
 
-const VERDE = "rgb(2,189,48)";
-const MORADO = "rgb(106,2,197)";
-const VERDE_CLARO = "rgb(114,221,138)";
-const MORADO_CLARO = "rgb(164,119,227)";
+// U-wifi brand: exact hex values for primary screen accents
+const VERDE = "#69c45f";
+const MORADO = "#682cd0";
+const VERDE_CLARO = "#9ad793";
+const MORADO_CLARO = "#a98ce4";
 const NEUTRO_A = "rgb(214,220,228)";
 const NEUTRO_B = "rgb(151,160,172)";
 
@@ -90,7 +92,7 @@ export function SpeedTestDial({
 
       <div className={cn("relative w-full", frameClassName)}>
         <div className="pointer-events-none absolute inset-[12%] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.96)_0%,rgba(250,252,254,0.82)_58%,rgba(255,255,255,0)_78%)]" />
-        <div className="pointer-events-none absolute inset-[18%] rounded-full bg-[radial-gradient(circle,rgba(2,189,48,0.06)_0%,rgba(106,2,197,0.05)_48%,transparent_76%)] blur-[12px]" />
+        <div className="pointer-events-none absolute inset-[18%] rounded-full bg-[radial-gradient(circle,rgba(105,196,95,0.07)_0%,rgba(104,44,208,0.06)_48%,transparent_76%)] blur-[12px]" />
 
         <svg viewBox="0 0 240 240" className="relative h-full w-full rotate-[135deg]">
           <defs>
@@ -196,15 +198,17 @@ export function SpeedTestDial({
 }
 
 const CHART_W = 640;
-const CHART_H = 236;
-const PAD_LEFT = 20;
-const PAD_RIGHT = 20;
-const PAD_TOP = 18;
-const PAD_BOTTOM = 24;
+const CHART_H = 240;
+const PAD_LEFT = 16;
+const PAD_RIGHT = 16;
+const PAD_TOP = 14;
+const PAD_BOTTOM = 14;
+const BAND_GAP = 10;
 
 function buildPath(
   points: ReadonlyArray<{ x: number; y: number }>,
   close: boolean,
+  baselineY: number,
 ): string {
   if (points.length === 0) {
     return "";
@@ -214,7 +218,7 @@ function buildPath(
     const only = points[0];
     const line = `M ${only.x.toFixed(1)} ${only.y.toFixed(1)} L ${(only.x + 0.5).toFixed(1)} ${only.y.toFixed(1)}`;
     return close
-      ? `${line} L ${(only.x + 0.5).toFixed(1)} ${CHART_H - PAD_BOTTOM} L ${only.x.toFixed(1)} ${CHART_H - PAD_BOTTOM} Z`
+      ? `${line} L ${(only.x + 0.5).toFixed(1)} ${baselineY} L ${only.x.toFixed(1)} ${baselineY} Z`
       : line;
   }
 
@@ -230,216 +234,384 @@ function buildPath(
   if (close) {
     const last = points[points.length - 1];
     const first = points[0];
-    d += ` L ${last.x.toFixed(1)} ${CHART_H - PAD_BOTTOM} L ${first.x.toFixed(1)} ${CHART_H - PAD_BOTTOM} Z`;
+    d += ` L ${last.x.toFixed(1)} ${baselineY} L ${first.x.toFixed(1)} ${baselineY} Z`;
   }
 
   return d;
 }
 
+type ChartState = "idle" | "running" | "completed";
+
 type SpeedOverTimeChartProps = {
   samples?: ReadonlyArray<SpeedSample>;
+  state?: ChartState;
+  /**
+   * @deprecated Historical view is no longer rendered. The prop stays in the
+   * public API for compatibility, but the chart now only renders the live
+   * test trace from `samples` so the completed state matches what the user
+   * saw during the run.
+   */
   history?: ReadonlyArray<{ download_speed: number; upload_speed: number; created_at?: string }>;
   heightClass?: string;
 };
 
+function formatTooltipMbps(value: number) {
+  if (value >= 100) return value.toFixed(0);
+  if (value >= 10) return value.toFixed(1);
+  return value.toFixed(2);
+}
+
+
+
 export function SpeedOverTimeChart({
   samples = [],
-  history = [],
-  heightClass = "h-[15rem]",
+  state = "idle",
+  heightClass = "h-[10.5rem]",
 }: Readonly<SpeedOverTimeChartProps>) {
-  const isHistorical = history && history.length > 0;
-  const hasData = (samples && samples.length > 0) || isHistorical;
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
 
-  const historyPoints = (() => {
-    if (!isHistorical) return { download: [], upload: [], peak: 1, span: 1 };
-    
-    const chronological = [...history].slice(0, 15).reverse();
-    const plotWidth = CHART_W - PAD_LEFT - PAD_RIGHT;
-    const plotHeight = CHART_H - PAD_TOP - PAD_BOTTOM;
-    const peak = Math.max(
-      ...chronological.map((h) => Math.max(h.download_speed, h.upload_speed)),
-      1
-    );
-    const ceiling = niceCeiling(peak);
-    const stepX = chronological.length > 1 ? plotWidth / (chronological.length - 1) : plotWidth;
+  const hasData = samples.length > 0;
 
-    return {
-      download: chronological.map((h, i) => ({
-        x: PAD_LEFT + i * stepX,
-        y: PAD_TOP + plotHeight - (Math.min(h.download_speed, ceiling) / ceiling) * plotHeight,
-      })),
-      upload: chronological.map((h, i) => ({
-        x: PAD_LEFT + i * stepX,
-        y: PAD_TOP + plotHeight - (Math.min(h.upload_speed, ceiling) / ceiling) * plotHeight,
-      })),
-      peak,
-      span: chronological.length,
-    };
+  const downloadSamples = useMemo(
+    () => samples.filter((sample) => sample.phase === "download"),
+    [samples],
+  );
+  const uploadSamples = useMemo(
+    () => samples.filter((sample) => sample.phase === "upload"),
+    [samples],
+  );
+
+  const downloadPeak =
+    downloadSamples.length > 0
+      ? Math.max(...downloadSamples.map((sample) => sample.mbps), 1)
+      : 1;
+  const uploadPeak =
+    uploadSamples.length > 0
+      ? Math.max(...uploadSamples.map((sample) => sample.mbps), 1)
+      : 1;
+
+  const downloadCeiling = niceCeiling(downloadPeak);
+  const uploadCeiling = niceCeiling(uploadPeak);
+
+  const span = hasData
+    ? Math.max(...samples.map((sample) => sample.elapsed), 1)
+    : 1;
+
+  const plotWidth = CHART_W - PAD_LEFT - PAD_RIGHT;
+  const plotHeight = CHART_H - PAD_TOP - PAD_BOTTOM;
+  const plotBottomY = PAD_TOP + plotHeight;
+
+  // Stacked visual bands: Download lives in the upper half, Upload in the
+  // lower half. Each band has its own baseline → ceiling → so a 5 Mbps upload
+  // trace fills its band just like a 150 Mbps download trace fills its own.
+  // The math is rendering-only — tooltips, peaks and the footer still surface
+  // real sample.mbps values.
+  const bandHeight = (plotHeight - BAND_GAP) / 2;
+  const downloadBaseY = PAD_TOP + bandHeight;
+  const uploadBaseY = plotBottomY;
+
+  const downloadMeasured = downloadSamples.map((sample) => ({
+    x: PAD_LEFT + (sample.elapsed / span) * plotWidth,
+    y:
+      downloadBaseY -
+      (Math.min(sample.mbps, downloadCeiling) / downloadCeiling) * bandHeight,
+    sample,
+  }));
+  const uploadMeasured = uploadSamples.map((sample) => ({
+    x: PAD_LEFT + (sample.elapsed / span) * plotWidth,
+    y:
+      uploadBaseY -
+      (Math.min(sample.mbps, uploadCeiling) / uploadCeiling) * bandHeight,
+    sample,
+  }));
+
+  // Anchor each trace at its band baseline (0 Mbps at x=0) so the line rises
+  // from rest into the measured samples instead of starting mid-air.
+  const downloadPoints =
+    downloadMeasured.length > 0
+      ? [{ x: PAD_LEFT, y: downloadBaseY }, ...downloadMeasured]
+      : [];
+  const uploadPoints =
+    uploadMeasured.length > 0
+      ? [{ x: PAD_LEFT, y: uploadBaseY }, ...uploadMeasured]
+      : [];
+
+  // Peak markers (completed state) — by real Mbps within each phase.
+  const downloadPeakPoint =
+    downloadMeasured.length > 0
+      ? downloadMeasured.reduce((max, current) =>
+          current.sample.mbps > max.sample.mbps ? current : max,
+        )
+      : null;
+  const uploadPeakPoint =
+    uploadMeasured.length > 0
+      ? uploadMeasured.reduce((max, current) =>
+          current.sample.mbps > max.sample.mbps ? current : max,
+        )
+      : null;
+
+  // Latest-active marker (running state) — the most recent sample of the
+  // currently-running phase. samples is chronological so the tail is freshest.
+  const latestSample =
+    samples.length > 0 ? samples[samples.length - 1] : null;
+  const latestPoint = (() => {
+    if (!latestSample) return null;
+    const arr =
+      latestSample.phase === "upload" ? uploadMeasured : downloadMeasured;
+    return arr.length > 0 ? arr[arr.length - 1] : null;
   })();
+  const latestColor = latestSample?.phase === "upload" ? MORADO : VERDE;
 
-  const peak = isHistorical
-    ? historyPoints.peak
-    : (samples && samples.length > 0
-        ? Math.max(...samples.map((sample) => sample.mbps), 1)
-        : 1);
+  const hoverSample = hoverIndex !== null ? samples[hoverIndex] : null;
+  const hoverX =
+    hoverSample !== null
+      ? PAD_LEFT + (hoverSample.elapsed / span) * plotWidth
+      : null;
+  const hoverIsUpload = hoverSample?.phase === "upload";
+  const hoverCeiling = hoverIsUpload ? uploadCeiling : downloadCeiling;
+  const hoverBaseY = hoverIsUpload ? uploadBaseY : downloadBaseY;
+  const hoverY =
+    hoverSample !== null
+      ? hoverBaseY -
+        (Math.min(hoverSample.mbps, hoverCeiling) / hoverCeiling) * bandHeight
+      : null;
+  const hoverColor = hoverIsUpload ? MORADO : VERDE;
 
-  const ceiling = niceCeiling(peak);
+  const handleSvgMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+    if (!hasData) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const ratio = (event.clientX - rect.left) / rect.width;
+    const viewBoxX = ratio * CHART_W;
 
-  const span = isHistorical
-    ? historyPoints.span
-    : (samples && samples.length > 0
-        ? Math.max(...samples.map((sample) => sample.elapsed), 1)
-        : 1);
-
-  const project = (group: "download" | "upload") => {
-    const plotWidth = CHART_W - PAD_LEFT - PAD_RIGHT;
-    const plotHeight = CHART_H - PAD_TOP - PAD_BOTTOM;
-
-    return samples
-      .filter((sample) => sample.phase === group)
-      .map((sample) => ({
-        x: PAD_LEFT + (sample.elapsed / span) * plotWidth,
-        y:
-          PAD_TOP +
-          plotHeight -
-          (Math.min(sample.mbps, ceiling) / ceiling) * plotHeight,
-      }));
+    let nearestIndex = 0;
+    let nearestDist = Infinity;
+    for (let index = 0; index < samples.length; index += 1) {
+      const sx = PAD_LEFT + (samples[index].elapsed / span) * plotWidth;
+      const dist = Math.abs(sx - viewBoxX);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearestIndex = index;
+      }
+    }
+    setHoverIndex(nearestIndex);
   };
 
-  const downloadPoints = isHistorical ? historyPoints.download : project("download");
-  const uploadPoints = isHistorical ? historyPoints.upload : project("upload");
+  const handleSvgLeave = () => setHoverIndex(null);
 
   return (
     <div>
-      <div className="relative overflow-hidden rounded-[1.35rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.8),rgba(248,250,252,0.66))] px-2 pb-2 pt-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+      <div className="relative overflow-hidden rounded-[1.35rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(248,250,252,0.66))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
         <svg
           viewBox={`0 0 ${CHART_W} ${CHART_H}`}
           preserveAspectRatio="none"
           className={`${heightClass} w-full`}
+          onMouseMove={handleSvgMouseMove}
+          onMouseLeave={handleSvgLeave}
         >
           <defs>
             <linearGradient id="speedChartDownload" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={VERDE} stopOpacity="0.28" />
+              <stop offset="0%" stopColor={VERDE} stopOpacity="0.36" />
+              <stop offset="65%" stopColor={VERDE} stopOpacity="0.14" />
               <stop offset="100%" stopColor={VERDE} stopOpacity="0" />
             </linearGradient>
             <linearGradient id="speedChartUpload" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={MORADO} stopOpacity="0.22" />
+              <stop offset="0%" stopColor={MORADO} stopOpacity="0.30" />
+              <stop offset="65%" stopColor={MORADO} stopOpacity="0.12" />
               <stop offset="100%" stopColor={MORADO} stopOpacity="0" />
             </linearGradient>
+            <filter id="speedChartDotGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2" />
+            </filter>
           </defs>
 
-          {[0.2, 0.4, 0.6, 0.8].map((ratio) => {
-            const y = PAD_TOP + (CHART_H - PAD_TOP - PAD_BOTTOM) * ratio;
-            return (
-              <line
-                key={ratio}
-                x1={PAD_LEFT}
-                x2={CHART_W - PAD_RIGHT}
-                y1={y}
-                y2={y}
-                stroke="rgba(15,23,42,0.05)"
-                strokeWidth="1"
-                strokeDasharray="3 7"
-              />
-            );
-          })}
-
+          {/* Subtle band baselines — replace the visible Y axes. Each line
+             marks the 0 Mbps level of its trace's band, giving the eye a
+             faint anchor without adding numeric chrome. */}
           <line
             x1={PAD_LEFT}
             x2={CHART_W - PAD_RIGHT}
-            y1={CHART_H - PAD_BOTTOM}
-            y2={CHART_H - PAD_BOTTOM}
-            stroke="rgba(15,23,42,0.1)"
+            y1={downloadBaseY}
+            y2={downloadBaseY}
+            stroke="rgba(15,23,42,0.05)"
+            strokeWidth="1"
+            strokeDasharray="2 6"
+          />
+          <line
+            x1={PAD_LEFT}
+            x2={CHART_W - PAD_RIGHT}
+            y1={uploadBaseY}
+            y2={uploadBaseY}
+            stroke="rgba(15,23,42,0.08)"
             strokeWidth="1"
           />
 
           {hasData ? (
             <>
-              <path
-                d={buildPath(downloadPoints, true)}
-                fill="url(#speedChartDownload)"
-              />
-              <path
-                d={buildPath(uploadPoints, true)}
-                fill="url(#speedChartUpload)"
-              />
+              {/* Area fills first so lines paint on top */}
+              {downloadPoints.length > 0 ? (
+                <path
+                  d={buildPath(downloadPoints, true, downloadBaseY)}
+                  fill="url(#speedChartDownload)"
+                />
+              ) : null}
+              {uploadPoints.length > 0 ? (
+                <path
+                  d={buildPath(uploadPoints, true, uploadBaseY)}
+                  fill="url(#speedChartUpload)"
+                />
+              ) : null}
 
-              <path
-                d={buildPath(downloadPoints, false)}
-                fill="none"
-                stroke={VERDE}
-                strokeWidth="2.15"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d={buildPath(uploadPoints, false)}
-                fill="none"
-                stroke={MORADO}
-                strokeWidth="2.15"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              {downloadPoints.length > 0 ? (
+                <path
+                  d={buildPath(downloadPoints, false, downloadBaseY)}
+                  fill="none"
+                  stroke={VERDE}
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              ) : null}
+              {uploadPoints.length > 0 ? (
+                <path
+                  d={buildPath(uploadPoints, false, uploadBaseY)}
+                  fill="none"
+                  stroke={MORADO}
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              ) : null}
 
-              {isHistorical ? (
-                <>
-                  {downloadPoints.map((pt, idx) => (
-                    <circle
-                      key={`dl-dot-${idx}`}
-                      cx={pt.x}
-                      cy={pt.y}
-                      r="3.5"
-                      fill={VERDE}
-                      stroke="white"
-                      strokeWidth="1.8"
+              {/* Dot strategy:
+                 - state="running": pulse the latest sample of the active phase
+                 - state="completed": peak dot per trace
+                 - hover: hover dot (rendered last, on top)
+                 No per-sample dots — keeps the trace clean and premium. */}
+              {state === "running" && latestPoint ? (
+                <g>
+                  <circle
+                    cx={latestPoint.x}
+                    cy={latestPoint.y}
+                    r="6"
+                    fill={latestColor}
+                    opacity="0.22"
+                    filter="url(#speedChartDotGlow)"
+                  >
+                    <animate
+                      attributeName="r"
+                      values="5;9;5"
+                      dur="1.6s"
+                      repeatCount="indefinite"
                     />
-                  ))}
-                  {uploadPoints.map((pt, idx) => (
-                    <circle
-                      key={`ul-dot-${idx}`}
-                      cx={pt.x}
-                      cy={pt.y}
-                      r="3.5"
-                      fill={MORADO}
-                      stroke="white"
-                      strokeWidth="1.8"
+                    <animate
+                      attributeName="opacity"
+                      values="0.25;0;0.25"
+                      dur="1.6s"
+                      repeatCount="indefinite"
                     />
-                  ))}
-                </>
-              ) : (
-                [
-                  { points: downloadPoints, color: VERDE },
-                  { points: uploadPoints, color: MORADO },
-                ].map(({ points, color }) =>
-                  points.length > 0 ? (
-                    <circle
-                      key={color}
-                      cx={points[points.length - 1].x}
-                      cy={points[points.length - 1].y}
-                      r="3.2"
-                      fill={color}
-                      stroke="white"
-                      strokeWidth="1.8"
-                    />
-                  ) : null,
-                )
-              )}
+                  </circle>
+                  <circle
+                    cx={latestPoint.x}
+                    cy={latestPoint.y}
+                    r="4"
+                    fill={latestColor}
+                    stroke="white"
+                    strokeWidth="2"
+                  />
+                </g>
+              ) : null}
+
+              {state === "completed" && downloadPeakPoint ? (
+                <circle
+                  cx={downloadPeakPoint.x}
+                  cy={downloadPeakPoint.y}
+                  r="4"
+                  fill={VERDE}
+                  stroke="white"
+                  strokeWidth="2"
+                />
+              ) : null}
+              {state === "completed" && uploadPeakPoint ? (
+                <circle
+                  cx={uploadPeakPoint.x}
+                  cy={uploadPeakPoint.y}
+                  r="4"
+                  fill={MORADO}
+                  stroke="white"
+                  strokeWidth="2"
+                />
+              ) : null}
+
+              {hoverX !== null && hoverY !== null ? (
+                <g>
+                  <line
+                    x1={hoverX}
+                    x2={hoverX}
+                    y1={PAD_TOP}
+                    y2={plotBottomY}
+                    stroke="rgba(15,23,42,0.18)"
+                    strokeWidth="1"
+                    strokeDasharray="3 4"
+                  />
+                  <circle
+                    cx={hoverX}
+                    cy={hoverY}
+                    r="5"
+                    fill="white"
+                    stroke={hoverColor}
+                    strokeWidth="2.4"
+                  />
+                </g>
+              ) : null}
             </>
           ) : null}
         </svg>
+
+        {hasData && hoverSample && hoverX !== null ? (
+          <div
+            className="pointer-events-none absolute z-10 -translate-x-1/2 rounded-[0.8rem] border border-white/85 bg-white/95 px-2.5 py-1.5 text-left shadow-[0_14px_28px_rgba(15,23,42,0.12)] backdrop-blur"
+            style={{
+              left: `${(hoverX / CHART_W) * 100}%`,
+              top: "0.45rem",
+            }}
+          >
+            <div className="flex items-center gap-1.5">
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ backgroundColor: hoverColor }}
+              />
+              <span
+                className="text-[0.62rem] font-semibold uppercase tracking-[0.14em]"
+                style={{ color: hoverIsUpload ? "#5421a8" : "#3f8a36" }}
+              >
+                {hoverIsUpload ? "Upload" : "Download"}
+              </span>
+            </div>
+            <div className="mt-0.5 flex items-baseline gap-1 tabular-nums">
+              <span className="text-[0.92rem] font-bold leading-none text-ink">
+                {formatTooltipMbps(hoverSample.mbps)}
+              </span>
+              <span className="text-[0.62rem] font-medium text-ink-muted">
+                Mbps
+              </span>
+            </div>
+            <div className="mt-0.5 text-[0.6rem] font-medium text-ink-faint tabular-nums">
+              {hoverSample.elapsed.toFixed(1)}s
+            </div>
+          </div>
+        ) : null}
 
         {!hasData ? (
           <div className="absolute inset-0 flex items-center justify-center px-6">
             <div className="rounded-[1.2rem] border border-line/20 bg-white/84 px-5 py-4 text-center shadow-[0_14px_30px_rgba(208,211,218,0.12)]">
               <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(15,23,42,0.04)] text-ink-soft">
-                <Gauge size={18} strokeWidth={1.9} />
+                <Activity size={18} strokeWidth={1.9} />
               </span>
               <div className="mt-3 text-[0.96rem] font-medium text-ink">
-                Speed over time will appear here
+                Connection trace will appear here
               </div>
               <div className="mt-1 text-[0.82rem] leading-6 text-ink-muted">
-                Start a test to compare download and upload behavior across the
-                full run.
+                Start a test to see live download and upload behavior.
               </div>
             </div>
           </div>
@@ -447,12 +619,28 @@ export function SpeedOverTimeChart({
       </div>
 
       <div className="mt-2.5 flex items-center justify-between text-[0.68rem] font-medium text-ink-faint">
-        <span>{isHistorical ? "15 tests ago" : "0s"}</span>
-        <span className="inline-flex items-center gap-1.5">
-          <Activity size={12} strokeWidth={1.8} />
-          {hasData ? `Peak ${Math.round(peak)} Mbps` : "Peak --"}
+        <span>{hasData ? "0s" : "--"}</span>
+        <span className="inline-flex items-center gap-3 tabular-nums">
+          {downloadSamples.length > 0 ? (
+            <span className="inline-flex items-center gap-1.5" style={{ color: "#3f8a36" }}>
+              <Activity size={11} strokeWidth={2} />
+              Peak {Math.round(downloadPeak)} Mbps
+            </span>
+          ) : null}
+          {uploadSamples.length > 0 ? (
+            <span className="inline-flex items-center gap-1.5" style={{ color: "#5421a8" }}>
+              <Activity size={11} strokeWidth={2} />
+              Peak {Math.round(uploadPeak)} Mbps
+            </span>
+          ) : null}
+          {!hasData ? (
+            <span className="inline-flex items-center gap-1.5">
+              <Activity size={12} strokeWidth={1.8} />
+              Peak --
+            </span>
+          ) : null}
         </span>
-        <span>{isHistorical ? "Latest test" : `${span.toFixed(1)}s`}</span>
+        <span>{hasData ? `${span.toFixed(1)}s` : "--"}</span>
       </div>
     </div>
   );

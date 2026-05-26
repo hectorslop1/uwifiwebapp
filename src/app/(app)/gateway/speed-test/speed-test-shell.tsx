@@ -217,7 +217,6 @@ function MetricCard({
   label,
   value,
   unit,
-  hint,
   icon: Icon,
   accent,
   compact = false,
@@ -225,7 +224,6 @@ function MetricCard({
   label: string;
   value: string;
   unit: string;
-  hint: string;
   icon: LucideIcon;
   accent: "green" | "violet" | "neutral";
   compact?: boolean;
@@ -237,20 +235,18 @@ function MetricCard({
         ? "bg-brand-soft text-brand"
         : "bg-[#f3f4f6] text-ink-soft";
 
+  // Brand-exact glow: green #69c45f → rgb(105,196,95), purple #682cd0 → rgb(104,44,208)
   const glowClass =
     accent === "green"
-      ? "bg-[radial-gradient(circle_at_top,rgba(2,189,48,0.1),transparent_70%)]"
+      ? "bg-[radial-gradient(circle_at_top,rgba(105,196,95,0.12),transparent_70%)]"
       : accent === "violet"
-        ? "bg-[radial-gradient(circle_at_top,rgba(106,2,197,0.1),transparent_70%)]"
+        ? "bg-[radial-gradient(circle_at_top,rgba(104,44,208,0.10),transparent_70%)]"
         : "bg-[radial-gradient(circle_at_top,rgba(148,163,184,0.08),transparent_70%)]";
 
   return (
     <SurfacePanel
       subtle
-      className={cn(
-        "relative overflow-hidden",
-        compact ? "p-2.5" : "p-2.5",
-      )}
+      className="relative overflow-hidden p-3"
     >
       <div
         className={cn(
@@ -272,7 +268,7 @@ function MetricCard({
             {label}
           </span>
         </div>
-        <div className="mt-1.5 flex items-baseline gap-1">
+        <div className="mt-2 flex items-baseline gap-1">
           <span
             className={cn(
               "font-semibold leading-none tracking-[-0.045em] text-ink tabular-nums",
@@ -284,14 +280,6 @@ function MetricCard({
           <span className="text-[0.64rem] font-medium text-ink-muted">
             {unit}
           </span>
-        </div>
-        <div
-          className={cn(
-            "mt-1 text-[0.64rem] leading-4 text-ink-muted",
-            compact ? "truncate" : "truncate",
-          )}
-        >
-          {hint}
         </div>
       </div>
     </SurfacePanel>
@@ -338,30 +326,31 @@ function PendingActivityRow({ activity }: Readonly<{ activity: { id: ActivityId;
 function ActivityRow({ rating }: Readonly<{ rating: ActivityRating }>) {
   const Icon = ACTIVITY_ICONS[rating.id];
   
-  // Define visual styling dynamic states based on score
+  // U-wifi brand-only tier styling. Green = excellent, purple = good, neutral = limited.
+  // Off-brand cyan/emerald/amber removed; red reserved for true error states elsewhere.
   const config = (() => {
     if (rating.score >= 4) {
       return {
-        // Excellent: Emerald Green
-        iconClass: "text-[#10b981] bg-[#e6f9f3] border-[#10b981]/20",
-        pillClass: "text-[#10b981] bg-[#e6f9f3] border-[#10b981]/15",
+        // Excellent: brand green #69c45f with darker text for contrast on tinted bg
+        iconClass: "text-[#3f8a36] bg-[rgba(105,196,95,0.12)] border-[rgba(105,196,95,0.20)]",
+        pillClass: "text-[#3f8a36] bg-[rgba(105,196,95,0.12)] border-[rgba(105,196,95,0.18)]",
         verdictText: "Excellent",
         verdictIcon: Check,
       };
     } else if (rating.score === 3) {
       return {
-        // Good: Electric Cyan/Blue
-        iconClass: "text-[#06b6d4] bg-[#ecfeff] border-[#06b6d4]/20",
-        pillClass: "text-[#06b6d4] bg-[#ecfeff] border-[#06b6d4]/15",
+        // Good: brand purple #682cd0
+        iconClass: "text-[#682cd0] bg-[rgba(104,44,208,0.10)] border-[rgba(104,44,208,0.20)]",
+        pillClass: "text-[#682cd0] bg-[rgba(104,44,208,0.10)] border-[rgba(104,44,208,0.18)]",
         verdictText: "Good",
         verdictIcon: Check,
       };
     } else {
-      // Limited/Unsupported: Amber/Orange
+      // Limited / unsupported: neutral, no off-brand accent
       return {
-        iconClass: "text-[#f59e0b] bg-[#fffbeb] border-[#f59e0b]/20",
-        pillClass: "text-[#f59e0b] bg-[#fffbeb] border-[#f59e0b]/15",
-        verdictText: rating.verdict, // Use the specific verdict like "Laggy", "SD only", etc.
+        iconClass: "text-ink-soft bg-[rgba(15,23,42,0.04)] border-[rgba(15,23,42,0.06)]",
+        pillClass: "text-ink-soft bg-[rgba(15,23,42,0.04)] border-[rgba(15,23,42,0.06)]",
+        verdictText: rating.verdict, // dynamic verdict from runner: "Laggy", "SD only", etc.
         verdictIcon: Check,
       };
     }
@@ -437,7 +426,10 @@ export function SpeedTestShell({
   const [progress, setProgress] = useState<SpeedTestProgress | null>(null);
   const [results, setResults] = useState<SpeedTestResults | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [history, setHistory] = useState<ReadonlyArray<{ download_speed: number; upload_speed: number; created_at?: string }>>([]);
+  // The chart now renders the live test trace only; history state is kept so
+  // the existing fetch sites continue to populate the server with post-test
+  // telemetry without altering API contracts. Reading is no longer needed.
+  const [, setHistory] = useState<ReadonlyArray<{ download_speed: number; upload_speed: number; created_at?: string }>>([]);
 
   const fetchHistory = async () => {
     try {
@@ -590,7 +582,6 @@ export function SpeedTestShell({
     label: string;
     value: string;
     unit: string;
-    hint: string;
     icon: LucideIcon;
     accent: "green" | "violet" | "neutral";
     technicalOnly?: boolean;
@@ -600,7 +591,6 @@ export function SpeedTestShell({
       label: "Download",
       value: formatMbps(results?.downloadMbps),
       unit: "Mbps",
-      hint: "Speed data reaches this device.",
       icon: Download,
       accent: "green",
     },
@@ -609,7 +599,6 @@ export function SpeedTestShell({
       label: "Upload",
       value: formatMbps(results?.uploadMbps),
       unit: "Mbps",
-      hint: "Speed this device sends data out.",
       icon: Upload,
       accent: "violet",
     },
@@ -618,7 +607,6 @@ export function SpeedTestShell({
       label: "Ping",
       value: formatMs(results?.pingMs),
       unit: "ms",
-      hint: "Round-trip response time.",
       icon: Gauge,
       accent: "neutral",
     },
@@ -627,7 +615,6 @@ export function SpeedTestShell({
       label: "Jitter",
       value: formatMs(results?.jitterMs),
       unit: "ms",
-      hint: "Variation between ping samples.",
       icon: Activity,
       accent: "neutral",
       technicalOnly: true,
@@ -637,7 +624,6 @@ export function SpeedTestShell({
       label: "Packet loss",
       value: formatLossPct(results?.packetLossPct),
       unit: "%",
-      hint: "Requests that never returned.",
       icon: Signal,
       accent: "neutral",
       technicalOnly: true,
@@ -793,7 +779,6 @@ export function SpeedTestShell({
                     label={metric.label}
                     value={metric.value}
                     unit={metric.unit}
-                    hint={metric.hint}
                     icon={metric.icon}
                     accent={metric.accent}
                   />
@@ -804,23 +789,29 @@ export function SpeedTestShell({
 
           {isTechnical ? (
             <SurfacePanel subtle className="shrink-0 p-3">
-              <div className="mb-0.5 flex items-center justify-between">
-                <SectionLabel>Speed over time</SectionLabel>
-                <span className="flex items-center gap-3 text-[0.68rem] text-ink-muted">
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-[2px] bg-success" />
+              <div className="mb-1.5 flex items-center justify-between">
+                <SectionLabel>Connection trace</SectionLabel>
+                <span className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-[#3f8a36]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#69c45f]" />
                     Download
                   </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-[2px] bg-brand" />
+                  <span className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-[#5421a8]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#682cd0]" />
                     Upload
                   </span>
                 </span>
               </div>
               <SpeedChart
                 samples={progress?.samples ?? results?.samples ?? []}
-                history={stage === "idle" || stage === "done" ? history : []}
-                heightClass="h-[6rem]"
+                state={
+                  isRunning
+                    ? "running"
+                    : stage === "done"
+                      ? "completed"
+                      : "idle"
+                }
+                heightClass="h-[10.5rem]"
               />
             </SurfacePanel>
           ) : null}
@@ -901,7 +892,6 @@ export function SpeedTestShell({
                     label={metric.label}
                     value={metric.value}
                     unit={metric.unit}
-                    hint={metric.hint}
                     icon={metric.icon}
                     accent={metric.accent}
                     compact
