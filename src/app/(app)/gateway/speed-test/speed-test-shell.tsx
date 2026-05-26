@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ComponentType } from "react";
 import {
   Activity,
@@ -12,7 +12,6 @@ import {
   Globe,
   Loader2,
   MapPin,
-  MonitorPlay,
   Play,
   RotateCcw,
   Server,
@@ -21,6 +20,9 @@ import {
   Video,
   Waves,
   Wifi,
+  Headphones,
+  Laptop,
+  Tv,
 } from "lucide-react";
 
 import { PageIntro } from "@/src/components/ui/page-intro";
@@ -32,6 +34,7 @@ import { cn } from "@/src/lib/cn";
 import {
   rateActivities,
   runSpeedTest,
+  SPEED_TEST_SERVER_URL,
   type ActivityId,
   type ActivityRating,
   type SpeedTestPhase,
@@ -73,16 +76,12 @@ const ACTIVITY_ICONS: Record<ActivityId, LucideIcon> = {
   browsing: Globe,
   conferencing: Video,
   gaming: Gamepad2,
-  streaming: MonitorPlay,
+  streaming: Tv,
+  music: Headphones,
+  work: Laptop,
 };
 
-/** Fixed brand identity per activity: download-led -> verde, upload-led -> morado. */
-const ACTIVITY_THEME: Record<ActivityId, "green" | "violet"> = {
-  browsing: "green",
-  conferencing: "violet",
-  gaming: "green",
-  streaming: "violet",
-};
+
 
 type SpeedTestShellProps = {
   gatewayIp?: string | null;
@@ -299,64 +298,103 @@ function MetricCard({
   );
 }
 
-function ActivityMeter({
-  score,
-  color,
-}: Readonly<{ score: number; color: "green" | "violet" }>) {
-  const fillClass = color === "green" ? "bg-success" : "bg-brand";
-  // Runner scores activities 1-4; render as a 5-segment meter so a top
-  // result reads as a full bar (4 -> 5/5, 3 -> 4/5, …).
-  const filled = Math.min(5, Math.max(1, score + 1));
 
+
+const PENDING_ACTIVITIES: ReadonlyArray<{
+  id: ActivityId;
+  label: string;
+  detail: string;
+}> = [
+  { id: "browsing", label: "Web browsing", detail: "Pages, search and email load without waiting." },
+  { id: "conferencing", label: "Video conferencing", detail: "Group video calls stay sharp and in sync." },
+  { id: "gaming", label: "Online gaming", detail: "Low, steady latency for real-time play." },
+  { id: "streaming", label: "4K Streaming", detail: "Highest resolution streaming without buffering." },
+  { id: "music", label: "Music streaming", detail: "Lag-free audio streaming in high quality." },
+  { id: "work", label: "Smart work", detail: "Reliable file transfers, VPNs and telecommuting." },
+];
+
+function PendingActivityRow({ activity }: Readonly<{ activity: { id: ActivityId; label: string; detail: string } }>) {
+  const Icon = ACTIVITY_ICONS[activity.id];
   return (
-    <div className="flex items-center gap-[0.2rem]">
-      {[0, 1, 2, 3, 4].map((index) => (
-        <span
-          key={index}
-          className={cn(
-            "h-[0.42rem] flex-1 rounded-full transition-colors duration-300",
-            index < filled ? fillClass : "bg-[rgba(15,23,42,0.1)]",
-          )}
-        />
-      ))}
+    <div className="flex items-center gap-3 py-[0.5rem] opacity-55 transition-all duration-300">
+      <span className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-[0.7rem] border border-line bg-white/70 text-ink-faint transition-all duration-300">
+        <Icon size={15} strokeWidth={2} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <span className="block truncate text-[0.8rem] font-medium text-ink-muted">
+          {activity.label}
+        </span>
+        <span className="block text-[0.66rem] text-ink-faint mt-0.5 truncate">
+          {activity.detail}
+        </span>
+      </div>
+      <span className="flex shrink-0 items-center gap-1.5 rounded-pill border border-line bg-white/70 px-2.5 py-1 text-[0.7rem] font-semibold text-ink-faint transition-all duration-300">
+        Pending
+      </span>
     </div>
   );
 }
 
 function ActivityRow({ rating }: Readonly<{ rating: ActivityRating }>) {
   const Icon = ACTIVITY_ICONS[rating.id];
-  const color = ACTIVITY_THEME[rating.id];
-  const themeClass =
-    color === "green"
-      ? "bg-success-soft text-success"
-      : "bg-brand-soft text-brand";
+  
+  // Define visual styling dynamic states based on score
+  const config = (() => {
+    if (rating.score >= 4) {
+      return {
+        // Excellent: Emerald Green
+        iconClass: "text-[#10b981] bg-[#e6f9f3] border-[#10b981]/20",
+        pillClass: "text-[#10b981] bg-[#e6f9f3] border-[#10b981]/15",
+        verdictText: "Excellent",
+        verdictIcon: Check,
+      };
+    } else if (rating.score === 3) {
+      return {
+        // Good: Electric Cyan/Blue
+        iconClass: "text-[#06b6d4] bg-[#ecfeff] border-[#06b6d4]/20",
+        pillClass: "text-[#06b6d4] bg-[#ecfeff] border-[#06b6d4]/15",
+        verdictText: "Good",
+        verdictIcon: Check,
+      };
+    } else {
+      // Limited/Unsupported: Amber/Orange
+      return {
+        iconClass: "text-[#f59e0b] bg-[#fffbeb] border-[#f59e0b]/20",
+        pillClass: "text-[#f59e0b] bg-[#fffbeb] border-[#f59e0b]/15",
+        verdictText: rating.verdict, // Use the specific verdict like "Laggy", "SD only", etc.
+        verdictIcon: Check,
+      };
+    }
+  })();
+
+  const VerdictIcon = config.verdictIcon;
 
   return (
-    <div className="flex items-center gap-2.5 py-[0.5rem]">
+    <div className="flex items-center gap-3 py-[0.5rem] transition-all duration-300">
       <span
         className={cn(
-          "flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.7rem] border border-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.94)]",
-          themeClass,
+          "flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-[0.7rem] border shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] transition-all duration-300",
+          config.iconClass,
         )}
       >
-        <Icon size={15} strokeWidth={2} />
+        <Icon size={15} strokeWidth={2.2} />
       </span>
       <div className="min-w-0 flex-1">
         <span className="block truncate text-[0.8rem] font-semibold leading-tight text-ink">
           {rating.label}
         </span>
-        <div className="mt-[0.4rem]">
-          <ActivityMeter score={rating.score} color={color} />
-        </div>
+        <span className="block text-[0.66rem] text-ink-muted mt-0.5 truncate">
+          {rating.detail}
+        </span>
       </div>
       <span
         className={cn(
-          "flex shrink-0 items-center gap-1 rounded-pill px-2.5 py-1 text-[0.7rem] font-semibold",
-          themeClass,
+          "flex shrink-0 items-center gap-1.5 rounded-pill border px-2.5 py-1 text-[0.7rem] font-semibold transition-all duration-300",
+          config.pillClass,
         )}
       >
-        <Check size={11} strokeWidth={2.8} />
-        {rating.verdict}
+        <VerdictIcon size={11} strokeWidth={2.8} />
+        {config.verdictText}
       </span>
     </div>
   );
@@ -399,6 +437,29 @@ export function SpeedTestShell({
   const [progress, setProgress] = useState<SpeedTestProgress | null>(null);
   const [results, setResults] = useState<SpeedTestResults | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [history, setHistory] = useState<ReadonlyArray<{ download_speed: number; upload_speed: number; created_at?: string }>>([]);
+
+  const fetchHistory = async () => {
+    try {
+      const response = await fetch(`${SPEED_TEST_SERVER_URL}/api/results`);
+      if (response.ok) {
+        const data = await response.json();
+        setHistory(data);
+      }
+    } catch (err) {
+      console.error("Failed to load history:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetch(`${SPEED_TEST_SERVER_URL}/api/results`)
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error("fail");
+      })
+      .then((data) => setHistory(data))
+      .catch((err) => console.error("History load error:", err));
+  }, []);
 
   const changeMode = (next: SpeedTestMode) => {
     setMode(next);
@@ -428,6 +489,7 @@ export function SpeedTestShell({
       });
       setResults(outcome);
       setStage("done");
+      await fetchHistory();
     } catch (error) {
       setStage("error");
       setErrorMessage(
@@ -485,7 +547,7 @@ export function SpeedTestShell({
           value: results?.downloadMbps ?? 0,
           unit: "Mbps",
           caption: "Download",
-          subCaption: "Test complete",
+          subCaption: undefined,
         };
       case "error":
         return {
@@ -646,7 +708,7 @@ export function SpeedTestShell({
                     subCaption={gauge.subCaption}
                     mode="technical"
                     status={dialStatus}
-                    frameClassName="relative mx-auto aspect-square w-full max-w-[9.5rem] sm:max-w-[10.5rem] lg:h-full lg:max-h-[11.5rem] lg:w-auto lg:max-w-full"
+                    frameClassName="relative mx-auto aspect-square w-full max-w-[12rem] sm:max-w-[13.5rem] lg:h-full lg:max-h-[14rem] lg:w-auto lg:max-w-full"
                   />
                 </div>
 
@@ -686,7 +748,7 @@ export function SpeedTestShell({
                     subCaption={gauge.subCaption}
                     mode="simple"
                     status={dialStatus}
-                    frameClassName="relative mx-auto aspect-square w-full max-w-[14rem] sm:max-w-[15.5rem] lg:h-full lg:max-h-[20rem] lg:w-auto lg:max-w-full"
+                    frameClassName="relative mx-auto aspect-square w-full max-w-[17.5rem] sm:max-w-[19rem] lg:h-full lg:max-h-[24rem] lg:w-auto lg:max-w-full"
                   />
                 </div>
 
@@ -757,6 +819,7 @@ export function SpeedTestShell({
               </div>
               <SpeedChart
                 samples={progress?.samples ?? results?.samples ?? []}
+                history={stage === "idle" || stage === "done" ? history : []}
                 heightClass="h-[6rem]"
               />
             </SurfacePanel>
@@ -793,9 +856,10 @@ export function SpeedTestShell({
                 ))}
               </div>
             ) : (
-              <div className="mt-2.5 flex min-h-0 flex-1 items-center justify-center rounded-[0.9rem] border border-dashed border-line/30 px-5 text-center text-[0.74rem] leading-5 text-ink-muted">
-                Run a test to see how your connection handles browsing, calls,
-                gaming and streaming.
+              <div className="flex min-h-0 flex-1 flex-col justify-center divide-y divide-line/12">
+                {PENDING_ACTIVITIES.map((activity) => (
+                  <PendingActivityRow key={activity.id} activity={activity} />
+                ))}
               </div>
             )}
           </SurfacePanel>

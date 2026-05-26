@@ -40,13 +40,13 @@ export type SpeedTestProgress = {
 
 type ProgressFn = (progress: SpeedTestProgress) => void;
 
+export const SPEED_TEST_SERVER_URL =
+  process.env.NEXT_PUBLIC_SPEED_TEST_SERVER_URL || "http://216.250.125.239:8081";
+
 const PING_SAMPLES = 12;
 const STABILITY_SAMPLES = 8;
-const DOWNLOAD_TARGET_MS = 5_000;
-const UPLOAD_TARGET_MS = 4_000;
-const DOWNLOAD_CHUNK_BYTES = 12_000_000;
-const UPLOAD_CHUNK_BYTES = 2_000_000;
-const SAMPLE_INTERVAL_MS = 140;
+const DOWNLOAD_TARGET_MS = 6_000;
+const UPLOAD_TARGET_MS = 6_000;
 
 function uniqueQuery() {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -57,7 +57,7 @@ async function pingOnce(): Promise<number | null> {
   const startedAt = performance.now();
 
   try {
-    const response = await fetch(`/api/speed-test/ping?t=${uniqueQuery()}`, {
+    const response = await fetch(`${SPEED_TEST_SERVER_URL}/ping?t=${uniqueQuery()}`, {
       cache: "no-store",
     });
 
@@ -104,59 +104,89 @@ async function measureDownload(
 ): Promise<{ mbps: number; samples: SpeedSample[] }> {
   const samples: SpeedSample[] = [];
   const phaseStart = performance.now();
-  let totalBytes = 0;
-  let bytesSinceSample = 0;
-  let lastSampleAt = phaseStart;
+  const testDurationLimit = DOWNLOAD_TARGET_MS; // 6 seconds
+  let totalDownloadedBytes = 0;
+  let isDownloadFinished = false;
+  const downloadChunkSize = 4 * 1024 * 1024; // 4MB
+  const controller = new AbortController();
+  const { signal } = controller;
 
-  while (performance.now() - phaseStart < DOWNLOAD_TARGET_MS) {
-    const response = await fetch(
-      `/api/speed-test/download?bytes=${DOWNLOAD_CHUNK_BYTES}&t=${uniqueQuery()}`,
-      { cache: "no-store" },
-    );
+  let lastSampleTime = phaseStart;
+  const sampleInterval = 120; // ms
 
-    const reader = response.body?.getReader();
+  const downloadWorker = async () => {
+    while (performance.now() - phaseStart < testDurationLimit && !isDownloadFinished) {
+      try {
+        const response = await fetch(
+          `${SPEED_TEST_SERVER_URL}/download?size=${downloadChunkSize}&t=${uniqueQuery()}`,
+          { signal, cache: "no-store" }
+        );
+        if (!response.ok) continue;
 
-    if (!reader) {
-      const buffer = await response.arrayBuffer();
-      totalBytes += buffer.byteLength;
-      bytesSinceSample += buffer.byteLength;
-    } else {
-      let streaming = true;
-      while (streaming) {
-        const { done, value } = await reader.read();
-        if (done || !value) {
-          streaming = false;
-          break;
+        const reader = response.body?.getReader();
+        if (!reader) {
+          const buffer = await response.arrayBuffer();
+          if (isDownloadFinished) break;
+          totalDownloadedBytes += buffer.byteLength;
+          const now = performance.now();
+          const elapsedSec = (now - phaseStart) / 1000;
+          if (elapsedSec > 0) {
+            const instantSpeedMbps = (totalDownloadedBytes * 8) / (elapsedSec * 1000000);
+            if (now - lastSampleTime >= sampleInterval) {
+              samples.push({
+                elapsed: (now - testStart) / 1000,
+                mbps: instantSpeedMbps,
+                phase: "download",
+              });
+              lastSampleTime = now;
+            }
+            onTick(instantSpeedMbps, samples);
+          }
+          continue;
         }
 
-        totalBytes += value.byteLength;
-        bytesSinceSample += value.byteLength;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done || isDownloadFinished) break;
 
-        const now = performance.now();
-        const windowMs = now - lastSampleAt;
-        if (windowMs >= SAMPLE_INTERVAL_MS) {
-          const mbps = (bytesSinceSample * 8) / (windowMs / 1000) / 1_000_000;
-          samples.push({
-            elapsed: (now - testStart) / 1000,
-            mbps,
-            phase: "download",
-          });
-          onTick(mbps, samples);
-          lastSampleAt = now;
-          bytesSinceSample = 0;
-        }
+          totalDownloadedBytes += value.length;
+          
+          const now = performance.now();
+          const elapsedSec = (now - phaseStart) / 1000;
+          if (elapsedSec > 0) {
+            const instantSpeedMbps = (totalDownloadedBytes * 8) / (elapsedSec * 1000000);
+            if (now - lastSampleTime >= sampleInterval) {
+              samples.push({
+                elapsed: (now - testStart) / 1000,
+                mbps: instantSpeedMbps,
+                phase: "download",
+              });
+              lastSampleTime = now;
+            }
+            onTick(instantSpeedMbps, samples);
+          }
 
-        if (now - phaseStart >= DOWNLOAD_TARGET_MS) {
-          await reader.cancel().catch(() => undefined);
-          streaming = false;
+          if (performance.now() - phaseStart >= testDurationLimit) {
+            isDownloadFinished = true;
+            controller.abort();
+            await reader.cancel().catch(() => {});
+            break;
+          }
         }
+      } catch {
+        // Silence expected abort errors
       }
     }
-  }
+  };
 
-  const elapsedSeconds = (performance.now() - phaseStart) / 1000;
-  const mbps =
-    elapsedSeconds > 0 ? (totalBytes * 8) / elapsedSeconds / 1_000_000 : 0;
+  // Launch 3 concurrent workers in parallel to saturate the client's network
+  const workers = [downloadWorker(), downloadWorker(), downloadWorker()];
+  await Promise.all(workers);
+  isDownloadFinished = true;
+  controller.abort();
+
+  const totalDurationSec = (performance.now() - phaseStart) / 1000;
+  const mbps = totalDurationSec > 0 ? (totalDownloadedBytes * 8) / (totalDurationSec * 1000000) : 0;
 
   return { mbps, samples };
 }
@@ -166,39 +196,80 @@ async function measureUpload(
   onTick: (liveMbps: number, samples: SpeedSample[]) => void,
 ): Promise<{ mbps: number; samples: SpeedSample[] }> {
   const samples: SpeedSample[] = [];
-  const payload = new Blob([new Uint8Array(UPLOAD_CHUNK_BYTES)]);
   const phaseStart = performance.now();
-  let totalBytes = 0;
-
-  while (performance.now() - phaseStart < UPLOAD_TARGET_MS) {
-    const chunkStart = performance.now();
-    const response = await fetch(`/api/speed-test/upload?t=${uniqueQuery()}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/octet-stream" },
-      body: payload,
-    });
-
-    const data = (await response
-      .json()
-      .catch(() => ({}))) as { bytesReceived?: number };
-    const sentBytes = data.bytesReceived ?? UPLOAD_CHUNK_BYTES;
-    const chunkSeconds = (performance.now() - chunkStart) / 1000;
-
-    totalBytes += sentBytes;
-
-    const mbps =
-      chunkSeconds > 0 ? (sentBytes * 8) / chunkSeconds / 1_000_000 : 0;
-    samples.push({
-      elapsed: (performance.now() - testStart) / 1000,
-      mbps,
-      phase: "upload",
-    });
-    onTick(mbps, samples);
+  const testDurationLimit = UPLOAD_TARGET_MS; // 6 seconds
+  
+  // Generate 1MB random buffer in memory to prevent browser/network payload compression
+  const chunkSize = 1024 * 1024; // 1MB
+  const randomBuffer = new Uint8Array(chunkSize);
+  const maxEntropySize = 65536;
+  for (let i = 0; i < chunkSize; i += maxEntropySize) {
+    const end = Math.min(i + maxEntropySize, chunkSize);
+    if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+      crypto.getRandomValues(randomBuffer.subarray(i, end));
+    } else {
+      for (let j = i; j < end; j++) {
+        randomBuffer[j] = Math.floor(Math.random() * 256);
+      }
+    }
   }
 
-  const elapsedSeconds = (performance.now() - phaseStart) / 1000;
-  const mbps =
-    elapsedSeconds > 0 ? (totalBytes * 8) / elapsedSeconds / 1_000_000 : 0;
+  const payload = new Blob([randomBuffer]);
+  let totalUploadedBytes = 0;
+  let isUploadFinished = false;
+  const controller = new AbortController();
+  const { signal } = controller;
+
+  let lastSampleTime = phaseStart;
+  const sampleInterval = 120; // ms
+
+  const uploadWorker = async () => {
+    while (performance.now() - phaseStart < testDurationLimit && !isUploadFinished) {
+      try {
+        if (performance.now() - phaseStart >= testDurationLimit) {
+          isUploadFinished = true;
+          controller.abort();
+          break;
+        }
+
+        const response = await fetch(`${SPEED_TEST_SERVER_URL}/upload?t=${uniqueQuery()}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/octet-stream" },
+          body: payload,
+          signal,
+        });
+
+        if (response.ok && !isUploadFinished) {
+          totalUploadedBytes += chunkSize;
+          const now = performance.now();
+          const elapsedSec = (now - phaseStart) / 1000;
+          if (elapsedSec > 0) {
+            const instantSpeedMbps = (totalUploadedBytes * 8) / (elapsedSec * 1000000);
+            if (now - lastSampleTime >= sampleInterval) {
+              samples.push({
+                elapsed: (now - testStart) / 1000,
+                mbps: instantSpeedMbps,
+                phase: "upload",
+              });
+              lastSampleTime = now;
+            }
+            onTick(instantSpeedMbps, samples);
+          }
+        }
+      } catch {
+        // Silence expected abort errors
+      }
+    }
+  };
+
+  // Launch 3 concurrent workers in parallel to saturate the client's network upload path
+  const workers = [uploadWorker(), uploadWorker(), uploadWorker()];
+  await Promise.all(workers);
+  isUploadFinished = true;
+  controller.abort();
+
+  const totalDurationSec = (performance.now() - phaseStart) / 1000;
+  const mbps = totalDurationSec > 0 ? (totalUploadedBytes * 8) / (totalDurationSec * 1000000) : 0;
 
   return { mbps, samples };
 }
@@ -323,12 +394,39 @@ export async function runSpeedTest(
     samples: collectedSamples,
   });
 
+  try {
+    const payload = {
+      uuid: `u-wifi-web-${Date.now()}`,
+      download_speed: Number(results.downloadMbps.toFixed(2)),
+      upload_speed: Number(results.uploadMbps.toFixed(2)),
+      ping: Number(results.pingMs.toFixed(2)),
+      jitter: Number(results.jitterMs.toFixed(2)),
+      device_os: "Web Browser",
+      device_os_version: typeof window !== "undefined" && window.navigator ? window.navigator.userAgent.substring(0, 40) : "Unknown",
+      device_model: "Web App",
+      app_version: "1.0.0",
+      carrier: "Web Connection",
+      latitude: 0.0,
+      longitude: 0.0,
+    };
+
+    await fetch(`${SPEED_TEST_SERVER_URL}/api/results`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }).catch((err) => console.error("Telemetry server post error:", err));
+  } catch (err) {
+    console.error("Telemetry payload error:", err);
+  }
+
   return results;
 }
 
 // --- Activity readiness ------------------------------------------------------
 
-export type ActivityId = "browsing" | "conferencing" | "gaming" | "streaming";
+export type ActivityId = "browsing" | "conferencing" | "gaming" | "streaming" | "music" | "work";
 
 export type ActivityTone = "success" | "brand" | "warning" | "danger";
 
@@ -358,69 +456,58 @@ function toneForScore(score: 1 | 2 | 3 | 4): ActivityTone {
 /**
  * Maps a completed test to a readiness rating per everyday activity.
  * Every score is derived from the measured numbers against well-known
- * bandwidth / latency thresholds.
+ * bandwidth / latency thresholds, aligned with Flutter app rules.
  */
 export function rateActivities(results: SpeedTestResults): ActivityRating[] {
-  const { downloadMbps, uploadMbps, pingMs, jitterMs, packetLossPct } = results;
+  const { downloadMbps, uploadMbps, pingMs } = results;
 
-  // Web browsing -- almost entirely download bound.
+  // 1. Browsing -- Excellent: >= 5.0, Good: >= 1.5, Fair: >= 0.5
   const browsingScore: 1 | 2 | 3 | 4 =
-    downloadMbps >= 8 && pingMs <= 90
-      ? 4
-      : downloadMbps >= 4
-        ? 3
-        : downloadMbps >= 1.5
-          ? 2
-          : 1;
-  const browsingVerdict = ["Limited", "Usable", "Smooth", "Instant"][
-    browsingScore - 1
-  ];
+    downloadMbps >= 5.0 ? 4 : downloadMbps >= 1.5 ? 3 : downloadMbps >= 0.5 ? 2 : 1;
+  const browsingVerdict = ["Limited", "Usable", "Smooth", "Instant"][browsingScore - 1];
 
-  // Video conferencing -- needs symmetric throughput and low jitter.
+  // 2. Video conferencing / calls -- Excellent: >= 10D, >= 4U, <= 60ms. Good: >= 4D, >= 1.5U, <= 120ms. Fair: >= 1.5D, >= 0.8U
   const conferencingScore: 1 | 2 | 3 | 4 =
-    downloadMbps >= 6 &&
-    uploadMbps >= 3 &&
-    pingMs <= 90 &&
-    jitterMs <= 25 &&
-    packetLossPct <= 1
+    downloadMbps >= 10.0 && uploadMbps >= 4.0 && pingMs > 0 && pingMs <= 60.0
       ? 4
-      : downloadMbps >= 3 && uploadMbps >= 1.5 && pingMs <= 150 && jitterMs <= 45
+      : downloadMbps >= 4.0 && uploadMbps >= 1.5 && pingMs > 0 && pingMs <= 120.0
         ? 3
         : downloadMbps >= 1.5 && uploadMbps >= 0.8
           ? 2
           : 1;
-  const conferencingVerdict = [
-    "Unstable",
-    "Audio-first",
-    "Reliable",
-    "Crystal clear",
-  ][conferencingScore - 1];
+  const conferencingVerdict = ["Unstable", "Audio-first", "Reliable", "Crystal clear"][conferencingScore - 1];
 
-  // Online gaming -- latency, jitter and loss dominate.
+  // 3. Online gaming -- Excellent: <= 35ms, Good: <= 80ms, Fair: <= 150ms
   const gamingScore: 1 | 2 | 3 | 4 =
-    pingMs <= 40 && jitterMs <= 12 && packetLossPct <= 0.5
+    pingMs > 0 && pingMs <= 35.0
       ? 4
-      : pingMs <= 80 && jitterMs <= 25 && packetLossPct <= 1.5
+      : pingMs > 0 && pingMs <= 80.0
         ? 3
-        : pingMs <= 150 && packetLossPct <= 4
+        : pingMs > 0 && pingMs <= 150.0
           ? 2
           : 1;
-  const gamingVerdict = ["Laggy", "Casual", "Responsive", "Competitive"][
-    gamingScore - 1
-  ];
+  const gamingVerdict = ["Laggy", "Casual", "Responsive", "Competitive"][gamingScore - 1];
 
-  // Video streaming -- download bandwidth defines the resolution ceiling.
+  // 4. Video / 4K streaming -- Excellent: >= 25.0, Good: >= 8.0, Fair: >= 3.0
   const streamingScore: 1 | 2 | 3 | 4 =
-    downloadMbps >= 25
+    downloadMbps >= 25.0 ? 4 : downloadMbps >= 8.0 ? 3 : downloadMbps >= 3.0 ? 2 : 1;
+  const streamingVerdict = ["SD only", "HD ready", "Full HD", "4K ready"][streamingScore - 1];
+
+  // 5. Music Stream -- Excellent: >= 1.5, Good: >= 0.5, Fair: >= 0.2
+  const musicScore: 1 | 2 | 3 | 4 =
+    downloadMbps >= 1.5 ? 4 : downloadMbps >= 0.5 ? 3 : downloadMbps >= 0.2 ? 2 : 1;
+  const musicVerdict = ["Buffering", "Basic", "Standard", "High quality"][musicScore - 1];
+
+  // 6. Smart Work -- Excellent: >= 20D, >= 8U. Good: >= 8D, >= 2.5U. Fair: >= 3D, >= 1.0U
+  const workScore: 1 | 2 | 3 | 4 =
+    downloadMbps >= 20.0 && uploadMbps >= 8.0
       ? 4
-      : downloadMbps >= 12
+      : downloadMbps >= 8.0 && uploadMbps >= 2.5
         ? 3
-        : downloadMbps >= 4
+        : downloadMbps >= 3.0 && uploadMbps >= 1.0
           ? 2
           : 1;
-  const streamingVerdict = ["SD only", "HD ready", "Full HD", "4K ready"][
-    streamingScore - 1
-  ];
+  const workVerdict = ["Limited", "Basic", "Good", "Seamless"][workScore - 1];
 
   return [
     {
@@ -449,11 +536,27 @@ export function rateActivities(results: SpeedTestResults): ActivityRating[] {
     },
     {
       id: "streaming",
-      label: "Video streaming",
+      label: "4K Streaming",
       verdict: streamingVerdict,
-      detail: "Highest resolution your speed can sustain.",
+      detail: "Highest resolution streaming without buffering.",
       score: streamingScore,
       tone: toneForScore(streamingScore),
+    },
+    {
+      id: "music",
+      label: "Music streaming",
+      verdict: musicVerdict,
+      detail: "Lag-free audio streaming in high quality.",
+      score: musicScore,
+      tone: toneForScore(musicScore),
+    },
+    {
+      id: "work",
+      label: "Smart work",
+      verdict: workVerdict,
+      detail: "Reliable file transfers, VPNs and telecommuting.",
+      score: workScore,
+      tone: toneForScore(workScore),
     },
   ];
 }
