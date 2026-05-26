@@ -175,8 +175,11 @@ export default function Grainient({
     let cancelled = false;
     let animationFrame = 0;
     let resizeObserver: ResizeObserver | null = null;
+    let intersectionObserver: IntersectionObserver | null = null;
+    let motionQuery: MediaQueryList | null = null;
     let canvas: HTMLCanvasElement | null = null;
     let loseContext: (() => void) | undefined;
+    let removeRuntimeListeners: (() => void) | undefined;
 
     const run = async () => {
       try {
@@ -190,7 +193,7 @@ export default function Grainient({
           webgl: 2,
           alpha: true,
           antialias: false,
-          dpr: Math.min(window.devicePixelRatio || 1, 2),
+          dpr: Math.min(window.devicePixelRatio || 1, 1.5),
         });
 
         const oglGl = renderer.gl;
@@ -233,6 +236,10 @@ export default function Grainient({
         });
 
         const mesh = new Mesh(oglGl, { geometry, program });
+        motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+        let reduceMotion = motionQuery.matches;
+        let inViewport = true;
+        const start = performance.now();
 
         const setSize = () => {
           const rect = container.getBoundingClientRect();
@@ -245,18 +252,87 @@ export default function Grainient({
           renderer.render({ scene: mesh });
         };
 
+        const shouldAnimate = () =>
+          !cancelled &&
+          !reduceMotion &&
+          inViewport &&
+          document.visibilityState === "visible";
+
+        const renderAt = (time: number) => {
+          program.uniforms.iTime.value = (time - start) * 0.001;
+          renderer.render({ scene: mesh });
+        };
+
+        const stopLoop = () => {
+          if (!animationFrame) {
+            return;
+          }
+
+          window.cancelAnimationFrame(animationFrame);
+          animationFrame = 0;
+        };
+
+        const loop = (time: number) => {
+          renderAt(time);
+
+          if (shouldAnimate()) {
+            animationFrame = window.requestAnimationFrame(loop);
+          } else {
+            animationFrame = 0;
+          }
+        };
+
+        const startLoop = () => {
+          if (animationFrame || cancelled) {
+            return;
+          }
+
+          if (shouldAnimate()) {
+            animationFrame = window.requestAnimationFrame(loop);
+          } else {
+            renderAt(performance.now());
+          }
+        };
+
+        const handleMotionPreferenceChange = (event: MediaQueryListEvent) => {
+          reduceMotion = event.matches;
+
+          if (reduceMotion) {
+            stopLoop();
+            renderAt(performance.now());
+            return;
+          }
+
+          startLoop();
+        };
+
+        const handleVisibilityChange = () => {
+          if (shouldAnimate()) {
+            startLoop();
+          } else {
+            stopLoop();
+          }
+        };
+
         resizeObserver = new ResizeObserver(setSize);
         resizeObserver.observe(container);
         setSize();
 
-        const start = performance.now();
-        const loop = (time: number) => {
-          program.uniforms.iTime.value = (time - start) * 0.001;
-          renderer.render({ scene: mesh });
-          animationFrame = window.requestAnimationFrame(loop);
-        };
+        if ("IntersectionObserver" in window) {
+          intersectionObserver = new IntersectionObserver(([entry]) => {
+            inViewport = entry.isIntersecting;
+            handleVisibilityChange();
+          });
+          intersectionObserver.observe(container);
+        }
 
-        animationFrame = window.requestAnimationFrame(loop);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        motionQuery.addEventListener("change", handleMotionPreferenceChange);
+        removeRuntimeListeners = () => {
+          document.removeEventListener("visibilitychange", handleVisibilityChange);
+          motionQuery?.removeEventListener("change", handleMotionPreferenceChange);
+        };
+        startLoop();
       } catch {
         // Keep the fallback gradients from the parent surface if WebGL is unavailable.
       }
@@ -268,6 +344,8 @@ export default function Grainient({
       cancelled = true;
       window.cancelAnimationFrame(animationFrame);
       resizeObserver?.disconnect();
+      intersectionObserver?.disconnect();
+      removeRuntimeListeners?.();
 
       if (canvas?.parentNode === container) {
         container.removeChild(canvas);

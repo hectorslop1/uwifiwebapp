@@ -19,6 +19,8 @@ import {
 
 import { useMobileNav } from "./mobile-nav-context";
 
+const PREMIUM_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+
 const navigation = [
   { label: "Dashboard", href: "/overview", icon: House },
   { label: "Gateway", href: "/gateway", icon: Router },
@@ -55,7 +57,7 @@ function SidebarItem({
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
       className={cx(
-        "group relative flex items-center overflow-hidden rounded-[1.35rem] border transition-all duration-200 hover:-translate-y-0.5",
+        "group relative flex items-center overflow-hidden rounded-[1.35rem] border transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0",
         expanded
           ? "gap-3.5 px-4 py-4"
           : "justify-center px-2 py-3.5",
@@ -66,7 +68,7 @@ function SidebarItem({
     >
       <span
         className={cx(
-          "flex shrink-0 items-center justify-center rounded-[0.9rem] border transition-colors duration-200",
+          "flex shrink-0 items-center justify-center rounded-[0.9rem] border transition-[background-color,border-color,color,box-shadow] duration-200 ease-out motion-reduce:transition-none",
           expanded ? "h-9 w-9" : "h-10 w-10",
           active
             ? "border-[#dff3e3] bg-[linear-gradient(180deg,rgba(241,251,243,0.96),rgba(231,248,235,0.92))] text-[#34c43b] shadow-[0_8px_20px_rgba(140,199,142,0.18),inset_0_1px_0_rgba(255,255,255,0.9)]"
@@ -78,15 +80,16 @@ function SidebarItem({
 
       <span
         className={cx(
-          "min-w-0 overflow-hidden whitespace-nowrap text-[0.95rem] font-medium tracking-[-0.03em] transition-all duration-150 ease-out",
+          "min-w-0 overflow-hidden whitespace-nowrap text-[0.95rem] font-medium tracking-[-0.03em] transition-[max-width,opacity,transform] duration-200 motion-reduce:transition-none",
           expanded ? "max-w-[10rem] translate-x-0 opacity-100" : "max-w-0 -translate-x-1 opacity-0",
         )}
+        style={{ transitionTimingFunction: PREMIUM_EASE }}
       >
         {label}
       </span>
 
       {!expanded ? (
-        <span className="theme-sidebar-tooltip pointer-events-none absolute left-[calc(100%+0.85rem)] top-1/2 z-30 -translate-y-1/2 rounded-[0.95rem] border px-3 py-2 text-[0.82rem] font-medium tracking-[-0.02em] whitespace-nowrap opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100">
+        <span className="theme-sidebar-tooltip pointer-events-none absolute left-[calc(100%+0.85rem)] top-1/2 z-30 -translate-x-1 -translate-y-1/2 rounded-[0.95rem] border px-3 py-2 text-[0.82rem] font-medium tracking-[-0.02em] whitespace-nowrap opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none">
           {label}
         </span>
       ) : null}
@@ -139,31 +142,26 @@ function SidebarContent({
           disabled={isLoggingOut}
           aria-label={!expanded ? "Log out" : undefined}
           className={cx(
-            "theme-sidebar-item-idle group relative flex w-full items-center rounded-[1.3rem] text-left font-medium tracking-[-0.03em] text-ink-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(249,253,249,0.94),rgba(237,246,239,0.82))] hover:text-ink hover:shadow-[0_18px_30px_rgba(183,206,185,0.18),inset_0_1px_0_rgba(255,255,255,0.94)]",
+            "theme-sidebar-item-idle group relative flex w-full items-center rounded-[1.3rem] text-left font-medium tracking-[-0.03em] text-ink-soft transition-[background-color,box-shadow,color,transform] duration-200 ease-out hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(249,253,249,0.94),rgba(237,246,239,0.82))] hover:text-ink hover:shadow-[0_18px_30px_rgba(183,206,185,0.18),inset_0_1px_0_rgba(255,255,255,0.94)] motion-reduce:transition-none motion-reduce:hover:translate-y-0",
             expanded ? "gap-3.5 px-4 py-3.5 text-[0.95rem]" : "justify-center px-2 py-3.5 text-[0.95rem]"
           )}
         >
-          <span className="theme-sidebar-icon-idle flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-all duration-200 group-hover:bg-[linear-gradient(180deg,rgba(245,252,246,0.98),rgba(235,247,237,0.94))] group-hover:text-success group-hover:shadow-[0_10px_18px_rgba(168,201,171,0.14)]">
+          <span className="theme-sidebar-icon-idle flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-[background-color,box-shadow,color] duration-200 ease-out group-hover:bg-[linear-gradient(180deg,rgba(245,252,246,0.98),rgba(235,247,237,0.94))] group-hover:text-success group-hover:shadow-[0_10px_18px_rgba(168,201,171,0.14)] motion-reduce:transition-none">
             <LogOut size={19} strokeWidth={1.8} />
           </span>
 
-          <AnimatePresence initial={false}>
-            {expanded ? (
-              <motion.span
-                key="logout-label"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.14, ease: "easeOut" }}
-                className="whitespace-nowrap"
-              >
-                {isLoggingOut ? "Logging out..." : "Log out"}
-              </motion.span>
-            ) : null}
-          </AnimatePresence>
+          <span
+            className={cx(
+              "overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 motion-reduce:transition-none",
+              expanded ? "max-w-[10rem] translate-x-0 opacity-100" : "max-w-0 -translate-x-1 opacity-0",
+            )}
+            style={{ transitionTimingFunction: PREMIUM_EASE }}
+          >
+            {isLoggingOut ? "Logging out..." : "Log out"}
+          </span>
 
           {!expanded ? (
-            <span className="theme-sidebar-tooltip pointer-events-none absolute left-[calc(100%+0.85rem)] top-1/2 z-30 -translate-y-1/2 rounded-[0.95rem] border px-3 py-2 text-[0.82rem] font-medium tracking-[-0.02em] whitespace-nowrap opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100">
+            <span className="theme-sidebar-tooltip pointer-events-none absolute left-[calc(100%+0.85rem)] top-1/2 z-30 -translate-x-1 -translate-y-1/2 rounded-[0.95rem] border px-3 py-2 text-[0.82rem] font-medium tracking-[-0.02em] whitespace-nowrap opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none">
               {isLoggingOut ? "Logging out..." : "Log out"}
             </span>
           ) : null}
@@ -179,15 +177,7 @@ export function SidebarRail() {
   const { mobileNavOpen, setMobileNavOpen, closeMobileNav } = useMobileNav();
   const [desktopOpen, setDesktopOpen] = useState(false);
   const [isLoggingOut, startLogoutTransition] = useTransition();
-  const [isDesktopAnimating, setIsDesktopAnimating] = useState(false);
   const portalTarget = typeof document === "undefined" ? null : document.body;
-
-  const layoutSpring = {
-    type: "spring",
-    stiffness: 460,
-    damping: 50,
-    mass: 1.05,
-  } as const;
 
   const performLogout = async () => {
     setMobileNavOpen(false);
@@ -237,15 +227,11 @@ export function SidebarRail() {
   return (
     <>
       <motion.div
-        layout
-        transition={{ layout: layoutSpring }}
-        onLayoutAnimationStart={() => setIsDesktopAnimating(true)}
-        onLayoutAnimationComplete={() => setIsDesktopAnimating(false)}
-        style={{ willChange: "transform" }}
         className={cx(
-          "relative hidden shrink-0 lg:sticky lg:top-[5rem] lg:block lg:h-[calc(100dvh-5rem)] transform-gpu",
+          "relative hidden shrink-0 overflow-visible transition-[width] duration-300 motion-reduce:transition-none lg:sticky lg:top-[5rem] lg:block lg:h-[calc(100dvh-5rem)]",
           desktopOpen ? "w-[232px]" : "w-[92px]",
         )}
+        style={{ transitionTimingFunction: PREMIUM_EASE }}
       >
         <aside
           onMouseEnter={() => setDesktopOpen(true)}
@@ -257,9 +243,9 @@ export function SidebarRail() {
             }
           }}
           className={cx(
-            "theme-sidebar-rail z-20 flex h-full min-h-0 flex-col border-r border-line/25 bg-white/12 px-3 py-4 transform-gpu",
-            isDesktopAnimating ? "backdrop-blur-none" : "backdrop-blur-xl",
+            "theme-sidebar-rail relative z-20 flex h-full w-full min-h-0 flex-col overflow-hidden border-r border-line/25 bg-white/12 px-3 py-4 shadow-[0_24px_52px_rgba(177,184,196,0.08)] backdrop-blur-xl transition-[box-shadow] duration-300 motion-reduce:transition-none",
           )}
+          style={{ transitionTimingFunction: PREMIUM_EASE }}
         >
           <SidebarContent
             expanded={desktopOpen}

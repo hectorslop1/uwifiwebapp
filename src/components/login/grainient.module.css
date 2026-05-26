@@ -2,4 +2,6 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
+  contain: layout paint size;
+  isolation: isolate;
 }

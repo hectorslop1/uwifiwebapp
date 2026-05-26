@@ -4,7 +4,6 @@ import { useSearchParams } from "next/navigation";
 import { useActionState, useMemo, useState } from "react";
 import { Eye, EyeOff, Radio, Receipt, Router, ShieldCheck } from "lucide-react";
 
-import DotGrid from "@/src/components/login/dot-grid";
 import Grainient from "@/src/components/login/grainient";
 import { UwifiBrandTile } from "@/src/components/layout/uwifi-brand";
 import { AuroraText } from "@/src/components/ui/aurora-text";
@@ -343,17 +342,6 @@ export function LoginShell() {
             centerX={0.03}
             centerY={0}
             zoom={0.96}
-          />
-          <DotGrid
-            className="absolute inset-0 opacity-85"
-            dotSize={8}
-            gap={18}
-            baseColor="#7e57c2"
-            activeColor="#81c784"
-            proximity={168}
-            shockRadius={190}
-            shockStrength={7.5}
-            resistance={0.84}
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,13,0.06)_0%,rgba(20,15,37,0.22)_40%,rgba(11,10,24,0.72)_100%)]" />
           <div className="absolute inset-y-0 left-0 w-24 bg-[linear-gradient(90deg,rgba(11,10,24,0.26),transparent)] lg:w-32" />
