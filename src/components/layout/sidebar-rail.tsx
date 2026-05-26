@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useTransition } from "react";
 import { createPortal } from "react-dom";
 import {
   FileText,
@@ -41,6 +41,7 @@ function SidebarItem({
   icon: Icon,
   active,
   expanded,
+  collapsible = false,
   onNavigate,
 }: {
   href: string;
@@ -48,6 +49,7 @@ function SidebarItem({
   icon: typeof House;
   active: boolean;
   expanded: boolean;
+  collapsible?: boolean;
   onNavigate?: () => void;
 }) {
   return (
@@ -60,6 +62,8 @@ function SidebarItem({
         "group relative flex items-center overflow-hidden rounded-[1.35rem] border transition-[border-color,background-color,box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0",
         expanded
           ? "gap-3.5 px-4 py-4"
+          : collapsible
+          ? "justify-center px-2 py-3.5 group-hover/sidebar:justify-start group-hover/sidebar:gap-3.5 group-hover/sidebar:px-4 group-hover/sidebar:py-4 group-focus-within/sidebar:justify-start group-focus-within/sidebar:gap-3.5 group-focus-within/sidebar:px-4 group-focus-within/sidebar:py-4"
           : "justify-center px-2 py-3.5",
         active
           ? "theme-control-active border-white/90 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(244,247,244,0.9))] text-ink shadow-[0_22px_46px_rgba(184,191,179,0.2),0_8px_18px_rgba(208,214,205,0.16),inset_0_1px_0_rgba(255,255,255,0.96)]"
@@ -69,7 +73,11 @@ function SidebarItem({
       <span
         className={cx(
           "flex shrink-0 items-center justify-center rounded-[0.9rem] border transition-[background-color,border-color,color,box-shadow] duration-200 ease-out motion-reduce:transition-none",
-          expanded ? "h-9 w-9" : "h-10 w-10",
+          expanded
+            ? "h-9 w-9"
+            : collapsible
+            ? "h-10 w-10 group-hover/sidebar:h-9 group-hover/sidebar:w-9 group-focus-within/sidebar:h-9 group-focus-within/sidebar:w-9"
+            : "h-10 w-10",
           active
             ? "border-[#dff3e3] bg-[linear-gradient(180deg,rgba(241,251,243,0.96),rgba(231,248,235,0.92))] text-[#34c43b] shadow-[0_8px_20px_rgba(140,199,142,0.18),inset_0_1px_0_rgba(255,255,255,0.9)]"
             : "theme-sidebar-icon-idle border-white/0 bg-white/0 text-ink-muted group-hover:border-[#dff1e2] group-hover:bg-[linear-gradient(180deg,rgba(245,252,246,0.98),rgba(235,247,237,0.94))] group-hover:text-success group-hover:shadow-[0_10px_18px_rgba(168,201,171,0.14)]"
@@ -81,7 +89,11 @@ function SidebarItem({
       <span
         className={cx(
           "min-w-0 overflow-hidden whitespace-nowrap text-[0.95rem] font-medium tracking-[-0.03em] transition-[max-width,opacity,transform] duration-200 motion-reduce:transition-none",
-          expanded ? "max-w-[10rem] translate-x-0 opacity-100" : "max-w-0 -translate-x-1 opacity-0",
+          expanded
+            ? "max-w-[10rem] translate-x-0 opacity-100"
+            : collapsible
+            ? "max-w-0 -translate-x-1 opacity-0 group-hover/sidebar:max-w-[10rem] group-hover/sidebar:translate-x-0 group-hover/sidebar:opacity-100 group-focus-within/sidebar:max-w-[10rem] group-focus-within/sidebar:translate-x-0 group-focus-within/sidebar:opacity-100"
+            : "max-w-0 -translate-x-1 opacity-0",
         )}
         style={{ transitionTimingFunction: PREMIUM_EASE }}
       >
@@ -89,7 +101,13 @@ function SidebarItem({
       </span>
 
       {!expanded ? (
-        <span className="theme-sidebar-tooltip pointer-events-none absolute left-[calc(100%+0.85rem)] top-1/2 z-30 -translate-x-1 -translate-y-1/2 rounded-[0.95rem] border px-3 py-2 text-[0.82rem] font-medium tracking-[-0.02em] whitespace-nowrap opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none">
+        <span
+          className={cx(
+            "theme-sidebar-tooltip pointer-events-none absolute left-[calc(100%+0.85rem)] top-1/2 z-30 -translate-x-1 -translate-y-1/2 rounded-[0.95rem] border px-3 py-2 text-[0.82rem] font-medium tracking-[-0.02em] whitespace-nowrap opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none",
+            collapsible &&
+              "group-hover/sidebar:opacity-0 group-focus-within/sidebar:opacity-0",
+          )}
+        >
           {label}
         </span>
       ) : null}
@@ -103,12 +121,14 @@ function SidebarContent({
   onNavigate,
   onLogout,
   isLoggingOut = false,
+  collapsible = false,
 }: {
   expanded: boolean;
   pathname: string;
   onNavigate?: () => void;
   onLogout?: () => void;
   isLoggingOut?: boolean;
+  collapsible?: boolean;
 }) {
   const currentPath = useMemo(() => pathname.replace(/\/$/, "") || "/", [pathname]);
 
@@ -129,6 +149,7 @@ function SidebarContent({
               icon={item.icon}
               active={active}
               expanded={expanded}
+              collapsible={collapsible}
               onNavigate={onNavigate}
             />
           );
@@ -143,7 +164,11 @@ function SidebarContent({
           aria-label={!expanded ? "Log out" : undefined}
           className={cx(
             "theme-sidebar-item-idle group relative flex w-full items-center rounded-[1.3rem] text-left font-medium tracking-[-0.03em] text-ink-soft transition-[background-color,box-shadow,color,transform] duration-200 ease-out hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,rgba(249,253,249,0.94),rgba(237,246,239,0.82))] hover:text-ink hover:shadow-[0_18px_30px_rgba(183,206,185,0.18),inset_0_1px_0_rgba(255,255,255,0.94)] motion-reduce:transition-none motion-reduce:hover:translate-y-0",
-            expanded ? "gap-3.5 px-4 py-3.5 text-[0.95rem]" : "justify-center px-2 py-3.5 text-[0.95rem]"
+            expanded
+              ? "gap-3.5 px-4 py-3.5 text-[0.95rem]"
+              : collapsible
+              ? "justify-center px-2 py-3.5 text-[0.95rem] group-hover/sidebar:justify-start group-hover/sidebar:gap-3.5 group-hover/sidebar:px-4 group-hover/sidebar:py-3.5 group-focus-within/sidebar:justify-start group-focus-within/sidebar:gap-3.5 group-focus-within/sidebar:px-4 group-focus-within/sidebar:py-3.5"
+              : "justify-center px-2 py-3.5 text-[0.95rem]"
           )}
         >
           <span className="theme-sidebar-icon-idle flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-muted transition-[background-color,box-shadow,color] duration-200 ease-out group-hover:bg-[linear-gradient(180deg,rgba(245,252,246,0.98),rgba(235,247,237,0.94))] group-hover:text-success group-hover:shadow-[0_10px_18px_rgba(168,201,171,0.14)] motion-reduce:transition-none">
@@ -153,7 +178,11 @@ function SidebarContent({
           <span
             className={cx(
               "overflow-hidden whitespace-nowrap transition-[max-width,opacity,transform] duration-200 motion-reduce:transition-none",
-              expanded ? "max-w-[10rem] translate-x-0 opacity-100" : "max-w-0 -translate-x-1 opacity-0",
+              expanded
+                ? "max-w-[10rem] translate-x-0 opacity-100"
+                : collapsible
+                ? "max-w-0 -translate-x-1 opacity-0 group-hover/sidebar:max-w-[10rem] group-hover/sidebar:translate-x-0 group-hover/sidebar:opacity-100 group-focus-within/sidebar:max-w-[10rem] group-focus-within/sidebar:translate-x-0 group-focus-within/sidebar:opacity-100"
+                : "max-w-0 -translate-x-1 opacity-0",
             )}
             style={{ transitionTimingFunction: PREMIUM_EASE }}
           >
@@ -161,7 +190,13 @@ function SidebarContent({
           </span>
 
           {!expanded ? (
-            <span className="theme-sidebar-tooltip pointer-events-none absolute left-[calc(100%+0.85rem)] top-1/2 z-30 -translate-x-1 -translate-y-1/2 rounded-[0.95rem] border px-3 py-2 text-[0.82rem] font-medium tracking-[-0.02em] whitespace-nowrap opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none">
+            <span
+              className={cx(
+                "theme-sidebar-tooltip pointer-events-none absolute left-[calc(100%+0.85rem)] top-1/2 z-30 -translate-x-1 -translate-y-1/2 rounded-[0.95rem] border px-3 py-2 text-[0.82rem] font-medium tracking-[-0.02em] whitespace-nowrap opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none",
+                collapsible &&
+                  "group-hover/sidebar:opacity-0 group-focus-within/sidebar:opacity-0",
+              )}
+            >
               {isLoggingOut ? "Logging out..." : "Log out"}
             </span>
           ) : null}
@@ -175,7 +210,6 @@ export function SidebarRail() {
   const pathname = usePathname();
   const router = useRouter();
   const { mobileNavOpen, setMobileNavOpen, closeMobileNav } = useMobileNav();
-  const [desktopOpen, setDesktopOpen] = useState(false);
   const [isLoggingOut, startLogoutTransition] = useTransition();
   const portalTarget = typeof document === "undefined" ? null : document.body;
 
@@ -226,35 +260,25 @@ export function SidebarRail() {
 
   return (
     <>
-      <motion.div
-        className={cx(
-          "relative hidden shrink-0 overflow-visible transition-[width] duration-300 motion-reduce:transition-none lg:sticky lg:top-[5rem] lg:block lg:h-[calc(100dvh-5rem)]",
-          desktopOpen ? "w-[232px]" : "w-[92px]",
-        )}
+      <div
+        className="group/sidebar relative hidden w-[92px] shrink-0 overflow-visible transition-[width] duration-[360ms] hover:w-[232px] focus-within:w-[232px] motion-reduce:transition-none lg:sticky lg:top-[5rem] lg:block lg:h-[calc(100dvh-5rem)]"
         style={{ transitionTimingFunction: PREMIUM_EASE }}
       >
         <aside
-          onMouseEnter={() => setDesktopOpen(true)}
-          onMouseLeave={() => setDesktopOpen(false)}
-          onFocusCapture={() => setDesktopOpen(true)}
-          onBlurCapture={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-              setDesktopOpen(false);
-            }
-          }}
           className={cx(
             "theme-sidebar-rail relative z-20 flex h-full w-full min-h-0 flex-col overflow-hidden border-r border-line/25 bg-white/12 px-3 py-4 shadow-[0_24px_52px_rgba(177,184,196,0.08)] backdrop-blur-xl transition-[box-shadow] duration-300 motion-reduce:transition-none",
           )}
           style={{ transitionTimingFunction: PREMIUM_EASE }}
         >
           <SidebarContent
-            expanded={desktopOpen}
+            expanded={false}
+            collapsible
             pathname={pathname}
             onLogout={handleLogout}
             isLoggingOut={isLoggingOut}
           />
         </aside>
-      </motion.div>
+      </div>
 
       {portalTarget
         ? createPortal(
