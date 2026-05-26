@@ -426,7 +426,7 @@ export async function runSpeedTest(
 
 // --- Activity readiness ------------------------------------------------------
 
-export type ActivityId = "browsing" | "conferencing" | "gaming" | "streaming" | "music" | "work";
+export type ActivityId = "browsing" | "conferencing" | "gaming" | "streaming";
 
 export type ActivityTone = "success" | "brand" | "warning" | "danger";
 
@@ -493,22 +493,6 @@ export function rateActivities(results: SpeedTestResults): ActivityRating[] {
     downloadMbps >= 25.0 ? 4 : downloadMbps >= 8.0 ? 3 : downloadMbps >= 3.0 ? 2 : 1;
   const streamingVerdict = ["SD only", "HD ready", "Full HD", "4K ready"][streamingScore - 1];
 
-  // 5. Music Stream -- Excellent: >= 1.5, Good: >= 0.5, Fair: >= 0.2
-  const musicScore: 1 | 2 | 3 | 4 =
-    downloadMbps >= 1.5 ? 4 : downloadMbps >= 0.5 ? 3 : downloadMbps >= 0.2 ? 2 : 1;
-  const musicVerdict = ["Buffering", "Basic", "Standard", "High quality"][musicScore - 1];
-
-  // 6. Smart Work -- Excellent: >= 20D, >= 8U. Good: >= 8D, >= 2.5U. Fair: >= 3D, >= 1.0U
-  const workScore: 1 | 2 | 3 | 4 =
-    downloadMbps >= 20.0 && uploadMbps >= 8.0
-      ? 4
-      : downloadMbps >= 8.0 && uploadMbps >= 2.5
-        ? 3
-        : downloadMbps >= 3.0 && uploadMbps >= 1.0
-          ? 2
-          : 1;
-  const workVerdict = ["Limited", "Basic", "Good", "Seamless"][workScore - 1];
-
   return [
     {
       id: "browsing",
@@ -541,22 +525,6 @@ export function rateActivities(results: SpeedTestResults): ActivityRating[] {
       detail: "Highest resolution streaming without buffering.",
       score: streamingScore,
       tone: toneForScore(streamingScore),
-    },
-    {
-      id: "music",
-      label: "Music streaming",
-      verdict: musicVerdict,
-      detail: "Lag-free audio streaming in high quality.",
-      score: musicScore,
-      tone: toneForScore(musicScore),
-    },
-    {
-      id: "work",
-      label: "Smart work",
-      verdict: workVerdict,
-      detail: "Reliable file transfers, VPNs and telecommuting.",
-      score: workScore,
-      tone: toneForScore(workScore),
     },
   ];
 }

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 
 import "./globals.css";
 
@@ -20,27 +19,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className="h-full antialiased"
     >
-      <body className="flex min-h-full flex-col">
-        <Script id="theme-init" strategy="beforeInteractive">
-          {`
-            try {
-              const storedTheme = window.localStorage.getItem("uwifi-theme");
-              const theme =
-                storedTheme === "dark"
-                  ? "dark"
-                  : storedTheme === "system"
-                    ? window.matchMedia("(prefers-color-scheme: dark)").matches
-                      ? "dark"
-                      : "light"
-                    : "light";
-              document.documentElement.dataset.theme = theme;
-            } catch (error) {
-              document.documentElement.dataset.theme = "light";
-            }
-          `}
-        </Script>
-        {children}
-      </body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }

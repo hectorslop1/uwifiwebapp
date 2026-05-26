@@ -10,7 +10,6 @@ import {
   Gamepad2,
   Gauge,
   Globe,
-  Loader2,
   MapPin,
   Play,
   RotateCcw,
@@ -20,8 +19,6 @@ import {
   Video,
   Waves,
   Wifi,
-  Headphones,
-  Laptop,
   Tv,
 } from "lucide-react";
 
@@ -77,8 +74,6 @@ const ACTIVITY_ICONS: Record<ActivityId, LucideIcon> = {
   conferencing: Video,
   gaming: Gamepad2,
   streaming: Tv,
-  music: Headphones,
-  work: Laptop,
 };
 
 
@@ -160,11 +155,11 @@ function StepChip({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-[0.9rem] border px-2.5 py-[0.45rem] transition-all duration-300",
+        "flex items-center gap-2 rounded-[0.9rem] border px-2.5 py-[0.35rem] transition-all duration-300",
         status === "active" &&
-          "border-brand/12 bg-[linear-gradient(180deg,rgba(248,243,255,0.98),rgba(242,236,252,0.94))] shadow-[0_10px_24px_rgba(106,2,197,0.08)]",
+          "border-[rgba(104,44,208,0.12)] bg-[linear-gradient(180deg,rgba(248,243,255,0.98),rgba(242,236,252,0.94))] shadow-[0_10px_24px_rgba(104,44,208,0.08)]",
         status === "done" &&
-          "border-success/12 bg-[linear-gradient(180deg,rgba(247,255,248,0.98),rgba(239,251,242,0.94))] shadow-[0_10px_24px_rgba(2,189,48,0.06)]",
+          "border-[rgba(105,196,95,0.14)] bg-[linear-gradient(180deg,rgba(248,255,247,0.98),rgba(241,251,240,0.94))] shadow-[0_10px_24px_rgba(105,196,95,0.07)]",
         status === "pending" &&
           "border-line/25 bg-[rgba(248,249,251,0.86)] opacity-90",
       )}
@@ -173,9 +168,9 @@ function StepChip({
         className={cn(
           "flex h-[1.2rem] w-[1.2rem] shrink-0 items-center justify-center rounded-full border transition-colors duration-300",
           status === "active" &&
-            "border-brand/12 bg-brand-soft text-brand shadow-[0_0_0_4px_rgba(106,2,197,0.07)]",
+            "border-[rgba(104,44,208,0.14)] bg-[rgba(104,44,208,0.10)] text-[#682cd0] shadow-[0_0_0_4px_rgba(104,44,208,0.07)]",
           status === "done" &&
-            "border-success/12 bg-success-soft text-success shadow-[0_0_0_4px_rgba(2,189,48,0.07)]",
+            "border-[rgba(105,196,95,0.16)] bg-[rgba(105,196,95,0.12)] text-[#3f8a36] shadow-[0_0_0_4px_rgba(105,196,95,0.07)]",
           status === "pending" &&
             "border-line/40 bg-white/80 text-ink-faint",
         )}
@@ -183,7 +178,7 @@ function StepChip({
         {status === "done" ? (
           <Check size={11} strokeWidth={2.5} />
         ) : status === "active" ? (
-          <Loader2 size={11} strokeWidth={2.3} className="animate-spin" />
+          <span className="h-2 w-2 rounded-full bg-[#682cd0] shadow-[0_0_0_4px_rgba(104,44,208,0.12)]" />
         ) : (
           <Icon size={10} strokeWidth={2} />
         )}
@@ -191,7 +186,7 @@ function StepChip({
       <span
         className={cn(
           "min-w-0 flex-1 truncate text-[0.73rem] transition-colors duration-300",
-          status === "active" && "font-semibold text-brand",
+          status === "active" && "font-semibold text-[#682cd0]",
           status === "done" && "font-medium text-ink",
           status === "pending" && "font-medium text-ink-muted",
         )}
@@ -200,12 +195,12 @@ function StepChip({
       </span>
       {status === "active" ? (
         <span className="flex shrink-0 items-center gap-[3px]">
-          <span className="h-1 w-1 animate-bounce rounded-full bg-brand [animation-delay:-0.24s]" />
-          <span className="h-1 w-1 animate-bounce rounded-full bg-brand [animation-delay:-0.12s]" />
-          <span className="h-1 w-1 animate-bounce rounded-full bg-brand" />
+          <span className="h-1 w-1 animate-bounce rounded-full bg-[#682cd0] [animation-delay:-0.24s]" />
+          <span className="h-1 w-1 animate-bounce rounded-full bg-[#682cd0] [animation-delay:-0.12s]" />
+          <span className="h-1 w-1 animate-bounce rounded-full bg-[#682cd0]" />
         </span>
       ) : status === "done" ? (
-        <span className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-[0.08em] text-success">
+        <span className="shrink-0 text-[0.58rem] font-semibold uppercase tracking-[0.08em] text-[#3f8a36]">
           Done
         </span>
       ) : null}
@@ -230,12 +225,11 @@ function MetricCard({
 }>) {
   const accentClass =
     accent === "green"
-      ? "bg-success-soft text-success"
+      ? "bg-[rgba(105,196,95,0.13)] text-[#3f8a36]"
       : accent === "violet"
-        ? "bg-brand-soft text-brand"
+        ? "bg-[rgba(104,44,208,0.11)] text-[#682cd0]"
         : "bg-[#f3f4f6] text-ink-soft";
 
-  // Brand-exact glow: green #69c45f → rgb(105,196,95), purple #682cd0 → rgb(104,44,208)
   const glowClass =
     accent === "green"
       ? "bg-[radial-gradient(circle_at_top,rgba(105,196,95,0.12),transparent_70%)]"
@@ -246,7 +240,10 @@ function MetricCard({
   return (
     <SurfacePanel
       subtle
-      className="relative overflow-hidden p-3"
+      className={cn(
+        "relative overflow-hidden p-2.5",
+        compact ? "min-h-[3.45rem]" : "min-h-[4rem]",
+      )}
     >
       <div
         className={cn(
@@ -254,25 +251,30 @@ function MetricCard({
           glowClass,
         )}
       />
-      <div className="relative">
-        <div className="flex items-center gap-1.5">
+      <div
+        className={cn(
+          "relative",
+          compact && "flex h-full items-center justify-between gap-3",
+        )}
+      >
+        <div className="flex min-w-0 items-center gap-1.5">
           <span
             className={cn(
-              "flex h-5 w-5 shrink-0 items-center justify-center rounded-[0.45rem] border border-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]",
+              "flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-[0.45rem] border border-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]",
               accentClass,
             )}
           >
-            <Icon size={12} strokeWidth={2} />
+            <Icon size={11} strokeWidth={2} />
           </span>
           <span className="min-w-0 truncate text-[0.62rem] font-semibold uppercase tracking-[0.07em] text-ink-faint">
             {label}
           </span>
         </div>
-        <div className="mt-2 flex items-baseline gap-1">
+        <div className={cn("flex items-baseline gap-1", compact ? "shrink-0" : "mt-2")}>
           <span
             className={cn(
               "font-semibold leading-none tracking-[-0.045em] text-ink tabular-nums",
-              compact ? "text-[1.32rem]" : "text-[1.4rem]",
+              compact ? "text-[1.24rem]" : "text-[1.28rem]",
             )}
           >
             {value}
@@ -291,20 +293,43 @@ function MetricCard({
 const PENDING_ACTIVITIES: ReadonlyArray<{
   id: ActivityId;
   label: string;
-  detail: string;
 }> = [
-  { id: "browsing", label: "Web browsing", detail: "Pages, search and email load without waiting." },
-  { id: "conferencing", label: "Video conferencing", detail: "Group video calls stay sharp and in sync." },
-  { id: "gaming", label: "Online gaming", detail: "Low, steady latency for real-time play." },
-  { id: "streaming", label: "4K Streaming", detail: "Highest resolution streaming without buffering." },
-  { id: "music", label: "Music streaming", detail: "Lag-free audio streaming in high quality." },
-  { id: "work", label: "Smart work", detail: "Reliable file transfers, VPNs and telecommuting." },
+  { id: "browsing", label: "Web browsing" },
+  { id: "conferencing", label: "Video conferencing" },
+  { id: "gaming", label: "Online gaming" },
+  { id: "streaming", label: "4K Streaming" },
 ];
 
-function PendingActivityRow({ activity }: Readonly<{ activity: { id: ActivityId; label: string; detail: string } }>) {
+function ActivityMeter({
+  score,
+  tone,
+}: Readonly<{ score: 1 | 2 | 3 | 4; tone: "green" | "violet" | "neutral" }>) {
+  const activeClass =
+    tone === "green"
+      ? "bg-[#69c45f]"
+      : tone === "violet"
+        ? "bg-[#682cd0]"
+        : "bg-ink-faint/45";
+
+  return (
+    <span className="mt-1.5 flex gap-1">
+      {[1, 2, 3, 4].map((segment) => (
+        <span
+          key={segment}
+          className={cn(
+            "h-1.5 w-6 rounded-full transition-colors duration-300",
+            segment <= score ? activeClass : "bg-[rgba(15,23,42,0.06)]",
+          )}
+        />
+      ))}
+    </span>
+  );
+}
+
+function PendingActivityRow({ activity }: Readonly<{ activity: { id: ActivityId; label: string } }>) {
   const Icon = ACTIVITY_ICONS[activity.id];
   return (
-    <div className="flex items-center gap-3 py-[0.5rem] opacity-55 transition-all duration-300">
+    <div className="flex items-center gap-3 py-[0.6rem] opacity-60 transition-all duration-300">
       <span className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-[0.7rem] border border-line bg-white/70 text-ink-faint transition-all duration-300">
         <Icon size={15} strokeWidth={2} />
       </span>
@@ -312,9 +337,7 @@ function PendingActivityRow({ activity }: Readonly<{ activity: { id: ActivityId;
         <span className="block truncate text-[0.8rem] font-medium text-ink-muted">
           {activity.label}
         </span>
-        <span className="block text-[0.66rem] text-ink-faint mt-0.5 truncate">
-          {activity.detail}
-        </span>
+        <ActivityMeter score={1} tone="neutral" />
       </div>
       <span className="flex shrink-0 items-center gap-1.5 rounded-pill border border-line bg-white/70 px-2.5 py-1 text-[0.7rem] font-semibold text-ink-faint transition-all duration-300">
         Pending
@@ -325,33 +348,31 @@ function PendingActivityRow({ activity }: Readonly<{ activity: { id: ActivityId;
 
 function ActivityRow({ rating }: Readonly<{ rating: ActivityRating }>) {
   const Icon = ACTIVITY_ICONS[rating.id];
-  
-  // U-wifi brand-only tier styling. Green = excellent, purple = good, neutral = limited.
-  // Off-brand cyan/emerald/amber removed; red reserved for true error states elsewhere.
+
   const config = (() => {
     if (rating.score >= 4) {
       return {
-        // Excellent: brand green #69c45f with darker text for contrast on tinted bg
         iconClass: "text-[#3f8a36] bg-[rgba(105,196,95,0.12)] border-[rgba(105,196,95,0.20)]",
         pillClass: "text-[#3f8a36] bg-[rgba(105,196,95,0.12)] border-[rgba(105,196,95,0.18)]",
         verdictText: "Excellent",
         verdictIcon: Check,
+        meterTone: "green" as const,
       };
     } else if (rating.score === 3) {
       return {
-        // Good: brand purple #682cd0
         iconClass: "text-[#682cd0] bg-[rgba(104,44,208,0.10)] border-[rgba(104,44,208,0.20)]",
         pillClass: "text-[#682cd0] bg-[rgba(104,44,208,0.10)] border-[rgba(104,44,208,0.18)]",
         verdictText: "Good",
         verdictIcon: Check,
+        meterTone: "violet" as const,
       };
     } else {
-      // Limited / unsupported: neutral, no off-brand accent
       return {
         iconClass: "text-ink-soft bg-[rgba(15,23,42,0.04)] border-[rgba(15,23,42,0.06)]",
         pillClass: "text-ink-soft bg-[rgba(15,23,42,0.04)] border-[rgba(15,23,42,0.06)]",
-        verdictText: rating.verdict, // dynamic verdict from runner: "Laggy", "SD only", etc.
+        verdictText: rating.verdict,
         verdictIcon: Check,
+        meterTone: "neutral" as const,
       };
     }
   })();
@@ -359,7 +380,7 @@ function ActivityRow({ rating }: Readonly<{ rating: ActivityRating }>) {
   const VerdictIcon = config.verdictIcon;
 
   return (
-    <div className="flex items-center gap-3 py-[0.5rem] transition-all duration-300">
+    <div className="flex items-center gap-3 py-[0.6rem] transition-all duration-300">
       <span
         className={cn(
           "flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-[0.7rem] border shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] transition-all duration-300",
@@ -372,9 +393,7 @@ function ActivityRow({ rating }: Readonly<{ rating: ActivityRating }>) {
         <span className="block truncate text-[0.8rem] font-semibold leading-tight text-ink">
           {rating.label}
         </span>
-        <span className="block text-[0.66rem] text-ink-muted mt-0.5 truncate">
-          {rating.detail}
-        </span>
+        <ActivityMeter score={rating.score} tone={config.meterTone} />
       </div>
       <span
         className={cn(
@@ -694,16 +713,16 @@ export function SpeedTestShell({
                     subCaption={gauge.subCaption}
                     mode="technical"
                     status={dialStatus}
-                    frameClassName="relative mx-auto aspect-square w-full max-w-[12rem] sm:max-w-[13.5rem] lg:h-full lg:max-h-[14rem] lg:w-auto lg:max-w-full"
+                    frameClassName="relative mx-auto aspect-square w-full max-w-[11.5rem] sm:max-w-[12.5rem] lg:h-full lg:max-h-[12.75rem] lg:w-auto lg:max-w-full"
                   />
                 </div>
 
-                <div className="flex shrink-0 flex-col justify-center gap-2 sm:w-[13.5rem]">
+                <div className="flex shrink-0 flex-col justify-center gap-1.5 sm:w-[13.5rem]">
                   <button
                     type="button"
                     onClick={runTest}
                     disabled={isRunning}
-                    className="theme-cta inline-flex w-full items-center justify-center gap-1.5 rounded-[1rem] border px-5 py-2 text-[0.8rem] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+                    className="theme-cta inline-flex w-full items-center justify-center gap-1.5 rounded-[1rem] border px-5 py-1.5 text-[0.78rem] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
                   >
                     {stage === "done" || stage === "error" ? (
                       <RotateCcw size={14} strokeWidth={2} />
@@ -788,8 +807,8 @@ export function SpeedTestShell({
           ) : null}
 
           {isTechnical ? (
-            <SurfacePanel subtle className="shrink-0 p-3">
-              <div className="mb-1.5 flex items-center justify-between">
+            <SurfacePanel subtle className="shrink-0 p-2.5">
+              <div className="mb-1 flex items-center justify-between">
                 <SectionLabel>Connection trace</SectionLabel>
                 <span className="flex items-center gap-3">
                   <span className="inline-flex items-center gap-1.5 text-[0.68rem] font-medium text-[#3f8a36]">
@@ -811,7 +830,7 @@ export function SpeedTestShell({
                       ? "completed"
                       : "idle"
                 }
-                heightClass="h-[10.5rem]"
+                heightClass="h-[6rem]"
               />
             </SurfacePanel>
           ) : null}
@@ -829,13 +848,14 @@ export function SpeedTestShell({
                 </div>
               </div>
               {activities ? (
-                <span className="flex shrink-0 items-center gap-1.5 rounded-pill bg-success-soft px-2.5 py-1 text-[0.72rem] font-semibold text-success">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                <span className="flex shrink-0 items-center gap-1.5 rounded-pill bg-[rgba(105,196,95,0.13)] px-2.5 py-1 text-[0.72rem] font-semibold text-[#3f8a36]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#69c45f]" />
                   {readyCount} / {activities.length}
                 </span>
               ) : (
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.55rem] bg-[rgba(15,23,42,0.04)] text-ink-faint">
-                  <Wifi size={14} strokeWidth={1.8} />
+                <span className="flex shrink-0 items-center gap-1.5 rounded-pill bg-[rgba(15,23,42,0.04)] px-2.5 py-1 text-[0.72rem] font-semibold text-ink-faint">
+                  <Wifi size={12} strokeWidth={1.8} />
+                  0 / {PENDING_ACTIVITIES.length}
                 </span>
               )}
             </div>

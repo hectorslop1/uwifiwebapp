@@ -175,9 +175,9 @@ export function SpeedTestDial({
                 className={cn(
                   "relative inline-flex h-2.5 w-2.5 rounded-full",
                   caption === "Upload"
-                    ? "bg-brand"
+                    ? "bg-[#682cd0]"
                     : caption === "Download"
-                      ? "bg-success"
+                      ? "bg-[#69c45f]"
                       : "bg-ink-faint",
                 )}
               >
@@ -400,7 +400,7 @@ export function SpeedOverTimeChart({
 
   return (
     <div>
-      <div className="relative overflow-hidden rounded-[1.35rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(248,250,252,0.66))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+      <div className="relative overflow-hidden rounded-[1.35rem] border border-white/75 bg-[linear-gradient(180deg,rgba(255,255,255,0.82),rgba(248,250,252,0.66))] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
         <svg
           viewBox={`0 0 ${CHART_W} ${CHART_H}`}
           preserveAspectRatio="none"
@@ -602,15 +602,15 @@ export function SpeedOverTimeChart({
         ) : null}
 
         {!hasData ? (
-          <div className="absolute inset-0 flex items-center justify-center px-6">
-            <div className="rounded-[1.2rem] border border-line/20 bg-white/84 px-5 py-4 text-center shadow-[0_14px_30px_rgba(208,211,218,0.12)]">
-              <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[rgba(15,23,42,0.04)] text-ink-soft">
-                <Activity size={18} strokeWidth={1.9} />
+          <div className="absolute inset-0 flex items-center justify-center px-4">
+            <div className="rounded-[1.05rem] border border-line/20 bg-white/84 px-4 py-2.5 text-center shadow-[0_14px_30px_rgba(208,211,218,0.12)]">
+              <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(15,23,42,0.04)] text-ink-soft">
+                <Activity size={14} strokeWidth={1.9} />
               </span>
-              <div className="mt-3 text-[0.96rem] font-medium text-ink">
+              <div className="mt-2 text-[0.82rem] font-medium text-ink">
                 Connection trace will appear here
               </div>
-              <div className="mt-1 text-[0.82rem] leading-6 text-ink-muted">
+              <div className="mt-0.5 text-[0.68rem] leading-5 text-ink-muted">
                 Start a test to see live download and upload behavior.
               </div>
             </div>
@@ -618,7 +618,7 @@ export function SpeedOverTimeChart({
         ) : null}
       </div>
 
-      <div className="mt-2.5 flex items-center justify-between text-[0.68rem] font-medium text-ink-faint">
+      <div className="mt-1.5 flex items-center justify-between text-[0.66rem] font-medium text-ink-faint">
         <span>{hasData ? "0s" : "--"}</span>
         <span className="inline-flex items-center gap-3 tabular-nums">
           {downloadSamples.length > 0 ? (
