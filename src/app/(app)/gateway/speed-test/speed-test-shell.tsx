@@ -113,11 +113,11 @@ function formatLossPct(value: number | undefined) {
 
 function getInitialMode(): SpeedTestMode {
   if (typeof window === "undefined") {
-    return "technical";
+    return "simple";
   }
 
   const saved = window.localStorage.getItem(MODE_STORAGE_KEY);
-  return saved === "simple" || saved === "technical" ? saved : "technical";
+  return saved === "simple" || saved === "technical" ? saved : "simple";
 }
 
 function stepStatus(
@@ -303,13 +303,15 @@ const PENDING_ACTIVITIES: ReadonlyArray<{
 function ActivityMeter({
   score,
   tone,
-}: Readonly<{ score: 1 | 2 | 3 | 4; tone: "green" | "violet" | "neutral" }>) {
+}: Readonly<{ score: 1 | 2 | 3 | 4; tone: "green" | "violet" }>) {
   const activeClass =
     tone === "green"
       ? "bg-[#69c45f]"
-      : tone === "violet"
-        ? "bg-[#682cd0]"
-        : "bg-ink-faint/45";
+      : "bg-[#682cd0]";
+  const inactiveClass =
+    tone === "green"
+      ? "bg-[rgba(105,196,95,0.14)]"
+      : "bg-[rgba(104,44,208,0.12)]";
 
   return (
     <span className="mt-1.5 flex gap-1">
@@ -318,7 +320,7 @@ function ActivityMeter({
           key={segment}
           className={cn(
             "h-1.5 w-6 rounded-full transition-colors duration-300",
-            segment <= score ? activeClass : "bg-[rgba(15,23,42,0.06)]",
+            segment <= score ? activeClass : inactiveClass,
           )}
         />
       ))}
@@ -328,16 +330,25 @@ function ActivityMeter({
 
 function PendingActivityRow({ activity }: Readonly<{ activity: { id: ActivityId; label: string } }>) {
   const Icon = ACTIVITY_ICONS[activity.id];
+  const tone = activity.id === "browsing" || activity.id === "gaming" ? "green" : "violet";
+
   return (
     <div className="flex items-center gap-3 py-[0.6rem] opacity-60 transition-all duration-300">
-      <span className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-[0.7rem] border border-line bg-white/70 text-ink-faint transition-all duration-300">
+      <span
+        className={cn(
+          "flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-[0.7rem] border transition-all duration-300",
+          tone === "green"
+            ? "border-[rgba(105,196,95,0.14)] bg-[rgba(105,196,95,0.08)] text-[#3f8a36]"
+            : "border-[rgba(104,44,208,0.14)] bg-[rgba(104,44,208,0.08)] text-[#682cd0]",
+        )}
+      >
         <Icon size={15} strokeWidth={2} />
       </span>
       <div className="min-w-0 flex-1">
         <span className="block truncate text-[0.8rem] font-medium text-ink-muted">
           {activity.label}
         </span>
-        <ActivityMeter score={1} tone="neutral" />
+        <ActivityMeter score={1} tone={tone} />
       </div>
       <span className="flex shrink-0 items-center gap-1.5 rounded-pill border border-line bg-white/70 px-2.5 py-1 text-[0.7rem] font-semibold text-ink-faint transition-all duration-300">
         Pending
@@ -348,6 +359,8 @@ function PendingActivityRow({ activity }: Readonly<{ activity: { id: ActivityId;
 
 function ActivityRow({ rating }: Readonly<{ rating: ActivityRating }>) {
   const Icon = ACTIVITY_ICONS[rating.id];
+  const familyTone: "green" | "violet" =
+    rating.id === "browsing" || rating.id === "gaming" ? "green" : "violet";
 
   const config = (() => {
     if (rating.score >= 4) {
@@ -367,12 +380,18 @@ function ActivityRow({ rating }: Readonly<{ rating: ActivityRating }>) {
         meterTone: "violet" as const,
       };
     } else {
+      const isGreen = familyTone === "green";
+
       return {
-        iconClass: "text-ink-soft bg-[rgba(15,23,42,0.04)] border-[rgba(15,23,42,0.06)]",
-        pillClass: "text-ink-soft bg-[rgba(15,23,42,0.04)] border-[rgba(15,23,42,0.06)]",
+        iconClass: isGreen
+          ? "text-[#3f8a36] bg-[rgba(105,196,95,0.08)] border-[rgba(105,196,95,0.14)]"
+          : "text-[#682cd0] bg-[rgba(104,44,208,0.08)] border-[rgba(104,44,208,0.14)]",
+        pillClass: isGreen
+          ? "text-[#3f8a36] bg-[rgba(105,196,95,0.08)] border-[rgba(105,196,95,0.14)]"
+          : "text-[#682cd0] bg-[rgba(104,44,208,0.08)] border-[rgba(104,44,208,0.14)]",
         verdictText: rating.verdict,
         verdictIcon: Check,
-        meterTone: "neutral" as const,
+        meterTone: familyTone,
       };
     }
   })();

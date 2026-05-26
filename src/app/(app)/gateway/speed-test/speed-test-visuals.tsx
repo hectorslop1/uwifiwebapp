@@ -203,7 +203,6 @@ const PAD_LEFT = 16;
 const PAD_RIGHT = 16;
 const PAD_TOP = 14;
 const PAD_BOTTOM = 14;
-const BAND_GAP = 10;
 
 function buildPath(
   points: ReadonlyArray<{ x: number; y: number }>,
@@ -301,39 +300,32 @@ export function SpeedOverTimeChart({
   const plotHeight = CHART_H - PAD_TOP - PAD_BOTTOM;
   const plotBottomY = PAD_TOP + plotHeight;
 
-  // Stacked visual bands: Download lives in the upper half, Upload in the
-  // lower half. Each band has its own baseline → ceiling → so a 5 Mbps upload
-  // trace fills its band just like a 150 Mbps download trace fills its own.
-  // The math is rendering-only — tooltips, peaks and the footer still surface
-  // real sample.mbps values.
-  const bandHeight = (plotHeight - BAND_GAP) / 2;
-  const downloadBaseY = PAD_TOP + bandHeight;
-  const uploadBaseY = plotBottomY;
+  const sampleX = (sample: SpeedSample) =>
+    PAD_LEFT + (sample.elapsed / span) * plotWidth;
+  const normalizedY = (sample: SpeedSample, ceiling: number) =>
+    plotBottomY -
+    (Math.min(sample.mbps, ceiling) / ceiling) * plotHeight;
 
   const downloadMeasured = downloadSamples.map((sample) => ({
-    x: PAD_LEFT + (sample.elapsed / span) * plotWidth,
-    y:
-      downloadBaseY -
-      (Math.min(sample.mbps, downloadCeiling) / downloadCeiling) * bandHeight,
+    x: sampleX(sample),
+    y: normalizedY(sample, downloadCeiling),
     sample,
   }));
   const uploadMeasured = uploadSamples.map((sample) => ({
-    x: PAD_LEFT + (sample.elapsed / span) * plotWidth,
-    y:
-      uploadBaseY -
-      (Math.min(sample.mbps, uploadCeiling) / uploadCeiling) * bandHeight,
+    x: sampleX(sample),
+    y: normalizedY(sample, uploadCeiling),
     sample,
   }));
 
-  // Anchor each trace at its band baseline (0 Mbps at x=0) so the line rises
-  // from rest into the measured samples instead of starting mid-air.
+  // Each phase is normalized only for drawing, so upload remains legible
+  // beside download while labels and peaks keep the real Mbps values.
   const downloadPoints =
     downloadMeasured.length > 0
-      ? [{ x: PAD_LEFT, y: downloadBaseY }, ...downloadMeasured]
+      ? [{ x: downloadMeasured[0].x, y: plotBottomY }, ...downloadMeasured]
       : [];
   const uploadPoints =
     uploadMeasured.length > 0
-      ? [{ x: PAD_LEFT, y: uploadBaseY }, ...uploadMeasured]
+      ? [{ x: uploadMeasured[0].x, y: plotBottomY }, ...uploadMeasured]
       : [];
 
   // Peak markers (completed state) — by real Mbps within each phase.
@@ -365,15 +357,13 @@ export function SpeedOverTimeChart({
   const hoverSample = hoverIndex !== null ? samples[hoverIndex] : null;
   const hoverX =
     hoverSample !== null
-      ? PAD_LEFT + (hoverSample.elapsed / span) * plotWidth
+      ? sampleX(hoverSample)
       : null;
   const hoverIsUpload = hoverSample?.phase === "upload";
   const hoverCeiling = hoverIsUpload ? uploadCeiling : downloadCeiling;
-  const hoverBaseY = hoverIsUpload ? uploadBaseY : downloadBaseY;
   const hoverY =
     hoverSample !== null
-      ? hoverBaseY -
-        (Math.min(hoverSample.mbps, hoverCeiling) / hoverCeiling) * bandHeight
+      ? normalizedY(hoverSample, hoverCeiling)
       : null;
   const hoverColor = hoverIsUpload ? MORADO : VERDE;
 
@@ -386,7 +376,7 @@ export function SpeedOverTimeChart({
     let nearestIndex = 0;
     let nearestDist = Infinity;
     for (let index = 0; index < samples.length; index += 1) {
-      const sx = PAD_LEFT + (samples[index].elapsed / span) * plotWidth;
+      const sx = sampleX(samples[index]);
       const dist = Math.abs(sx - viewBoxX);
       if (dist < nearestDist) {
         nearestDist = dist;
@@ -422,71 +412,65 @@ export function SpeedOverTimeChart({
             <filter id="speedChartDotGlow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="2" />
             </filter>
+            <filter id="speedChartLineGlow" x="-12%" y="-30%" width="124%" height="160%">
+              <feGaussianBlur stdDeviation="1.2" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
 
-          {/* Subtle band baselines — replace the visible Y axes. Each line
-             marks the 0 Mbps level of its trace's band, giving the eye a
-             faint anchor without adding numeric chrome. */}
           <line
             x1={PAD_LEFT}
             x2={CHART_W - PAD_RIGHT}
-            y1={downloadBaseY}
-            y2={downloadBaseY}
-            stroke="rgba(15,23,42,0.05)"
+            y1={plotBottomY}
+            y2={plotBottomY}
+            stroke="rgba(15,23,42,0.07)"
             strokeWidth="1"
-            strokeDasharray="2 6"
-          />
-          <line
-            x1={PAD_LEFT}
-            x2={CHART_W - PAD_RIGHT}
-            y1={uploadBaseY}
-            y2={uploadBaseY}
-            stroke="rgba(15,23,42,0.08)"
-            strokeWidth="1"
+            strokeDasharray="3 7"
           />
 
           {hasData ? (
             <>
-              {/* Area fills first so lines paint on top */}
               {downloadPoints.length > 0 ? (
                 <path
-                  d={buildPath(downloadPoints, true, downloadBaseY)}
+                  d={buildPath(downloadPoints, true, plotBottomY)}
                   fill="url(#speedChartDownload)"
+                  opacity="0.9"
                 />
               ) : null}
               {uploadPoints.length > 0 ? (
                 <path
-                  d={buildPath(uploadPoints, true, uploadBaseY)}
+                  d={buildPath(uploadPoints, true, plotBottomY)}
                   fill="url(#speedChartUpload)"
+                  opacity="0.82"
                 />
               ) : null}
 
               {downloadPoints.length > 0 ? (
                 <path
-                  d={buildPath(downloadPoints, false, downloadBaseY)}
+                  d={buildPath(downloadPoints, false, plotBottomY)}
                   fill="none"
                   stroke={VERDE}
-                  strokeWidth="2.6"
+                  strokeWidth="2.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  filter="url(#speedChartLineGlow)"
                 />
               ) : null}
               {uploadPoints.length > 0 ? (
                 <path
-                  d={buildPath(uploadPoints, false, uploadBaseY)}
+                  d={buildPath(uploadPoints, false, plotBottomY)}
                   fill="none"
                   stroke={MORADO}
-                  strokeWidth="2.6"
+                  strokeWidth="2.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  filter="url(#speedChartLineGlow)"
                 />
               ) : null}
 
-              {/* Dot strategy:
-                 - state="running": pulse the latest sample of the active phase
-                 - state="completed": peak dot per trace
-                 - hover: hover dot (rendered last, on top)
-                 No per-sample dots — keeps the trace clean and premium. */}
               {state === "running" && latestPoint ? (
                 <g>
                   <circle
